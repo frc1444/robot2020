@@ -1,0 +1,24 @@
+apply plugin: "java"
+
+sourceCompatibility = 1.11
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+dependencies {
+    api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+
+    api "edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion"
+    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion"
+    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:linuxx86-64"
+    api "edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-java:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:linuxx86-64"
+
+    api "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
+    api "com.github.frc1444.robo-sim:gdx:$roboSimVersion"
+    api "com.github.retrodaredevil.abstract-controller-lib:gdx:$abstractControllerLibVersion"
+
+//    api "edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion"
+//    api "edu.wpi.first.cscore:cscore-java:$wpiLibVersion"
+}
