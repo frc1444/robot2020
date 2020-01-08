@@ -44,6 +44,7 @@ public class TalonSwerveModule implements SwerveModule {
     private final ValueMap<ModuleConfig> moduleConfig;
 
     private boolean quickReverseAllowed = true;
+    private boolean isDisabled = false;
     private double speed = 0;
     private double targetPositionDegrees = 0;
 
@@ -98,6 +99,11 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public void run() {
+        if(isDisabled){
+            steer.set(ControlMode.Disabled, 0);
+            drive.set(ControlMode.Disabled, 0);
+            return;
+        }
         final double speedMultiplier;
 
         { // steer code
@@ -136,6 +142,7 @@ public class TalonSwerveModule implements SwerveModule {
     @Override
     public void setTargetSpeed(double speed) {
         this.speed = speed;
+        isDisabled = false;
     }
 
 
@@ -154,6 +161,7 @@ public class TalonSwerveModule implements SwerveModule {
     @Override
     public void setTargetAngleDegrees(double positionDegrees) {
         this.targetPositionDegrees = positionDegrees;
+        isDisabled = false;
     }
 
     @Override
@@ -197,7 +205,7 @@ public class TalonSwerveModule implements SwerveModule {
         return eventHandler;
     }
     private final EventHandler eventHandler = new EventHandler() {
-        private final Set<Event> eventSet = Collections.unmodifiableSet(EnumSet.of(SwerveModuleEvent.RECALIBRATE, SwerveModuleEvent.QUICK_REVERSE_ENABLED));
+        private final Set<Event> eventSet = Collections.unmodifiableSet(EnumSet.of(SwerveModuleEvent.RECALIBRATE, SwerveModuleEvent.QUICK_REVERSE_ENABLED, SwerveModuleEvent.DISABLE));
         @Override
         public boolean canHandleEvent(@NotNull Event event) {
             return eventSet.contains(event);
@@ -215,6 +223,10 @@ public class TalonSwerveModule implements SwerveModule {
                 } else {
                     System.err.println(o + " was passed for quick reversed enabled data."); // We could throw an exception, but this isn't something we need to crash the program for
                 }
+                return true;
+            }
+            if(event == SwerveModuleEvent.DISABLE){
+                isDisabled = true;
                 return true;
             }
             return false;

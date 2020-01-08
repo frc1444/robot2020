@@ -21,6 +21,8 @@ import com.first1444.sim.api.frc.BasicRobotRunnable
 import com.first1444.sim.api.frc.sim.DriverStationSendable
 import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
 import com.first1444.sim.api.sensors.DefaultOrientationHandler
+import com.first1444.sim.api.surroundings.Surrounding
+import com.first1444.sim.api.surroundings.SurroundingProvider
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -150,7 +152,10 @@ object MyRobotCreator : RobotCreator {
                     GdxSoundCreator { Gdx.files.internal(it) },
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
-                    VisionProvider2019(entity, 2.0, updateableData.clock) // TODO this is for 2019 only!!!
+                    object : SurroundingProvider { // TODO simulate 2020 vision targets in robo-sim
+                        override val surroundings: List<Surrounding>
+                            get() = emptyList()
+                    }
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {

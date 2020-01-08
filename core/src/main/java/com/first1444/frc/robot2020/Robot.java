@@ -9,6 +9,7 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
+import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
 import com.first1444.frc.robot2020.actions.SwerveDriveAction;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
@@ -58,7 +59,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         config.useAbstractedIsDownIfPossible = false; // On PS4 controllers, this option is too sensitive
         controlConfig = config;
     }
-    private final FrcDriverStation driverStation;
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private final FrcDriverStation driverStation; // We want to keep this as a field even though it isn't used yet
     private final FrcLogger logger;
     private final Clock clock;
     private final DashboardMap dashboardMap;
@@ -77,10 +79,14 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final VisionPacketListener visionPacketListener;
     private final SoundMap soundMap;
 
+    private final Action periodicAction;
+
     /** The {@link ActionChooser} that handles an action that updates subsystems. (One action is active)*/
     private final ActionChooser actionChooser;
 
+    /** The action that when updated, allows the driver and operator to control the robot */
     private final Action teleopAction;
+    /** This is updated by teleopAction and should not be updated directly. This is stored as a field because we may need to change its perspective */
     private final SwerveDriveAction swerveDriveAction;
 
     // region Initialize
@@ -132,6 +138,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 "10.14.44.5", 5801
         );
 
+        periodicAction = new Actions.ActionMultiplexerBuilder(
+            new ColorWheelMonitorAction(driverStation, soundMap)
+        ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
         swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), robotInput, surroundingProvider);
@@ -157,6 +166,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void robotPeriodic() {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
+        periodicAction.update();
         actionChooser.update(); // update Actions that control the subsystems
 
         if(robotInput.getSwerveQuickReverseCancel().isJustPressed()){
@@ -220,6 +230,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void testInit() {
         dashboardMap.getLiveWindow().setEnabled(true);
+        for(SwerveModule module : drive.getDrivetrainData().getModules()){
+            module.getEventHandler().handleEvent(SwerveModuleEvent.DISABLE, null);
+        }
     }
     // endregion
 

@@ -40,3 +40,12 @@ This project has four main modules:
 * `wpi` - WPI specific code that is deployed to the robot
 * `gdx` - RoboSim simulation specific code
 * `desktop` - Contains a class to launch the `gdx` module on the desktop
+
+### Classes
+You should put classes that require WPI/RoboRIO interaction in the `wpi` module.
+
+When initializing things for `wpi`, you can change [WpiRunnableCreator.java](wpi/src/main/java/com/first1444/frc/robot2020/WpiRunnableCreator.java) when you
+need to pass data to [Robot.java](core/src/main/java/com/first1444/frc/robot2020/Robot.java)
+
+If you are brave, you can change [MyRobotCreator.kt](gdx/src/main/java/com/first1444/frc/robot2020/gdx/MyRobotCreator.kt) to pass different values to
+[Robot.java](core/src/main/java/com/first1444/frc/robot2020/Robot.java) for the simulation. It does, however, use Kotlin.

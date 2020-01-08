@@ -11,4 +11,11 @@ public interface SoundMap {
 
     Sound getTargetFound();
     Sound getTargetFailed();
+
+    // region Color Wheel Sounds
+    Sound getColorWheelBlue();
+    Sound getColorWheelGreen();
+    Sound getColorWheelRed();
+    Sound getColorWheelYellow();
+    // endregion
 }

@@ -36,4 +36,24 @@ public class SilentSoundMap implements SoundMap {
     public Sound getTargetFailed() {
         return DummySound.INSTANCE;
     }
+
+    @Override
+    public Sound getColorWheelBlue() {
+        return DummySound.INSTANCE;
+    }
+
+    @Override
+    public Sound getColorWheelGreen() {
+        return DummySound.INSTANCE;
+    }
+
+    @Override
+    public Sound getColorWheelRed() {
+        return DummySound.INSTANCE;
+    }
+
+    @Override
+    public Sound getColorWheelYellow() {
+        return DummySound.INSTANCE;
+    }
 }
