@@ -26,6 +26,7 @@ import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
 import com.first1444.sim.gdx.entity.EntityOrientation
 import com.first1444.sim.gdx.implementations.deepspace2019.surroundings.VisionProvider2019
+import com.first1444.sim.gdx.implementations.infiniterecharge.FieldSetup2020
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
 import com.first1444.sim.gdx.sound.GdxSoundCreator
@@ -39,6 +40,7 @@ import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardCon
 import me.retrodaredevil.controller.options.OptionValues
 import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
+import kotlin.experimental.or
 
 object MyRobotCreator : RobotCreator {
     override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
@@ -59,6 +61,11 @@ object MyRobotCreator : RobotCreator {
             }
             val area = wheelBase * trackWidth
             density = 1.0f / area.toFloat()
+        }, FixtureDef().apply { // the box that collides with the trench
+            filter.categoryBits = FieldSetup2020.TRENCH_MASK_BITS or 1
+            shape = PolygonShape().apply {
+                setAsBox(inchesToMeters(15.0f / 2), inchesToMeters(15.0f / 2), ZERO, 0.0f)
+            }
         }, FixtureDef().apply {
             isSensor = true
             shape = EdgeShape().apply {

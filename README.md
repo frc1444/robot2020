@@ -3,6 +3,13 @@ Our robot code for Infinite Recharge.
 
 This project uses robo-sim and is not a standard WPILib project.
 
+### Setup
+You will need **Java 11** installed. Not 10, not 12, **11**.
+
+Run the `./gradlew build` and `./gradlew wpi:downloadAll` commands described below.
+
+It is recommended to use either IntelliJ or VS Code.
+
 ### Commands
 NOTE: These commands work on Linux/Mac but must be altered on Windows.
 To alter them on Windows, replace `./gradlew` with `gradlew.bat`
