@@ -5,6 +5,7 @@ import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.input.InputUtil;
+import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class WpiRunnableCreator implements RunnableCreator {
+    private static final boolean DUMMY_SWERVE = true;
 
     @Override
     public void prematureInit() {
@@ -61,23 +63,30 @@ public class WpiRunnableCreator implements RunnableCreator {
                 .setDouble(PidKey.I, .03);
         final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
         final int quadCounts = swerve.getQuadCountsPerRevolution();
-        FourWheelSwerveDriveData data = new FourWheelSwerveDriveData(
-                new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
-                        swerve.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
+        final FourWheelSwerveDriveData data;
+        if(DUMMY_SWERVE){
+            data = new FourWheelSwerveDriveData(
+                    new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(),
+                    swerve.getWheelBase(), swerve.getTrackWidth()
+            );
+        } else {
+            data = new FourWheelSwerveDriveData(
+                    new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
+                            swerve.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
 
-                new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
-                        swerve.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
+                    new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
+                            swerve.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
 
-                new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
-                        swerve.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
+                    new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
+                            swerve.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
 
-                new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
-                        swerve.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
-                swerve.getWheelBase(), swerve.getTrackWidth()
-        );
+                    new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
+                            swerve.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
+                    swerve.getWheelBase(), swerve.getTrackWidth()
+            );
+        }
         final BNO055 gyro = new BNO055();
 
-        final Robot[] robotReference = {null};
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, new WpiClock(), dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), new DualShockRumble(new WpiInputCreator(5).createRumble()),
@@ -86,7 +95,6 @@ public class WpiRunnableCreator implements RunnableCreator {
                 data,
                 Collections::emptyList // TODO vision
         );
-        robotReference[0] = robot;
         return new RobotRunnableMultiplexer(Arrays.asList(
                 new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
                 new RobotRunnable() {

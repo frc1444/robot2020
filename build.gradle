@@ -5,9 +5,10 @@ buildscript {
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "5c7a82b0af"
+        roboSimVersion = "67bf025fc0"
         abstractControllerLibVersion = "v2.2.6"
         abstractDashboardVersion = "v1.1.0"
+        jacksonVersion = "2.10.1"
     }
     repositories {
         mavenLocal()
@@ -36,7 +37,6 @@ subprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
         maven { url "https://jitpack.io" }
-//        maven { url "https://first.wpi.edu/FRC/roborio/maven/release"}
         maven { url "https://frcmaven.wpi.edu/artifactory/release" }
     }
     dependencies {

@@ -3,8 +3,6 @@ package com.first1444.frc.robot2020;
 import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.advanced.Sendable;
-import com.first1444.dashboard.advanced.implementations.chooser.MutableMappedChooserProvider;
-import com.first1444.dashboard.advanced.implementations.chooser.SimpleMappedChooserProvider;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
@@ -18,6 +16,7 @@ import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.OrientationSystem;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
+import com.first1444.frc.robot2020.vision.VisionPacketParser;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.distance.*;
@@ -36,7 +35,10 @@ import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.api.sound.SoundCreator;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
-import me.retrodaredevil.action.*;
+import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.ActionChooser;
+import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.WhenDone;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
@@ -130,16 +132,15 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         )));
 
         visionPacketListener = new VisionPacketListener(
-                clock,
-                Map.of(
-                        0, Rotation2.ZERO,
-                        1, Rotation2.DEG_180
+                new VisionPacketParser(
+                        clock,
+                        Map.of(0, Rotation2.ZERO)
                 ),
-                "10.14.44.5", 5801
+                "tcp://10.14.44.5:5801"
         );
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
-            new ColorWheelMonitorAction(driverStation, soundMap)
+                new ColorWheelMonitorAction(driverStation, soundMap)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
