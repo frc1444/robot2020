@@ -19,6 +19,9 @@ import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+/**
+ * We probably won't use this in 2020 because we currently don't need to move to a certain position based on the vision target
+ */
 public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLinkedAction {
     private static final double FAIL_NOTIFY_TIME = .1;
     private static final double MAX_FAIL_TIME = 2;

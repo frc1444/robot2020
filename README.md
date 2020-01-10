@@ -22,6 +22,7 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 ./gradlew wpi:downloadAll
 
 # Deploying:
+./gradlew jar
 ./gradlew wpi:deploy
 
 # Launching Shuffleboard:
@@ -30,8 +31,10 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 # Running RoboSim Simlation:
 ./gradlew desktop:run
 
-# Download Vendor Dependencies
-./gradlew wpi:downloadDepsPreemptively
+# Running WPI Simulation
+./gradlew jar
+./gradlew wpi:simulateJava
+
 ```
 
 ### Project Structure

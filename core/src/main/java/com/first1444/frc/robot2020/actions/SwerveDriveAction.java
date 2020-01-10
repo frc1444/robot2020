@@ -25,14 +25,12 @@ import static java.util.Objects.requireNonNull;
  * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
  */
 public class SwerveDriveAction extends SimpleAction {
-    private final Clock clock;
+    private final Clock clock; // we may use this in the future for vision
     private final SwerveDrive drive;
     private final Orientation orientation;
     private final RobotInput input;
-    private final SurroundingProvider surroundingProvider;
+    private final SurroundingProvider surroundingProvider; // we may use this in the future for vision
 
-
-    private final ActionChooser actionChooser;
 
     /** The perspective or null to automatically choose the perspective based on the task */
     private Perspective perspective = Perspective.DRIVER_STATION;
@@ -49,8 +47,6 @@ public class SwerveDriveAction extends SimpleAction {
         this.orientation = requireNonNull(orientation);
         this.input = requireNonNull(input);
         this.surroundingProvider = requireNonNull(surroundingProvider);
-
-        actionChooser = Actions.createActionChooserRecyclable(WhenDone.BE_DONE);
     }
 
     /**
@@ -74,6 +70,10 @@ public class SwerveDriveAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
+        // TODO use input.getVisionAlign() and execute something besides driverControl() if it is held down
+        driverControl();
+    }
+    private void driverControl(){
         final Perspective perspective;
         if(input.getFirstPersonHoldButton().isDown()){
             perspective = Perspective.ROBOT_FORWARD_CAM;
@@ -81,62 +81,41 @@ public class SwerveDriveAction extends SimpleAction {
             perspective = this.perspective;
         }
 
-        if(input.getVisionAlign().isDown()){
-            if(input.getVisionAlign().isJustPressed()){
-                actionChooser.setNextAction(LineUpCreator.createLineUpAction(
-                        clock, surroundingProvider,
-                        drive, orientation,
-                        Rotation2.ZERO, // line up straight on using the "front" of the robot
-                        null, null, SilentSoundMap.INSTANCE
-                ));
-            }
-            actionChooser.update();
-            if(actionChooser.isDone()){
-                final ControllerRumble rumble = input.getDriverRumble();
-                if(rumble.isConnected()) {
-                    rumble.rumbleTimeout(200, .3);
-                }
-            }
+        final JoystickPart joystick = input.getMovementJoy();
+        final double x, y;
+        if(joystick.isDeadzone()){
+            x = 0;
+            y = 0;
         } else {
-            if(actionChooser.isActive()){
-                actionChooser.end();
-            }
-            final JoystickPart joystick = input.getMovementJoy();
-            final double x, y;
-            if(joystick.isDeadzone()){
-                x = 0;
-                y = 0;
-            } else {
-                x = joystick.getCorrectX();
-                y = joystick.getCorrectY();
-            }
-
-            final double turnAmount;
-            if(input.getTurnAmount().isDeadzone()){
-                turnAmount = 0;
-            } else {
-                turnAmount = input.getTurnAmount().getPosition();
-            }
-
-            final InputPart speedInputPart = input.getMovementSpeed();
-            final double speed;
-            if (speedInputPart.isDeadzone()) {
-                speed = 0;
-            } else {
-                speed = conservePow(speedInputPart.getPosition(), 2);
-            }
-            final Vector2 translation;
-            double offsetRadians = perspective.getOffsetRadians();
-            double orientationRadians = orientation.getOrientationRadians();
-            if(perspective.isUseGyro()){
-                translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
-            } else {
-                //noinspection SuspiciousNameCombination
-                translation = new Vector2(y, -x).rotateRadians(offsetRadians);
-            }
-
-            drive.setControl(translation, turnAmount, speed);
+            x = joystick.getCorrectX();
+            y = joystick.getCorrectY();
         }
+
+        final double turnAmount;
+        if(input.getTurnAmount().isDeadzone()){
+            turnAmount = 0;
+        } else {
+            turnAmount = input.getTurnAmount().getPosition();
+        }
+
+        final InputPart speedInputPart = input.getMovementSpeed();
+        final double speed;
+        if (speedInputPart.isDeadzone()) {
+            speed = 0;
+        } else {
+            speed = conservePow(speedInputPart.getPosition(), 2);
+        }
+        final Vector2 translation;
+        double offsetRadians = perspective.getOffsetRadians();
+        double orientationRadians = orientation.getOrientationRadians();
+        if(perspective.isUseGyro()){
+            translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
+        } else {
+            //noinspection SuspiciousNameCombination
+            translation = new Vector2(y, -x).rotateRadians(offsetRadians);
+        }
+
+        drive.setControl(translation, turnAmount, speed);
     }
 
 }
