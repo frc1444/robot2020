@@ -22,7 +22,6 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 ./gradlew wpi:downloadAll
 
 # Deploying:
-./gradlew jar
 ./gradlew wpi:deploy
 
 # Launching Shuffleboard:
@@ -32,7 +31,6 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 ./gradlew desktop:run
 
 # Running WPI Simulation
-./gradlew jar
 ./gradlew wpi:simulateJava
 
 ```

@@ -45,12 +45,11 @@ dependencies {
 
     implementation "com.github.frc1444.robo-sim:wpi:$roboSimVersion"
     implementation "com.github.frc1444.robo-sim:wpi-controller:$roboSimVersion"
-//    implementation "com.github.retrodaredevil.abstract-controller-lib:wpi:$abstractControllerLibVersion"
     implementation "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
-
 }
 
 jar {
+    dependsOn ':core:jar'
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     //noinspection UnnecessaryQualifiedReference
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
