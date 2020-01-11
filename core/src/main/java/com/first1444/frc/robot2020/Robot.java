@@ -9,11 +9,14 @@ import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
 import com.first1444.frc.robot2020.actions.SwerveDriveAction;
+import com.first1444.frc.robot2020.actions.WheelSpinAction;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.sound.DefaultSoundMap;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.OrientationSystem;
+import com.first1444.frc.robot2020.subsystems.DummyWheelSpinner;
+import com.first1444.frc.robot2020.subsystems.WheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
@@ -68,6 +71,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final DashboardMap dashboardMap;
     private final OrientationSystem orientationSystem;
     private final SwerveDrive drive;
+    private final WheelSpinner spinner;
 
     private final PartUpdater partUpdater = new PartUpdater();
     private final RobotInput robotInput;
@@ -90,6 +94,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final Action teleopAction;
     /** This is updated by teleopAction and should not be updated directly. This is stored as a field because we may need to change its perspective */
     private final SwerveDriveAction swerveDriveAction;
+
+    private final WheelSpinAction wheelSpinAction;
 
     // region Initialize
     /** Used to initialize final fields.*/
@@ -121,6 +127,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
         this.orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
         this.matchScheduler = new DefaultMatchScheduler(driverStation, clock);
+        this.spinner = new DummyWheelSpinner();
 
         relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), getOrientation()));
         absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);
@@ -148,6 +155,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         teleopAction = new Actions.ActionMultiplexerBuilder(
                 swerveDriveAction
         ).canBeDone(false).canRecycle(true).build();
+
+        wheelSpinAction = new WheelSpinAction(spinner);
 
         visionPacketListener.start();
         System.out.println("Finished constructor");
@@ -234,6 +243,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         for(SwerveModule module : drive.getDrivetrainData().getModules()){
             module.getEventHandler().handleEvent(SwerveModuleEvent.DISABLE, null);
         }
+        wheelSpinAction.update();
     }
     // endregion
 
