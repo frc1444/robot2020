@@ -5,14 +5,20 @@ import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.input.InputUtil;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
+import com.first1444.frc.robot2020.vision.VisionPacketListener;
+import com.first1444.frc.robot2020.vision.VisionPacketParser;
 import com.first1444.frc.util.pid.PidKey;
+import com.first1444.frc.util.reportmap.DashboardReportMap;
+import com.first1444.frc.util.reportmap.ReportMap;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
-import com.first1444.sim.api.RobotRunnable;
-import com.first1444.sim.api.RobotRunnableMultiplexer;
-import com.first1444.sim.api.RunnableCreator;
+import com.first1444.sim.api.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
@@ -28,10 +34,11 @@ import me.retrodaredevil.controller.wpi.WpiInputCreator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = true;
+    private static final SwerveSetup SWERVE = Constants.Swerve2019.INSTANCE;
 
     @Override
     public void prematureInit() {
@@ -43,11 +50,11 @@ public class WpiRunnableCreator implements RunnableCreator {
         BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
         ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
         DashboardMap dashboardMap = new DefaultDashboardMap(bundle);
+        ReportMap reportMap = new DashboardReportMap(dashboardMap.getDebugTab().getRawDashboard().getSubDashboard("Report Map"));
         FrcDriverStation driverStation = new WpiFrcDriverStation(DriverStation.getInstance());
 
         final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
         final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
-//        MetadataEditor robotPreferencesEditor = (metadata) -> new ComponentMetadataHelper(metadata).setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
         dashboardMap.getLiveWindow().add("Drive PID", drivePidSendable);
         dashboardMap.getLiveWindow().add("Steer PID", steerPidSendable);
         dashboardMap.getLiveWindow().setEnabled(true);
@@ -61,39 +68,48 @@ public class WpiRunnableCreator implements RunnableCreator {
         steerPid
                 .setDouble(PidKey.P, 12)
                 .setDouble(PidKey.I, .03);
-        final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
-        final int quadCounts = swerve.getQuadCountsPerRevolution();
         final FourWheelSwerveDriveData data;
         if(DUMMY_SWERVE){
             data = new FourWheelSwerveDriveData(
                     new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(),
-                    swerve.getWheelBase(), swerve.getTrackWidth()
+                    SWERVE.getWheelBase(), SWERVE.getTrackWidth()
             );
         } else {
+            final int quadCounts = SWERVE.getQuadCountsPerRevolution();
             data = new FourWheelSwerveDriveData(
-                    new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
-                            swerve.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
+                    new TalonSwerveModule("front right", SWERVE.getFRDriveCAN(), SWERVE.getFRSteerCAN(), quadCounts, drivePid, steerPid,
+                            SWERVE.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
 
-                    new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
-                            swerve.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
+                    new TalonSwerveModule("front left", SWERVE.getFLDriveCAN(), SWERVE.getFLSteerCAN(), quadCounts, drivePid, steerPid,
+                            SWERVE.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
 
-                    new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
-                            swerve.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
+                    new TalonSwerveModule("rear left", SWERVE.getRLDriveCAN(), SWERVE.getRLSteerCAN(), quadCounts, drivePid, steerPid,
+                            SWERVE.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
 
-                    new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
-                            swerve.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
-                    swerve.getWheelBase(), swerve.getTrackWidth()
+                    new TalonSwerveModule("rear right", SWERVE.getRRDriveCAN(), SWERVE.getRRSteerCAN(), quadCounts, drivePid, steerPid,
+                            SWERVE.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
+                    SWERVE.getWheelBase(), SWERVE.getTrackWidth()
             );
         }
         final BNO055 gyro = new BNO055();
 
+        final Clock clock = new WpiClock();
+        VisionPacketListener visionPacketListener = new VisionPacketListener(
+                new VisionPacketParser(
+                        clock,
+                        Map.of(0, Rotation2.ZERO)
+                ),
+                "tcp://10.14.44.5:5801"
+        );
+        visionPacketListener.start();
         Robot robot = new Robot(
-                driverStation, DriverStationLogger.INSTANCE, new WpiClock(), dashboardMap,
+                driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), new DualShockRumble(new WpiInputCreator(5).createRumble()),
                 DummySoundCreator.INSTANCE, // TODO sounds
                 new BNOOrientationHandler(gyro),
                 data,
-                Collections::emptyList // TODO vision
+                new DummyIntake(reportMap), new DummyBallShooter(reportMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                visionPacketListener
         );
         return new RobotRunnableMultiplexer(Arrays.asList(
                 new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
@@ -106,6 +122,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     @Override
                     public void close() {
                         bundle.onRemove();
+                        visionPacketListener.close();
                     }
                 }
         ));

@@ -11,14 +11,26 @@ import org.zeromq.ZMQ;
 import java.util.Collections;
 import java.util.List;
 
-public class VisionPacketListener extends Thread implements SurroundingProvider {
+public class VisionPacketListener implements SurroundingProvider, AutoCloseable {
     private final String address;
     private final VisionPacketParser parser;
+    private final Thread thread;
     private List<Surrounding> surroundingList = null;
     public VisionPacketListener(VisionPacketParser parser, String address){
         this.parser = parser;
         this.address = address;
-        setDaemon(true);
+        Thread thread = new Thread(this::run);
+        thread.setDaemon(true);
+        this.thread = thread;
+    }
+
+    public void start(){
+        thread.start();
+    }
+
+    @Override
+    public void close() {
+        thread.interrupt();
     }
 
     @NotNull
@@ -34,8 +46,7 @@ public class VisionPacketListener extends Thread implements SurroundingProvider 
         return r;
     }
 
-    @Override
-    public void run() {
+    private void run() {
         try(ZContext context = new ZContext()) {
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
             socket.connect(address);

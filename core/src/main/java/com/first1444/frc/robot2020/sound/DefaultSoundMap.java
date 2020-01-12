@@ -2,8 +2,10 @@ package com.first1444.frc.robot2020.sound;
 
 import com.first1444.sim.api.sound.Sound;
 import com.first1444.sim.api.sound.SoundCreator;
+import com.first1444.sim.api.sound.implementations.DummySoundCreator;
 
 public class DefaultSoundMap implements SoundMap {
+    public static final SoundMap SILENT = new DefaultSoundMap(DummySoundCreator.INSTANCE);
 
     private final Sound disable, autonomousEnable, teleopEnable, matchEnd, targetFound, targetFailed;
     private final Sound blue, green, red, yellow;

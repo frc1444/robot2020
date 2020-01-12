@@ -1,19 +1,13 @@
 package com.first1444.frc.robot2020.actions;
 
 import com.first1444.frc.robot2020.Perspective;
-import com.first1444.frc.robot2020.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2020.input.RobotInput;
-import com.first1444.frc.robot2020.sound.SilentSoundMap;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
-import me.retrodaredevil.action.ActionChooser;
-import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.SimpleAction;
-import me.retrodaredevil.action.WhenDone;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;

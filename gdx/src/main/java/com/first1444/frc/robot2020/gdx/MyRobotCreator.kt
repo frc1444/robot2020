@@ -12,6 +12,10 @@ import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.input.InputUtil
+import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
+import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
+import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
+import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
 import com.first1444.frc.util.reportmap.DashboardReportMap
 import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
@@ -152,6 +156,7 @@ object MyRobotCreator : RobotCreator {
                     GdxSoundCreator { Gdx.files.internal(it) },
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
+                    DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
                     object : SurroundingProvider { // TODO simulate 2020 vision targets in robo-sim
                         override val surroundings: List<Surrounding>
                             get() = emptyList()
