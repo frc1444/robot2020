@@ -38,7 +38,9 @@ public class DummyClimber implements Climber {
 
     @Override
     public void run() {
-        reportMap.report("Raw Speed", FORMAT.format(speed));
-        reportMap.report("Neutral State", neutralState.toString());
+        final Double speed = this.speed;
+        String speedString = speed == null ? "lock" : FORMAT.format(speed);
+        reportMap.report("Climber Raw Speed", speedString);
+        reportMap.report("Climber Neutral State", neutralState.toString());
     }
 }

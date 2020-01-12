@@ -35,7 +35,7 @@ public final class Constants {
     /** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
     public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
 
-    public enum Swerve2019 implements SwerveSetup{ // TODO update
+    public enum Swerve2019 implements SwerveSetup {
         INSTANCE;
 
         // Yup, we're using some of the same constants as last year, that doesn't mean everything will be the same, though!
@@ -66,28 +66,28 @@ public final class Constants {
 
         @Override
         public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 786)
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 131)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
         public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 708)
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 113)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
         public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 381)
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 600)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 896)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
         public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 840)
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 869)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }

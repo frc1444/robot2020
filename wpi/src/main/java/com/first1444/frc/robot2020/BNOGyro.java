@@ -22,8 +22,6 @@ public class BNOGyro implements Gyro {
         return bno055.getEulerData().heading - gyroHeadingOffset;
     }
 
-    @Deprecated public void free() { } // TODO remove in 2020. It is expected that this method that is overridden will be removed
-
     @Override
     public void close() {
         bno055.close();

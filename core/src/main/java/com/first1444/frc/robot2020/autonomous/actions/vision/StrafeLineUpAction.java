@@ -88,7 +88,8 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
             failed = true;
         }
         if(failed){
-            // TODO cache old successful surroundings and try to estimate where we are and where we need to be
+            // NOT TO DO cache old successful surroundings and try to estimate where we are and where we need to be
+            // if we decide to use this again, maybe we should try that
             if(failureStartTime == null){
                 failureStartTime = now;
             }

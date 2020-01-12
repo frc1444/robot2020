@@ -1,19 +1,23 @@
-apply plugin: "java"
+plugins {
+    id "java"
+    id "edu.wpi.first.GradleRIO" version "$wpiLibVersion"
+}
 
 sourceCompatibility = 1.11
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 dependencies {
+    println("platform=${wpi.platforms.desktop}")
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
 
     api "edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion"
     api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion"
-    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:linuxx86-64"
+    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:${wpi.platforms.desktop}"
     api "edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion"
     api "edu.wpi.first.hal:hal-java:$wpiLibVersion"
     api "edu.wpi.first.hal:hal-jni:$wpiLibVersion"
-    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:linuxx86-64"
+    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:${wpi.platforms.desktop}"
 
     api "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
     api "com.github.frc1444.robo-sim:gdx:$roboSimVersion"

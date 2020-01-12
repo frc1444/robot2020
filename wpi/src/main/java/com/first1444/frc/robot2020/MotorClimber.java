@@ -1,25 +1,25 @@
 package com.first1444.frc.robot2020;
 
-import com.first1444.frc.robot2020.subsystems.Intake;
+import com.first1444.frc.robot2020.subsystems.Climber;
 
-public class MotorIntake implements Intake {
+public class MotorClimber implements Climber {
     @Override
-    public void setSpeed(double speed) {
+    public void setRawSpeed(double speed) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setDesiredState(State state) {
+    public void lockCurrentPosition() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public State getDesiredState() {
+    public void setNeutralState(NeutralState neutralState) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public State getCurrentState() {
+    public NeutralState getNeutralState() {
         throw new UnsupportedOperationException();
     }
 

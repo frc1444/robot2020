@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.util.ColorShim;
  * Some credit to
  * <a href="https://github.com/FRCTeam225/Ri3D2020/blob/master/src/main/java/frc/robot/subsystems/ColorMatcher.java">FRCTeam255's Robot in 3 Days Code</a>
  */
-public class ColorHelper {
+public class SimpleColorSensor {
     /*
     If we want to use multiple I2C devices: https://www.chiefdelphi.com/t/using-more-then-one-color-sensors-per-the-one-i2c-port-on-the-roborio/369584
      */
@@ -30,14 +30,11 @@ public class ColorHelper {
 
     private final ColorSensorV3 colorSensor;
 
-    public ColorHelper(I2C.Port port) {
+    public SimpleColorSensor(I2C.Port port) {
         colorSensor = new ColorSensorV3(port);
     }
-    public ColorHelper(){
-        this(I2C.Port.kOnboard);
-    }
 
-    private void doStuff(){
+    public WheelColor getWheelColor(){
         Color detectedColor = colorSensor.getColor();
         ColorMatchResult result = colorMatch.matchClosestColor(detectedColor);
         Color color = result.color;
@@ -51,7 +48,11 @@ public class ColorHelper {
         } else if(color.equals(YELLOW)){
             wheelColor = WheelColor.YELLOW;
         } else {
-            wheelColor = null;
+            throw new AssertionError("It should have matched a color no matter what! color=" + color);
         }
+        if(result.confidence < .9 || (wheelColor != WheelColor.RED && result.confidence < .93)){
+            return null;
+        }
+        return wheelColor;
     }
 }

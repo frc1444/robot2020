@@ -1,11 +1,24 @@
 package com.first1444.frc.robot2020;
 
-import com.first1444.frc.robot2020.subsystems.Intake;
+import com.first1444.frc.robot2020.subsystems.WheelSpinner;
+import com.first1444.sim.api.frc.implementations.infiniterecharge.WheelColor;
+import edu.wpi.first.wpilibj.I2C;
 
-public class MotorIntake implements Intake {
+public class MotorWheelSpinner implements WheelSpinner {
+    private final SimpleColorSensor colorSensor;
+
+    public MotorWheelSpinner() {
+        colorSensor = new SimpleColorSensor(I2C.Port.kOnboard);
+    }
+
     @Override
     public void setSpeed(double speed) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public WheelColor getCurrentColor() {
+        return colorSensor.getWheelColor();
     }
 
     @Override
