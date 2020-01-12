@@ -18,6 +18,8 @@ public class VisionPacketParser {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final Clock clock;
+
+    // TODO instead of using a map, maybe create an interface so that if we have a turret, we can adjust the angle based on that
     private final Map<Integer, Rotation2> cameraOffsetMap;
 
     public VisionPacketParser(Clock clock, Map<Integer, Rotation2> cameraOffsetMap) {
@@ -37,7 +39,7 @@ public class VisionPacketParser {
                 final Transform2 correctTransform = new Transform2(
                         packet.xMeters, packet.zMeters,
                         Rotation2.ZERO
-                ).getReversed();
+                );
                 final Surrounding surrounding = new Surrounding(
                         Transform2.fromDegrees(
                                 correctTransform.getX(),
@@ -69,20 +71,30 @@ public class VisionPacketParser {
         }
     }
     private static class VisionPacket {
+        private final int status;
+        private final double imageX, imageY;
         private final double xMeters, yMeters, zMeters;
         private final double yawDegrees, pitchDegrees, rollDegrees;
 
         private VisionPacket(
-                @JsonProperty(value = "xMeters", required = true) double xMeters,
-                @JsonProperty(value = "yMeters", required = true) double yMeters,
-                @JsonProperty(value = "zMeters", required = true) double zMeters,
-                @JsonProperty(value = "yawDegrees", required = true) double yawDegrees,
-                @JsonProperty(value = "pitchDegrees", required = true) double pitchDegrees,
-                @JsonProperty(value = "rollDegrees", required = true) double rollDegrees
+                @JsonProperty(value = "status", required = true) int status,
+                @JsonProperty(value = "imageX", required = true) double imageX,
+                @JsonProperty(value = "imageY", required = true) double imageY,
+
+                @JsonProperty(value = "x", required = true) double xMillimeters,
+                @JsonProperty(value = "y", required = true) double yMillimeters,
+                @JsonProperty(value = "z", required = true) double zMillimeters,
+
+                @JsonProperty(value = "yaw", required = true) double yawDegrees,
+                @JsonProperty(value = "pitch", required = true) double pitchDegrees,
+                @JsonProperty(value = "roll", required = true) double rollDegrees
         ) {
-            this.xMeters = xMeters;
-            this.yMeters = yMeters;
-            this.zMeters = zMeters;
+            this.status = status;
+            this.imageX = imageX;
+            this.imageY = imageY;
+            this.xMeters = xMillimeters / 1000.0;
+            this.yMeters = yMillimeters / 1000.0;
+            this.zMeters = zMillimeters / 1000.0;
             this.yawDegrees = yawDegrees;
             this.pitchDegrees = pitchDegrees;
             this.rollDegrees = rollDegrees;
