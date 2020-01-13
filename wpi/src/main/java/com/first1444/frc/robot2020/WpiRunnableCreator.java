@@ -5,6 +5,7 @@ import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.input.InputUtil;
+import com.first1444.frc.robot2020.sound.ZMQSoundCreator;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
@@ -23,6 +24,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
+import com.first1444.sim.api.sound.SoundCreator;
 import com.first1444.sim.api.sound.implementations.DummySoundCreator;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.DriverStationLogger;
@@ -102,10 +104,11 @@ public class WpiRunnableCreator implements RunnableCreator {
                 "tcp://10.14.44.5:5801"
         );
         visionPacketListener.start();
+        var soundCreator = new ZMQSoundCreator(5809); // TODO create a readme file with all the ports we use
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), new DualShockRumble(new WpiInputCreator(5).createRumble()),
-                DummySoundCreator.INSTANCE, // TODO sounds
+                soundCreator,
                 new BNOOrientationHandler(gyro),
                 data,
                 new DummyIntake(reportMap), new DummyBallShooter(reportMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
@@ -123,6 +126,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     public void close() {
                         bundle.onRemove();
                         visionPacketListener.close();
+                        soundCreator.close();
                     }
                 }
         ));

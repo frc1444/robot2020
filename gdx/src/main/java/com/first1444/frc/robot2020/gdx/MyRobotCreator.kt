@@ -13,6 +13,7 @@ import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.input.InputUtil
+import com.first1444.frc.robot2020.sound.ZMQSoundCreator
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
@@ -163,7 +164,8 @@ class MyRobotCreator(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
                     joystick, DisconnectedRumble.getInstance(),
-                    GdxSoundCreator { Gdx.files.internal(it) },
+//                    GdxSoundCreator { Gdx.files.internal(it) },
+                    ZMQSoundCreator(5809),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
@@ -192,7 +194,8 @@ class MyRobotCreator(
         ))
     }
 
-}class MySupplementaryRobotCreator(
+}
+class MySupplementaryRobotCreator(
         private val serverName: String
 ) : RobotCreator {
     override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
@@ -214,7 +217,8 @@ class MyRobotCreator(
         }
         return CloseableUpdateableMultiplexer(listOf(
                 CloseableUpdateable.fromUpdateable(entity),
-                RobotUpdateable(robotCreator)
+                RobotUpdateable(robotCreator),
+                BasicSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, "tcp://$serverName:5809")
         ))
     }
 
