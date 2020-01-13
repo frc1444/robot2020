@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
-    private static final boolean DUMMY_SWERVE = true;
+    private static final boolean DUMMY_SWERVE = false;
     private static final SwerveSetup SWERVE = Constants.Swerve2019.INSTANCE;
 
     @Override

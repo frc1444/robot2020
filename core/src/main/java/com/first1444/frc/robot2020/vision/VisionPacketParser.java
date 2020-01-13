@@ -36,14 +36,11 @@ public class VisionPacketParser {
         for(VisionInstant instant : instants){
             final Rotation2 offset = cameraOffsetMap.get(instant.cameraId);
             for (VisionPacket packet : instant.packets) {
-                final Transform2 correctTransform = new Transform2(
-                        packet.xMeters, packet.zMeters,
-                        Rotation2.ZERO
-                );
+                // TODO Do we actually need to rotate stuff 90 degrees?
                 final Surrounding surrounding = new Surrounding(
                         Transform2.fromDegrees(
-                                correctTransform.getX(),
-                                correctTransform.getY(),
+                                packet.xMeters,
+                                packet.zMeters,
                                 packet.yawDegrees
                         ).rotate(offset),
                         timestamp,
