@@ -118,7 +118,7 @@ public class TalonSwerveModule implements SwerveModule {
                 } else {
                     speedMultiplier = -1;
                 }
-                steer.set(ControlMode.Position, newPosition); // taking .6 ms to 1.7 ms
+                steer.set(ControlMode.Position, newPosition);
             } else {
                 speedMultiplier = 1;
                 final int newPosition = (int) MathUtil.minChange(desired, current, wrap) + current;
@@ -148,7 +148,7 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public double getDistanceTraveledMeters() {
-        final double currentDistance = drive.getSelectedSensorPosition(Constants.PID_INDEX) // takes a long time - .9 ms to 5 ms
+        final double currentDistance = drive.getSelectedSensorPosition(Constants.PID_INDEX)
                 * WHEEL_CIRCUMFERENCE_INCHES / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
         return inchesToMeters(currentDistance);
     }

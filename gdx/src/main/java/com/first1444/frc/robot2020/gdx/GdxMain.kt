@@ -39,7 +39,7 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
                 ))).create(changer))
             },
             SupplementaryConfigScreenCreator(uiSkin, "localhost") { _, config ->
-                val supplementaryCreator = MySupplementaryRobotCreator(config.hostAddress)
+                val supplementaryCreator = MySupplementaryRobotCreator(bundle, config.hostAddress)
                 changer.change(FieldScreenCreator(uiSkin, UpdateableCreatorMultiplexer(listOf(
                         SupplementaryUpdateableCreator(supplementaryCreator, DashboardFrcDriverStation(bundle.rootDashboard.getSubDashboard("FMSInfo"))),
                         fieldCreator,

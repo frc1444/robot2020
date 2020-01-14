@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.EdgeShape
 import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
+import com.first1444.dashboard.BasicDashboard
 import com.first1444.dashboard.bundle.ActiveDashboardBundle
 import com.first1444.dashboard.bundle.DefaultDashboardBundle
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
@@ -50,10 +51,11 @@ import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
 import kotlin.experimental.or
 
+private const val underTrench = true
 private val startingPosition = Vector2(0.0, -6.6)
 private val startingAngleRadians = toRadians(90.0)
 
-private val maxVelocity = 3.35
+private const val maxVelocity = 3.35
 private val wheelBase = inchesToMeters(22.75) // length
 private val trackWidth = inchesToMeters(24.0)
 
@@ -70,7 +72,9 @@ private fun createEntity(data: RobotCreator.Data, updateableData: UpdateableCrea
         val area = wheelBase * trackWidth
         density = 1.0f / area.toFloat()
     }, FixtureDef().apply { // the box that collides with the trench
-        filter.categoryBits = FieldSetup2020.TRENCH_MASK_BITS or 1
+        if(!underTrench) {
+            filter.categoryBits = FieldSetup2020.TRENCH_MASK_BITS or 1
+        }
         shape = PolygonShape().apply {
             setAsBox(inchesToMeters(15.0f / 2), inchesToMeters(15.0f / 2), ZERO, 0.0f)
         }
@@ -196,6 +200,7 @@ class MyRobotCreator(
 
 }
 class MySupplementaryRobotCreator(
+        private val dashboardBundle: ActiveDashboardBundle,
         private val serverName: String
 ) : RobotCreator {
     override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
@@ -207,9 +212,19 @@ class MySupplementaryRobotCreator(
             networkTable.startClient(serverName)
             object : RobotRunnable {
                 override fun run() {
+                    dashboardBundle.update()
+                    val positionDashboard = dashboardBundle.rootDashboard.getSubDashboard("Absolute Position")
+                    val position = Vector2(
+                            positionDashboard["x"].getter.getDouble(0.0),
+                            positionDashboard["y"].getter.getDouble(0.0)
+                    )
+                    val orientationRadians = positionDashboard["orientationRadians"].getter.getDouble(0.0)
+                    entity.simVector = position
+                    entity.rotationRadians = orientationRadians.toFloat()
                 }
 
                 override fun close() {
+                    dashboardBundle.onRemove()
                     networkTable.stopClient()
                 }
 

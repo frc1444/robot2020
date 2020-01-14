@@ -2,6 +2,7 @@ package com.first1444.frc.robot2020;
 
 import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
+import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
@@ -21,6 +22,7 @@ import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
@@ -195,6 +197,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         climber.run();
         relativeDistanceAccumulator.run();
         matchScheduler.run();
+
+        BasicDashboard dashboard = dashboardMap.getRawBundle().getRootDashboard().getSubDashboard("Absolute Position");
+        Vector2 position = absoluteDistanceAccumulator.getPosition();
+        dashboard.get("x").getStrictSetter().setDouble(position.getX());
+        dashboard.get("y").getStrictSetter().setDouble(position.getY());
+        dashboard.get("orientationRadians").getStrictSetter().setDouble(getOrientation().getOrientationRadians());
     }
 
     @Override
