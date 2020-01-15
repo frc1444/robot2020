@@ -8,10 +8,7 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
-import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
-import com.first1444.frc.robot2020.actions.OperatorAction;
-import com.first1444.frc.robot2020.actions.SwerveDriveAction;
-import com.first1444.frc.robot2020.actions.WheelSpinAction;
+import com.first1444.frc.robot2020.actions.*;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.sound.DefaultSoundMap;
@@ -88,6 +85,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     private final SoundMap soundMap;
 
+    /** Should be updated last in robotPeriodic. Usually updates actions that are used to monitor different things */
     private final Action periodicAction;
 
     /** The {@link ActionChooser} that handles an action that updates subsystems. (One action is active)*/
@@ -145,7 +143,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
-                new ColorWheelMonitorAction(driverStation, soundMap)
+                new ColorWheelMonitorAction(driverStation, soundMap),
+                new SurroundingPositionCorrectAction(surroundingProvider, getOrientation(), absoluteDistanceAccumulator)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -172,7 +171,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public void robotPeriodic() {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
         orientationSystem.run();
-        periodicAction.update();
         actionChooser.update(); // update Actions that control the subsystems
 
         if(robotInput.getSwerveQuickReverseCancel().isJustPressed()){
@@ -203,6 +201,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         dashboard.get("x").getStrictSetter().setDouble(position.getX());
         dashboard.get("y").getStrictSetter().setDouble(position.getY());
         dashboard.get("orientationRadians").getStrictSetter().setDouble(getOrientation().getOrientationRadians());
+
+        periodicAction.update();
     }
 
     @Override

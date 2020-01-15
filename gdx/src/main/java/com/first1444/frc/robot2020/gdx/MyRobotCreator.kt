@@ -25,6 +25,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
 import com.first1444.sim.api.frc.BasicRobotRunnable
+import com.first1444.sim.api.frc.implementations.infiniterecharge.VisionType2020
 import com.first1444.sim.api.frc.sim.DriverStationSendable
 import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
 import com.first1444.sim.api.sensors.DefaultOrientationHandler
@@ -36,6 +37,10 @@ import com.first1444.sim.gdx.entity.ActorBodyEntity
 import com.first1444.sim.gdx.entity.BodyEntity
 import com.first1444.sim.gdx.entity.EntityOrientation
 import com.first1444.sim.gdx.implementations.infiniterecharge2020.FieldSetup2020
+import com.first1444.sim.gdx.implementations.infiniterecharge2020.surroundings.VisionProvider2020
+import com.first1444.sim.gdx.implementations.infiniterecharge2020.surroundings.VisionTypeFilter
+import com.first1444.sim.gdx.implementations.surroundings.EntityRangeVisionFilter
+import com.first1444.sim.gdx.implementations.surroundings.VisionFilterMultiplexer
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
 import com.first1444.sim.gdx.sound.GdxSoundCreator
@@ -164,19 +169,17 @@ class MyRobotCreator(
             val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))
             val shuffleboardMap = DefaultDashboardMap(dashboardBundle)
             val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
+            val soundCreator = ZMQSoundCreator(5809)
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
                     joystick, DisconnectedRumble.getInstance(),
 //                    GdxSoundCreator { Gdx.files.internal(it) },
-                    ZMQSoundCreator(5809),
+                    soundCreator,
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
-                    object : SurroundingProvider { // TODO simulate 2020 vision targets in robo-sim
-                        override val surroundings: List<Surrounding>
-                            get() = emptyList()
-                    }
+                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, updateableData.clock)
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {
@@ -188,6 +191,7 @@ class MyRobotCreator(
                             dashboardBundle.onRemove()
                             driverStationActiveComponent.onRemove()
                             networkTable.stopServer()
+                            soundCreator.close()
                         }
                     })
             )
