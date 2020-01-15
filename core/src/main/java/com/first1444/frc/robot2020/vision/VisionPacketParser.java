@@ -15,20 +15,19 @@ import java.util.List;
 import java.util.Map;
 
 public class VisionPacketParser {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ObjectMapper mapper;
     private final Clock clock;
-
     // TODO instead of using a map, maybe create an interface so that if we have a turret, we can adjust the angle based on that
     private final Map<Integer, Rotation2> cameraOffsetMap;
 
-    public VisionPacketParser(Clock clock, Map<Integer, Rotation2> cameraOffsetMap) {
+    public VisionPacketParser(ObjectMapper mapper, Clock clock, Map<Integer, Rotation2> cameraOffsetMap) {
+        this.mapper = mapper;
         this.clock = clock;
         this.cameraOffsetMap = cameraOffsetMap;
     }
 
     public List<Surrounding> parseSurroundings(String jsonString) throws JsonProcessingException {
-        List<VisionInstant> instants = MAPPER.readValue(jsonString, MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class));
+        List<VisionInstant> instants = mapper.readValue(jsonString, mapper.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class));
         return parseSurroundings(clock.getTimeSeconds(), instants);
     }
     private List<Surrounding> parseSurroundings(double timestamp, List<VisionInstant> instants){

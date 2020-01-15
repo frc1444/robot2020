@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2020;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
@@ -24,8 +25,6 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
-import com.first1444.sim.api.sound.SoundCreator;
-import com.first1444.sim.api.sound.implementations.DummySoundCreator;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.DriverStationLogger;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
@@ -98,13 +97,14 @@ public class WpiRunnableCreator implements RunnableCreator {
         final Clock clock = new WpiClock();
         VisionPacketListener visionPacketListener = new VisionPacketListener(
                 new VisionPacketParser(
+                        new ObjectMapper(),
                         clock,
-                        Map.of(0, Rotation2.ZERO)
+                        Map.of(1, Rotation2.ZERO)
                 ),
                 "tcp://10.14.44.5:5801"
         );
         visionPacketListener.start();
-        var soundCreator = new ZMQSoundCreator(5809); // TODO create a readme file with all the ports we use
+        var soundCreator = new ZMQSoundCreator(5809);
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), new DualShockRumble(new WpiInputCreator(5).createRumble()),

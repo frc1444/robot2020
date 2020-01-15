@@ -49,33 +49,33 @@ public class TalonSwerveModule implements SwerveModule {
     private double targetPositionDegrees = 0;
 
     public TalonSwerveModule(
-        String name, int driveID, int steerID, int quadCountsPerRevolution,
+        String name, int driveId, int steerId, int quadCountsPerRevolution,
         MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
         MutableValueMap<ModuleConfig> moduleConfig, DashboardMap dashboardMap) {
         this.name = name;
         this.quadCountsPerRevolution = quadCountsPerRevolution;
 
-        drive = new TalonSRX(driveID);
-        steer = new TalonSRX(steerID);
+        drive = new TalonSRX(driveId);
+        steer = new TalonSRX(steerId);
         System.out.println("encoder " + name + " " + steer.getSensorCollection().getAnalogInRaw());
         this.moduleConfig = moduleConfig;
 
-        drive.configFactoryDefault(Constants.INIT_TIMEOUT);
-        steer.configFactoryDefault(Constants.INIT_TIMEOUT);
+        drive.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
+        steer.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
 
         drive.setNeutralMode(NeutralMode.Brake);
         steer.setNeutralMode(NeutralMode.Coast); // to make them easier to reposition when the robot is on
-        drive.configClosedLoopPeriod(Constants.SLOT_INDEX, CLOSED_LOOP_TIME, Constants.INIT_TIMEOUT);
+        drive.configClosedLoopPeriod(RobotConstants.SLOT_INDEX, CLOSED_LOOP_TIME, RobotConstants.INIT_TIMEOUT);
 
-        steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, Constants.PID_INDEX, Constants.INIT_TIMEOUT);
-        steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, Constants.INIT_TIMEOUT);
+        steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
+        steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, RobotConstants.INIT_TIMEOUT);
         steer.setSensorPhase(true);
-        steer.configClosedLoopPeriod(Constants.SLOT_INDEX, CLOSED_LOOP_TIME, Constants.INIT_TIMEOUT);
+        steer.configClosedLoopPeriod(RobotConstants.SLOT_INDEX, CLOSED_LOOP_TIME, RobotConstants.INIT_TIMEOUT);
 
-        drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, Constants.LOOP_TIMEOUT));
-        steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, Constants.LOOP_TIMEOUT));
-        CTREUtil.applyPID(drive, drivePid, Constants.INIT_TIMEOUT);
-        CTREUtil.applyPID(steer, steerPid, Constants.INIT_TIMEOUT);
+        drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, RobotConstants.LOOP_TIMEOUT));
+        steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, RobotConstants.LOOP_TIMEOUT));
+        CTREUtil.applyPID(drive, drivePid, RobotConstants.INIT_TIMEOUT);
+        CTREUtil.applyPID(steer, steerPid, RobotConstants.INIT_TIMEOUT);
 
         moduleConfig.addListener(option -> {
             updateEncoderOffset(moduleConfig);
@@ -93,7 +93,7 @@ public class TalonSwerveModule implements SwerveModule {
 
         steer.setSelectedSensorPosition(
                 currentPosition,
-                Constants.PID_INDEX, Constants.LOOP_TIMEOUT
+                RobotConstants.PID_INDEX, RobotConstants.LOOP_TIMEOUT
         );
     }
 
@@ -108,7 +108,7 @@ public class TalonSwerveModule implements SwerveModule {
 
         { // steer code
             final int wrap = getCountsPerRevolution(); // in encoder counts
-            final int current = steer.getSelectedSensorPosition(Constants.PID_INDEX);
+            final int current = steer.getSelectedSensorPosition(RobotConstants.PID_INDEX);
             final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
             if(quickReverseAllowed){
@@ -128,8 +128,8 @@ public class TalonSwerveModule implements SwerveModule {
 
         { // speed code
             if(VELOCITY_CONTROL){
-                final double velocity = speed * speedMultiplier * Constants.CIMCODER_COUNTS_PER_REVOLUTION
-                        * Constants.MAX_SWERVE_DRIVE_RPM / (double) Constants.CTRE_UNIT_CONVERSION;
+                final double velocity = speed * speedMultiplier * RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION
+                        * RobotConstants.MAX_SWERVE_DRIVE_RPM / (double) RobotConstants.CTRE_UNIT_CONVERSION;
                 drive.set(ControlMode.Velocity, velocity); // taking .015 ms
             } else {
                 drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
@@ -148,8 +148,8 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public double getDistanceTraveledMeters() {
-        final double currentDistance = drive.getSelectedSensorPosition(Constants.PID_INDEX)
-                * WHEEL_CIRCUMFERENCE_INCHES / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+        final double currentDistance = drive.getSelectedSensorPosition(RobotConstants.PID_INDEX)
+                * WHEEL_CIRCUMFERENCE_INCHES / (double) RobotConstants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
         return inchesToMeters(currentDistance);
     }
 
@@ -177,7 +177,7 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public double getCurrentAngleDegrees() {
-        final int encoderPosition = steer.getSelectedSensorPosition(Constants.PID_INDEX);
+        final int encoderPosition = steer.getSelectedSensorPosition(RobotConstants.PID_INDEX);
         final int totalCounts = getCountsPerRevolution();
         return MathUtil.mod(encoderPosition * 360.0 / totalCounts, 360.0);
     }

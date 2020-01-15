@@ -17,24 +17,6 @@ public final class Constants {
 
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
 
-    public static final int PID_INDEX = 0;
-    public static final int SLOT_INDEX = 0;
-    public static final int INIT_TIMEOUT = 10;
-    public static final int LOOP_TIMEOUT = 3;
-
-    /** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
-    public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
-
-    // endregion
-
-    /** Conversion of CTRE units of 100 units/ms*/
-    public static final int CTRE_UNIT_CONVERSION = 600;
-    private static final int MAX_CIM_RPM = 5300;
-    /** The maximum RPM of a drive wheel on the swerve drive*/
-    public static final int MAX_SWERVE_DRIVE_RPM = MAX_CIM_RPM;
-    /** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
-    public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
-
     public enum Swerve2019 implements SwerveSetup {
         INSTANCE;
 
