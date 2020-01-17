@@ -7,14 +7,13 @@ import com.badlogic.gdx.physics.box2d.EdgeShape
 import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
-import com.first1444.dashboard.BasicDashboard
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.first1444.dashboard.bundle.ActiveDashboardBundle
-import com.first1444.dashboard.bundle.DefaultDashboardBundle
-import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.input.InputUtil
-import com.first1444.frc.robot2020.sound.ZMQSoundCreator
+import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
+import com.first1444.frc.robot2020.packets.transfer.ZMQPacketHandler
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
@@ -29,8 +28,6 @@ import com.first1444.sim.api.frc.implementations.infiniterecharge.VisionType2020
 import com.first1444.sim.api.frc.sim.DriverStationSendable
 import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
 import com.first1444.sim.api.sensors.DefaultOrientationHandler
-import com.first1444.sim.api.surroundings.Surrounding
-import com.first1444.sim.api.surroundings.SurroundingProvider
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -169,13 +166,10 @@ class MyRobotCreator(
             val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))
             val shuffleboardMap = DefaultDashboardMap(dashboardBundle)
             val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
-            val soundCreator = ZMQSoundCreator(5809)
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
                     joystick, DisconnectedRumble.getInstance(),
-//                    GdxSoundCreator { Gdx.files.internal(it) },
-                    soundCreator,
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
@@ -191,7 +185,6 @@ class MyRobotCreator(
                             dashboardBundle.onRemove()
                             driverStationActiveComponent.onRemove()
                             networkTable.stopServer()
-                            soundCreator.close()
                         }
                     })
             )
@@ -234,10 +227,18 @@ class MySupplementaryRobotCreator(
 
             }
         }
+        val packetHandler = ZMQPacketHandler.createSubscriber(ObjectMapper(), "tcp://$serverName:5809")
+        val packetQueueMaster = PacketQueueMaster(packetHandler)
         return CloseableUpdateableMultiplexer(listOf(
                 CloseableUpdateable.fromUpdateable(entity),
                 RobotUpdateable(robotCreator),
-                BasicSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, "tcp://$serverName:5809")
+                CloseableUpdateable.fromUpdateable(PacketQueueSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, packetQueueMaster.create())),
+                object : CloseableUpdateable {
+                    override fun update(delta: Float) {}
+                    override fun close() {
+                        packetHandler.close()
+                    }
+                }
         ))
     }
 

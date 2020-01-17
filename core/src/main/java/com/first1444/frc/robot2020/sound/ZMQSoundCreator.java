@@ -9,6 +9,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+@Deprecated
 public class ZMQSoundCreator implements SoundCreator {
 
     private final ZContext context;

@@ -2,6 +2,7 @@ package com.first1444.frc.robot2020.vision;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.first1444.sim.api.Clock;
@@ -30,10 +31,13 @@ public class VisionPacketParser {
         List<VisionInstant> instants = mapper.readValue(jsonString, mapper.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class));
         return parseSurroundings(clock.getTimeSeconds(), instants);
     }
-    private List<Surrounding> parseSurroundings(double timestamp, List<VisionInstant> instants){
+    private List<Surrounding> parseSurroundings(double timestamp, List<VisionInstant> instants) throws JsonProcessingException{
         final List<Surrounding> surroundings = new ArrayList<>();
         for(VisionInstant instant : instants){
             final Rotation2 offset = cameraOffsetMap.get(instant.cameraId);
+            if(offset == null){
+                throw new RuntimeException("TODO create a checked exception here"); // TODO
+            }
             for (VisionPacket packet : instant.packets) {
                 // TODO Do we actually need to rotate stuff 90 degrees?
                 final Surrounding surrounding = new Surrounding(

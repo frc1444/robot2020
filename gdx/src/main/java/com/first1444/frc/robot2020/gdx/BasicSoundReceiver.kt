@@ -7,6 +7,7 @@ import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 
+@Deprecated("")
 class BasicSoundReceiver(
         private val soundCreator: SoundCreator,
         address: String

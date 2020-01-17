@@ -6,7 +6,6 @@ import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.input.InputUtil;
-import com.first1444.frc.robot2020.sound.ZMQSoundCreator;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
@@ -104,11 +103,9 @@ public class WpiRunnableCreator implements RunnableCreator {
                 "tcp://10.14.44.5:5801"
         );
         visionPacketListener.start();
-        var soundCreator = new ZMQSoundCreator(5809);
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), new DualShockRumble(new WpiInputCreator(5).createRumble()),
-                soundCreator,
                 new BNOOrientationHandler(gyro),
                 data,
                 new DummyIntake(reportMap), new DummyBallShooter(reportMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
@@ -126,7 +123,6 @@ public class WpiRunnableCreator implements RunnableCreator {
                     public void close() {
                         bundle.onRemove();
                         visionPacketListener.close();
-                        soundCreator.close();
                     }
                 }
         ));

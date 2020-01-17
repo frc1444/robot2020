@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2020;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
@@ -11,7 +12,12 @@ import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.actions.*;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
+import com.first1444.frc.robot2020.packets.transfer.PacketHandler;
+import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster;
+import com.first1444.frc.robot2020.packets.transfer.PacketSender;
+import com.first1444.frc.robot2020.packets.transfer.ZMQPacketHandler;
 import com.first1444.frc.robot2020.sound.DefaultSoundMap;
+import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
@@ -67,6 +73,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final FrcLogger logger;
     private final Clock clock;
     private final DashboardMap dashboardMap;
+    private final PacketSender packetSender;
     private final OrientationSystem orientationSystem;
     private final SwerveDrive drive;
     private final Intake intake;
@@ -104,7 +111,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             Clock clock,
             DashboardMap dashboardMap,
             StandardControllerInput controller, ControllerRumble rumble,
-            SoundCreator soundCreator,
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
@@ -118,17 +124,19 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.ballShooter = ballShooter;
         this.wheelSpinner = wheelSpinner;
         this.climber = climber;
-
         robotInput = new DefaultRobotInput(
                 controller,
                 rumble
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
+        drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
-        soundMap = new DefaultSoundMap(soundCreator);
+        PacketHandler packetHandler = ZMQPacketHandler.createPublisher(new ObjectMapper(), 5809);
+        PacketQueueMaster packetQueueMaster = new PacketQueueMaster(packetHandler);
+        packetSender = packetHandler;
+        soundMap = new DefaultSoundMap(new PacketSenderSoundCreator(packetSender, false));
 
-        this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
         this.orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
         this.matchScheduler = new DefaultMatchScheduler(driverStation, clock);
 
@@ -159,14 +167,16 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void close() {
+        try {
+            packetSender.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("close() method called! Robot program must be ending!");
     }
-
-
     // endregion
 
     // region Overridden Methods
-
     @Override
     public void robotPeriodic() {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
@@ -263,8 +273,4 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     }
 
     public SoundMap getSoundMap(){ return soundMap; }
-
-    public SurroundingProvider getSurroundingProvider() {
-        throw new UnsupportedOperationException();
-    }
 }
