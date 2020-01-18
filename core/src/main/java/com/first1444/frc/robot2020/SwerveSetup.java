@@ -14,7 +14,9 @@ public interface SwerveSetup {
     int getRLSteerCAN();
     int getRRSteerCAN();
 
+    /** @return wheel base in meters*/
     double getWheelBase();
+    /** @return track width in meters*/
     double getTrackWidth();
 
     int getQuadCountsPerRevolution();

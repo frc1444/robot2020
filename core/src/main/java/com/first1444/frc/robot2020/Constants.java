@@ -17,6 +17,62 @@ public final class Constants {
 
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
 
+    public enum Swerve2018 implements SwerveSetup{
+        INSTANCE;
+
+        @Override public int getFLDriveCAN() { return 4; }
+        @Override public int getFRDriveCAN() { return 3; }
+        @Override public int getRLDriveCAN() { return 2; }
+        @Override public int getRRDriveCAN() { return 1; }
+
+        @Override public int getFLSteerCAN() { return 8; }
+        @Override public int getFRSteerCAN() { return 7; }
+        @Override public int getRLSteerCAN() { return 6; }
+        @Override public int getRRSteerCAN() { return 5; }
+
+        @Override
+        public double getWheelBase() {
+            return inchesToMeters(27.375);
+        }
+
+        @Override
+        public double getTrackWidth() {
+            return inchesToMeters(22.25);
+        }
+
+        @Override
+        public int getQuadCountsPerRevolution() {
+            return 1657;
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 516)
+                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 58)
+                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
+                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12);
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 122)
+                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 872)
+                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 13);
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 824)
+                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 895)
+                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 9);
+        }
+    }
     public enum Swerve2019 implements SwerveSetup {
         INSTANCE;
 
@@ -33,12 +89,12 @@ public final class Constants {
 
         @Override
         public double getWheelBase() {
-            return 22.75;
+            return inchesToMeters(22.75);
         }
 
         @Override
         public double getTrackWidth() {
-            return 24;
+            return inchesToMeters(24.0);
         }
 
         @Override

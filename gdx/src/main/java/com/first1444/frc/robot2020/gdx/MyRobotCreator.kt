@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.first1444.dashboard.bundle.ActiveDashboardBundle
+import com.first1444.frc.robot2020.Constants
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.input.InputUtil
@@ -63,8 +64,9 @@ private val startingPosition = Vector2(0.0, -6.6)
 private val startingAngleRadians = toRadians(90.0)
 
 private const val maxVelocity = 3.35
-private val wheelBase = inchesToMeters(22.75) // length
-private val trackWidth = inchesToMeters(24.0)
+private val SWERVE = Constants.Swerve2019.INSTANCE
+private val wheelBase = SWERVE.wheelBase // length
+private val trackWidth = SWERVE.trackWidth // width
 
 private fun createEntity(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): BodyEntity {
     return ActorBodyEntity(updateableData.contentStage, updateableData.worldManager.world, BodyDef().apply {

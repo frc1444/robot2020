@@ -44,11 +44,10 @@ public class VisionPacketParser {
                 throw new IOException("The JSON requested cameraId=" + instant.cameraId + " but we don't have an offset rotation definedin cameraOffsetMap=" + cameraOffsetMap);
             }
             for (VisionPacket packet : instant.packets) {
-                // TODO Do we actually need to rotate stuff 90 degrees?
                 final Surrounding surrounding = new Surrounding(
                         Transform2.fromDegrees(
-                                packet.xMeters,
                                 packet.zMeters,
+                                -packet.xMeters,
                                 packet.yawDegrees
                         ).rotate(offset),
                         timestamp,
