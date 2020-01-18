@@ -2,18 +2,23 @@ package com.first1444.frc.robot2020.gdx
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.box2d.BodyDef
 import com.badlogic.gdx.physics.box2d.EdgeShape
 import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.first1444.dashboard.bundle.ActiveDashboardBundle
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.input.InputUtil
+import com.first1444.frc.robot2020.packets.AbsolutePositionPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
-import com.first1444.frc.robot2020.packets.transfer.ZMQPacketHandler
+import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
+import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
@@ -227,8 +232,26 @@ class MySupplementaryRobotCreator(
 
             }
         }
-        val packetHandler = ZMQPacketHandler.createSubscriber(ObjectMapper(), "tcp://$serverName:5809")
-        val packetQueueMaster = PacketQueueMaster(packetHandler)
+        val packetSender = ZMQPacketSender.create(ObjectMapper(), "tcp://$serverName:5808")
+        val packetQueueMaster = PacketQueueMaster(ZMQPacketQueue.create(ObjectMapper(), "tcp://$serverName:5809"), true)
+        updateableData.uiStage.addListener(object : ClickListener(){
+            val temp1 = Vector3()
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                val count = tapCount
+                if(count == 2){
+                    temp1.set(x, y, 0f)
+//                    println("1 x=${temp1.x} y=${temp1.y}") // bottom left 0 0
+                    updateableData.uiStage.viewport.project(temp1) // now temp1 is in screen coordinates
+//                    println("2 x=${temp1.x} y=${temp1.y}") //
+                    updateableData.contentStage.viewport.unproject(temp1) // temp1 is now in world coordinates
+                    temp1.y *= -1
+//                    println("3 x=${temp1.x} y=${temp1.y}")
+                    val absoluteX = temp1.x.toDouble()
+                    val absoluteY = temp1.y.toDouble()
+                    packetSender.send(AbsolutePositionPacket(Vector2(absoluteX, absoluteY)))
+                }
+            }
+        })
         return CloseableUpdateableMultiplexer(listOf(
                 CloseableUpdateable.fromUpdateable(entity),
                 RobotUpdateable(robotCreator),
@@ -236,7 +259,8 @@ class MySupplementaryRobotCreator(
                 object : CloseableUpdateable {
                     override fun update(delta: Float) {}
                     override fun close() {
-                        packetHandler.close()
+                        packetSender.close()
+                        packetQueueMaster.close()
                     }
                 }
         ))

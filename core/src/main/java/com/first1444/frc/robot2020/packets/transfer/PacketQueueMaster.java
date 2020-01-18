@@ -7,12 +7,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class PacketQueueMaster {
+public class PacketQueueMaster implements PacketQueueCreator {
     private final PacketQueue packetQueue;
+    private final boolean closePacketQueue;
     private final List<SubQueue> subQueueList = new ArrayList<>();
 
-    public PacketQueueMaster(PacketQueue packetQueue) {
+    public PacketQueueMaster(PacketQueue packetQueue, boolean closePacketQueue) {
         this.packetQueue = packetQueue;
+        this.closePacketQueue = closePacketQueue;
+    }
+    public PacketQueueMaster(PacketQueue packetQueue) {
+        this(packetQueue, true);
     }
 
     private void update(){
@@ -29,10 +34,18 @@ public class PacketQueueMaster {
         }
     }
 
+    @Override
     public PacketQueue create(){
         SubQueue r = new SubQueue();
         subQueueList.add(r);
         return r;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if(closePacketQueue) {
+            packetQueue.close();
+        }
     }
 
     private class SubQueue implements PacketQueue {

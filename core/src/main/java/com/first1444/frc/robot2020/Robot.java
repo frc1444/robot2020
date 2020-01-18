@@ -12,19 +12,13 @@ import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.actions.*;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
-import com.first1444.frc.robot2020.packets.transfer.PacketHandler;
-import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster;
-import com.first1444.frc.robot2020.packets.transfer.PacketSender;
-import com.first1444.frc.robot2020.packets.transfer.ZMQPacketHandler;
+import com.first1444.frc.robot2020.packets.transfer.*;
 import com.first1444.frc.robot2020.sound.DefaultSoundMap;
 import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
-import com.first1444.frc.robot2020.vision.VisionPacketListener;
-import com.first1444.frc.robot2020.vision.VisionPacketParser;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
@@ -40,7 +34,6 @@ import com.first1444.sim.api.scheduler.match.MatchSchedulerRunnable;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.sensors.OrientationHandler;
-import com.first1444.sim.api.sound.SoundCreator;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionChooser;
@@ -54,7 +47,6 @@ import me.retrodaredevil.controller.types.StandardControllerInput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public class Robot extends AdvancedIterativeRobotAdapter {
     private static final ControlConfig controlConfig;
@@ -74,6 +66,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final Clock clock;
     private final DashboardMap dashboardMap;
     private final PacketSender packetSender;
+    private final PacketQueueCreator packetQueueCreator;
     private final OrientationSystem orientationSystem;
     private final SwerveDrive drive;
     private final Intake intake;
@@ -104,7 +97,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final SwerveDriveAction swerveDriveAction;
 
     // region Initialize
-    /** Used to initialize final fields.*/
     public Robot(
             FrcDriverStation driverStation,
             FrcLogger logger,
@@ -132,9 +124,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
         drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
-        PacketHandler packetHandler = ZMQPacketHandler.createPublisher(new ObjectMapper(), 5809);
-        PacketQueueMaster packetQueueMaster = new PacketQueueMaster(packetHandler);
-        packetSender = packetHandler;
+        {
+            PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
+            packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
+            packetQueueCreator = new PacketQueueMaster(packetQueue, true);
+        }
         soundMap = new DefaultSoundMap(new PacketSenderSoundCreator(packetSender, false));
 
         this.orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
@@ -152,7 +146,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(surroundingProvider, getOrientation(), absoluteDistanceAccumulator)
+                new SurroundingPositionCorrectAction(surroundingProvider, getOrientation(), absoluteDistanceAccumulator),
+                new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 

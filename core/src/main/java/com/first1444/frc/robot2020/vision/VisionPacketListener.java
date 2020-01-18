@@ -8,6 +8,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class VisionPacketListener implements SurroundingProvider, AutoCloseable 
                         synchronized (this){
                             surroundingList = surroundings;
                         }
-                    } catch (JsonProcessingException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }

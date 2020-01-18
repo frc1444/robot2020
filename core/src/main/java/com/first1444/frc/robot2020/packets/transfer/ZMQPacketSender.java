@@ -9,17 +9,16 @@ import org.zeromq.ZMQ;
 
 import static java.util.Objects.requireNonNull;
 
-public class ZMQPacketHandler implements PacketHandler {
+public class ZMQPacketSender implements PacketSender {
     private final ObjectMapper mapper;
     private final ZContext context;
     private final ZMQ.Socket socket;
-
-    public ZMQPacketHandler(ObjectMapper mapper, ZContext context, ZMQ.Socket socket) {
+    private ZMQPacketSender(ObjectMapper mapper, ZContext context, ZMQ.Socket socket) {
         this.mapper = requireNonNull(mapper);
         this.context = requireNonNull(context);
         this.socket = requireNonNull(socket);
     }
-    public static ZMQPacketHandler createPublisher(ObjectMapper mapper, int port){
+    public static ZMQPacketSender create(ObjectMapper mapper, int port){
         ZContext context = new ZContext();
         final ZMQ.Socket socket;
         try {
@@ -30,39 +29,21 @@ public class ZMQPacketHandler implements PacketHandler {
             context.close();
             throw t;
         }
-        return new ZMQPacketHandler(mapper, context, socket);
+        return new ZMQPacketSender(mapper, context, socket);
     }
-    public static ZMQPacketHandler createSubscriber(ObjectMapper mapper, String address){
+    public static ZMQPacketSender create(ObjectMapper mapper, String address){
         ZContext context = new ZContext();
         final ZMQ.Socket socket;
         try {
-            socket = context.createSocket(SocketType.SUB);
+            socket = context.createSocket(SocketType.PUB);
             socket.connect(address);
-            socket.subscribe("".getBytes());
             socket.setLinger(0);
         } catch(Throwable t){
             context.close();
             throw t;
         }
-        return new ZMQPacketHandler(mapper, context, socket);
+        return new ZMQPacketSender(mapper, context, socket);
     }
-
-    @Override
-    public Packet poll() {
-        String data = socket.recvStr(ZMQ.DONTWAIT);
-        if(data == null){
-            return null;
-        }
-        final Packet packet;
-        try {
-            packet = mapper.readValue(data, Packet.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return packet;
-    }
-
     @Override
     public void send(Packet packet) {
         final String data;
