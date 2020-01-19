@@ -4,16 +4,25 @@ import com.badlogic.gdx.controllers.Controller
 import com.badlogic.gdx.controllers.Controllers
 import me.retrodaredevil.controller.gdx.ControllerProvider
 
-class SonyControllerProvider : ControllerProvider {
+class BestNameControllerProvider(
+        private val bestNames: List<String>
+) : ControllerProvider {
     override fun getName(): String {
         return controller?.name ?: ""
     }
 
     override fun getController(): Controller? {
+        val map = mutableMapOf<String, Controller>()
         for(controller in Controllers.getControllers()){
-            if("sony" in controller.name.toLowerCase()){
-                return controller
+            val controllerName = controller.name.toLowerCase()
+            for(name in bestNames){
+                if(name.toLowerCase() in controllerName){
+                    map[name] = controller
+                }
             }
+        }
+        for(name in bestNames){
+            return map[name] ?: continue
         }
         return null
     }
