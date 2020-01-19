@@ -10,6 +10,9 @@ import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.actions.*;
+import com.first1444.frc.robot2020.actions.positioning.AbsolutePositionPacketAction;
+import com.first1444.frc.robot2020.actions.positioning.OutOfBoundsPositionCorrectAction;
+import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrectAction;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
@@ -146,8 +149,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(surroundingProvider, getOrientation(), absoluteDistanceAccumulator),
-                new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator)
+                new SurroundingPositionCorrectAction(surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
+                new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
+                new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 

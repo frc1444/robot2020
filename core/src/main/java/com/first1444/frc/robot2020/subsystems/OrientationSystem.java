@@ -32,6 +32,9 @@ public class OrientationSystem implements Runnable {
     public Orientation getOrientation(){
         return orientation;
     }
+    public MutableOrientation getMutableOrientation(){
+        return orientation;
+    }
 
     @Override
     public void run() {

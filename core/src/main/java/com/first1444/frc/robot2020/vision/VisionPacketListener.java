@@ -1,6 +1,5 @@
 package com.first1444.frc.robot2020.vision;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.first1444.sim.api.surroundings.Surrounding;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import org.jetbrains.annotations.NotNull;

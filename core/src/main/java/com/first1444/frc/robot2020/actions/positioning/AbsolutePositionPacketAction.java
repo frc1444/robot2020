@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2020.actions;
+package com.first1444.frc.robot2020.actions.positioning;
 
 import com.first1444.frc.robot2020.packets.AbsolutePositionPacket;
 import com.first1444.frc.robot2020.packets.Packet;

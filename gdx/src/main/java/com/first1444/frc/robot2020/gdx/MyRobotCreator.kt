@@ -24,6 +24,8 @@ import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
+import com.first1444.frc.robot2020.vision.VisionPacketListener
+import com.first1444.frc.robot2020.vision.VisionPacketParser
 import com.first1444.frc.util.reportmap.DashboardReportMap
 import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
@@ -57,6 +59,7 @@ import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardCon
 import me.retrodaredevil.controller.options.OptionValues
 import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
+import java.util.Map
 import kotlin.experimental.or
 
 private const val underTrench = true
@@ -173,6 +176,16 @@ class MyRobotCreator(
             val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))
             val shuffleboardMap = DefaultDashboardMap(dashboardBundle)
             val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
+
+            val visionPacketListener = VisionPacketListener(
+                    VisionPacketParser(
+                            ObjectMapper(),
+                            updateableData.clock,
+                            Map.of(1, Rotation2.ZERO)
+                    ),
+                    "tcp://10.134.223.107:5801" // temporary testing address
+            )
+            visionPacketListener.start()
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
@@ -181,6 +194,7 @@ class MyRobotCreator(
                     swerveDriveData,
                     DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
                     VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, updateableData.clock)
+//                    visionPacketListener
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {
@@ -192,6 +206,7 @@ class MyRobotCreator(
                             dashboardBundle.onRemove()
                             driverStationActiveComponent.onRemove()
                             networkTable.stopServer()
+                            visionPacketListener.close()
                         }
                     })
             )

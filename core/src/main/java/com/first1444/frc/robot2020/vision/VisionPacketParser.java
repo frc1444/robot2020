@@ -70,22 +70,23 @@ public class VisionPacketParser {
             this.cameraId = cameraId;
         }
     }
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class VisionPacket {
 //        private final int status;
         private final double imageX, imageY;
         private final double xMeters, yMeters, zMeters;
         private final double yawDegrees, pitchDegrees, rollDegrees;
 
-        @JsonIgnoreProperties({"theta_deg", "dist_m"})
+//        @JsonIgnoreProperties({"theta_deg", "dist_mm"})
         @JsonCreator
         private VisionPacket(
 //                @JsonProperty(value = "status", required = true) int status,
                 @JsonProperty(value = "imageX_px", required = true) double imageX,
                 @JsonProperty(value = "imageY_px", required = true) double imageY,
 
-                @JsonProperty(value = "x_m", required = true) double xMeters,
-                @JsonProperty(value = "y_m", required = true) double yMeters,
-                @JsonProperty(value = "z_m", required = true) double zMeters,
+                @JsonProperty(value = "x_mm", required = true) double xMeters,
+                @JsonProperty(value = "y_mm", required = true) double yMeters,
+                @JsonProperty(value = "z_mm", required = true) double zMeters,
 
                 @JsonProperty(value = "yaw_deg", required = true) double yawDegrees,
                 @JsonProperty(value = "pitch_deg", required = true) double pitchDegrees,
@@ -94,9 +95,9 @@ public class VisionPacketParser {
 //            this.status = status;
             this.imageX = imageX;
             this.imageY = imageY;
-            this.xMeters = xMeters;
-            this.yMeters = yMeters;
-            this.zMeters = zMeters;
+            this.xMeters = xMeters / 1000.0;
+            this.yMeters = yMeters / 1000.0;
+            this.zMeters = zMeters / 1000.0;
             this.yawDegrees = yawDegrees;
             this.pitchDegrees = pitchDegrees;
             this.rollDegrees = rollDegrees;
