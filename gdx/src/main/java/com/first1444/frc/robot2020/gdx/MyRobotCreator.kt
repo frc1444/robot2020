@@ -59,7 +59,6 @@ import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardCon
 import me.retrodaredevil.controller.options.OptionValues
 import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
-import java.util.Map
 import kotlin.experimental.or
 
 private const val underTrench = true
@@ -154,9 +153,9 @@ class MyRobotCreator(
         val entity = createEntity(data, updateableData);
         val swerveDriveData = createSwerveDriveData(data, updateableData, entity)
 
-        val provider = IndexedControllerProvider(0)
+        val provider = SonyControllerProvider()
         val creator = GdxControllerPartCreator(provider, true)
-        val joystick = if("sony" in provider.name.toLowerCase()){
+        val joystick = if(!provider.isConnected || "sony" in provider.name.toLowerCase()){
             val osName = System.getProperty("os.name").toLowerCase()
             if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) { // only Linux is tested, so feel free to change these if you need to add or remove one
                 println("*nix ps4")
@@ -181,7 +180,7 @@ class MyRobotCreator(
                     VisionPacketParser(
                             ObjectMapper(),
                             updateableData.clock,
-                            Map.of(1, Rotation2.ZERO)
+                            mapOf(Pair(1, Rotation2.ZERO))
                     ),
                     "tcp://10.134.223.107:5801" // temporary testing address
             )
