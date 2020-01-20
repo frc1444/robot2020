@@ -51,7 +51,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
                 }
             }
             requireNonNull(best);
-            System.out.println("We see: " + best.getIdentifier() + " distance error: " + Math.sqrt(closest2) + " yaw error: " + Math.abs(visionTransform.getRotationDegrees() - best.getTransform().getRotationDegrees()));
+//            System.out.println("We see: " + best.getIdentifier() + " distance error: " + Math.sqrt(closest2) + " yaw error: " + Math.abs(visionTransform.getRotationDegrees() - best.getTransform().getRotationDegrees()));
             Rotation2 visionOffset = transform.getRotation();
 
             Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);

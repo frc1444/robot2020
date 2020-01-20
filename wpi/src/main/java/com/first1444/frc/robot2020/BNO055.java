@@ -113,6 +113,10 @@ public class BNO055 implements AutoCloseable{
      * @return a EulerData class representing the 3 Euler angles
      */
     public EulerData getEulerData() {
+        IMUMode mode = currentMode;
+        if(mode != null) {
+            setMode(mode); // make sure we're in our desired mode
+        }
         ByteBuffer result = ByteBuffer.allocateDirect(6);
         setPage(Page.PAGE0);
         i2c.read(REG_PAGE0.EUL_HEAD_LB, 6, result);
@@ -120,10 +124,6 @@ public class BNO055 implements AutoCloseable{
 
         return new EulerData(result);
     }
-
-
-    // region Orientation Implementation
-    // endregion
 
     /**
      * Object for holding Euler heading data.

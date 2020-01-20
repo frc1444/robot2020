@@ -65,6 +65,11 @@ public class DefaultRobotInput extends SimpleControllerPart implements RobotInpu
     }
 
     @Override
+    public InputPart getMovementJoyResetGyroButton() {
+        return controller.getFaceLeft();
+    }
+
+    @Override
     public ControllerRumble getDriverRumble() {
         return rumble;
     }

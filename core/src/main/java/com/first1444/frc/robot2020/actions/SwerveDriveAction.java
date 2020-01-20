@@ -109,6 +109,7 @@ public class SwerveDriveAction extends SimpleAction {
             translation = new Vector2(y, -x).rotateRadians(offsetRadians);
         }
 
+//        System.out.println("x=" + translation.getX() + " y=" + translation.getY());
         drive.setControl(translation, turnAmount, speed);
     }
 

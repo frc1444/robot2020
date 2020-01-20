@@ -9,14 +9,16 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
-import com.first1444.frc.robot2020.actions.*;
+import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
+import com.first1444.frc.robot2020.actions.OperatorAction;
+import com.first1444.frc.robot2020.actions.SwerveDriveAction;
+import com.first1444.frc.robot2020.actions.TimedAction;
 import com.first1444.frc.robot2020.actions.positioning.AbsolutePositionPacketAction;
 import com.first1444.frc.robot2020.actions.positioning.OutOfBoundsPositionCorrectAction;
 import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrectAction;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
-import com.first1444.frc.robot2020.sound.DefaultSoundMap;
 import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
@@ -38,10 +40,7 @@ import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
-import me.retrodaredevil.action.Action;
-import me.retrodaredevil.action.ActionChooser;
-import me.retrodaredevil.action.Actions;
-import me.retrodaredevil.action.WhenDone;
+import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
@@ -90,14 +89,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     /** Should be updated last in robotPeriodic. Usually updates actions that are used to monitor different things */
     private final Action periodicAction;
-
     /** The {@link ActionChooser} that handles an action that updates subsystems. (One action is active)*/
     private final ActionChooser actionChooser;
-
     /** The action that when updated, allows the driver and operator to control the robot */
     private final Action teleopAction;
-    /** This is updated by teleopAction and should not be updated directly. This is stored as a field because we may need to change its perspective */
-    private final SwerveDriveAction swerveDriveAction;
+
+    private final ActionMultiplexer dynamicAction;
 
     // region Initialize
     public Robot(
@@ -132,7 +129,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
             packetQueueCreator = new PacketQueueMaster(packetQueue, true);
         }
-        soundMap = new DefaultSoundMap(new PacketSenderSoundCreator(packetSender, false));
+        soundMap = new SoundMap(new PacketSenderSoundCreator(packetSender, false));
 
         this.orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
         this.matchScheduler = new DefaultMatchScheduler(driverStation, clock);
@@ -155,11 +152,13 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-        swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), robotInput, surroundingProvider);
+        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), robotInput, surroundingProvider);
+        swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
         teleopAction = new Actions.ActionMultiplexerBuilder(
                 swerveDriveAction,
                 new OperatorAction(this, robotInput)
         ).canBeDone(false).canRecycle(true).build();
+        dynamicAction = new Actions.ActionMultiplexerBuilder().canBeDone(true).canRecycle(true).build();
 
         System.out.println("Finished constructor");
     }
@@ -171,6 +170,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        try {
+            packetQueueCreator.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("close() method called! Robot program must be ending!");
     }
     // endregion
@@ -179,8 +183,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void robotPeriodic() {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
-        orientationSystem.run();
+        orientationSystem.run(); // we want to make sure the orientation is correct when we use it
+        relativeDistanceAccumulator.run(); // we want to make sure the absolute and relative positions are correct when we use them
         actionChooser.update(); // update Actions that control the subsystems
+        dynamicAction.update();
 
         if(robotInput.getSwerveQuickReverseCancel().isJustPressed()){
             for(SwerveModule module : drive.getDrivetrainData().getModules()){
@@ -197,14 +203,16 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             }
         }
 
+        // update subsystems
         drive.run();
         intake.run();
         ballShooter.run();
         wheelSpinner.run();
         climber.run();
-        relativeDistanceAccumulator.run();
+
         matchScheduler.run();
 
+        // Publish absolute position data to network tables
         BasicDashboard dashboard = dashboardMap.getRawBundle().getRootDashboard().getSubDashboard("Absolute Position");
         Vector2 position = absoluteDistanceAccumulator.getPosition();
         dashboard.get("x").getStrictSetter().setDouble(position.getX());
@@ -219,9 +227,13 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         dashboardMap.getLiveWindow().setEnabled(false);
         actionChooser.setToClearAction();
         if(previousMode == FrcMode.TELEOP){
-            soundMap.getMatchEnd().play();
-        } else {
-            soundMap.getDisable().play();
+            soundMap.getTeleopDisable().play();
+            dynamicAction.add(new Actions.ActionQueueBuilder(
+                    new TimedAction(false, clock, 5.0),
+                    Actions.createRunOnce(() -> soundMap.getPostMatchFiveSeconds().play())
+            ).build());
+        } else if(previousMode == FrcMode.AUTONOMOUS){
+            soundMap.getAutonomousDisable().play();
         }
     }
 
@@ -230,7 +242,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
                 teleopAction
         ).canRecycle(false).canBeDone(true).build());
-        swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
         soundMap.getTeleopEnable().play();
         matchScheduler.schedule(new MatchTime(7, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
             System.out.println("rumbling");

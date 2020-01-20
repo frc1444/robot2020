@@ -1,11 +1,11 @@
 buildscript {
     ext {
-        kotlinVersion = '1.3.60'
+        kotlinVersion = '1.3.61'
         wpiLibVersion = "2020.2.2"
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "bc7b722c5c"
+        roboSimVersion = "b7deee8225"
         abstractControllerLibVersion = "v2.3.2"
         abstractDashboardVersion = "e635c7080d"
         jacksonVersion = "2.10.1"

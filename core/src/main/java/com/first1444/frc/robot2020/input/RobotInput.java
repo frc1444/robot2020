@@ -20,6 +20,8 @@ public interface RobotInput extends ControllerPart {
 
     JoystickPart getResetGyroJoy();
     InputPart getGyroReinitializeButton();
+    /** When this button is pressed, {@link #getMovementJoy()}'s angle should be used to reset the gyro */
+    InputPart getMovementJoyResetGyroButton();
 
     ControllerRumble getDriverRumble();
 

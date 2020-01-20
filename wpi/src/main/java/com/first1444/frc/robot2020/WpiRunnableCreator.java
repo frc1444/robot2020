@@ -27,6 +27,8 @@ import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.DriverStationLogger;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
+import edu.wpi.first.hal.FRCNetComm;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.controller.output.DualShockRumble;
@@ -47,6 +49,9 @@ public class WpiRunnableCreator implements RunnableCreator {
     @NotNull
     @Override
     public RobotRunnable createRunnable() {
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed, 0, "RoboSim");
+
         BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
         ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
         DashboardMap dashboardMap = new DefaultDashboardMap(bundle);
