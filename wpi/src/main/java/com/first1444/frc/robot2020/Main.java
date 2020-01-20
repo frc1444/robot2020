@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2020;
 
 import com.first1444.sim.wpi.frc.RoboSimRobot;
+import com.first1444.sim.wpi.frc.WatchdogRunnableCreator;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 
@@ -13,11 +14,17 @@ public final class Main {
     }
 
     public static RobotBase createRobot(){
-        return new RoboSimRobot(new WpiRunnableCreator(), TimedRobot.kDefaultPeriod) {
+        final double period = TimedRobot.kDefaultPeriod;
+        return new RoboSimRobot(new WatchdogRunnableCreator(new WpiRunnableCreator(), period){
+            {
+                getWatchdog().suppressTimeoutMessage(true);
+            }
+            @Override
+            protected void onWatchdogDisable() {
+            }
             @Override
             protected void printLoopOverrunMessage() {
-                super.printLoopOverrunMessage(); // TODO we may actually override this in the future
             }
-        };
+        }, period);
     }
 }

@@ -52,6 +52,7 @@ import com.first1444.sim.gdx.sound.GdxSoundCreator
 import com.first1444.sim.gdx.velocity.AccelerateSetPointHandler
 import edu.wpi.first.networktables.NetworkTableInstance
 import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
+import me.retrodaredevil.controller.gdx.IndexedControllerProvider
 import me.retrodaredevil.controller.implementations.BaseStandardControllerInput
 import me.retrodaredevil.controller.implementations.mappings.DefaultStandardControllerInputCreator
 import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator
@@ -152,11 +153,15 @@ class MyRobotCreator(
         val entity = createEntity(data, updateableData);
         val swerveDriveData = createSwerveDriveData(data, updateableData, entity)
 
-        val provider = BestNameControllerProvider(listOf("sony", "ps4", "playstation", "wireless controller"))
-        val creator = GdxControllerPartCreator(provider, true)
-        val joystick = if(!provider.isConnected || "sony" in provider.name.toLowerCase()){
+        val playstationProvider = BestNameControllerProvider(listOf("sony", "ps4", "playstation", "wireless controller"))
+        val defaultProvider = IndexedControllerProvider(0)
+        val creator = GdxControllerPartCreator(
+                if(playstationProvider.isConnected || !defaultProvider.isConnected) playstationProvider else defaultProvider,
+                true
+        )
+        val joystick = if(playstationProvider.isConnected || !defaultProvider.isConnected){
             val osName = System.getProperty("os.name").toLowerCase()
-            if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) { // only Linux is tested, so feel free to change these if you need to add or remove one
+            if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) {
                 println("*nix ps4")
                 InputUtil.createController(creator, LinuxPS4StandardControllerInputCreator())
             } else {
