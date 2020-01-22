@@ -78,14 +78,13 @@ public class OrientationSystem implements Runnable {
         this.lastRawOrientationDegrees = rawOrientationDegrees;
         this.lastOrientationDegrees = orientation.getOrientationDegrees();
         if(needsReinitialize && orientationHandler.isConnected()){
-            orientationHandler.reinitialize();
-            System.out.println("Gyro was reinitialized because it is now connected");
-            if(orientationHandler.isInitialized()){
+            System.out.println("Going to try to reinitialize gyro.");
+            boolean success = orientationHandler.reinitialize();
+            if(success){
                 needsReinitialize = false;
                 System.out.println("Should have reinitialized properly");
             }
         }
-//        System.out.println(orientationHandler.isConnected());
     }
     private static class MyOrientation implements MutableOrientation {
         private double rawOrientationDegrees = 0;

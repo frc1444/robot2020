@@ -14,7 +14,7 @@ public class BNOOrientationHandler implements OrientationHandler {
 
     @Override
     public boolean isConnected() {
-        return bno055.isConnected();
+        return true;
     }
 
     @Override

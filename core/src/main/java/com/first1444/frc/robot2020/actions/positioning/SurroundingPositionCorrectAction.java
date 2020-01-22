@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2020.actions.positioning;
 
+import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
@@ -8,7 +9,6 @@ import com.first1444.sim.api.frc.implementations.infiniterecharge.Extra2020;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.VisionTarget2020;
 import com.first1444.sim.api.sensors.MutableOrientation;
-import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.surroundings.Surrounding;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.SimpleAction;
@@ -19,11 +19,16 @@ import static java.util.Objects.requireNonNull;
  * An action that resets the absolute position when a vision target is visible
  */
 public class SurroundingPositionCorrectAction extends SimpleAction {
+    private static final double VISION_DELAY_TIME_ALLOWED = .3;
+    private final Clock clock;
     private final SurroundingProvider surroundingProvider;
     private final MutableOrientation orientation;
     private final MutableDistanceAccumulator absoluteDistanceAccumulator;
-    public SurroundingPositionCorrectAction(SurroundingProvider surroundingProvider, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
+
+    private double lastTimestamp = 0;
+    public SurroundingPositionCorrectAction(Clock clock, SurroundingProvider surroundingProvider, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
         super(true);
+        this.clock = clock;
         this.surroundingProvider = surroundingProvider;
         this.orientation = orientation;
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
@@ -32,10 +37,21 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
+        double currentTimestamp = clock.getTimeSeconds();
         Rotation2 rotation = this.orientation.getOrientation();
         Vector2 position = absoluteDistanceAccumulator.getPosition();
 
+        final double lastTimestamp = this.lastTimestamp;
         for(Surrounding surrounding : surroundingProvider.getSurroundings()){
+            double timestamp = surrounding.getTimestamp();
+            this.lastTimestamp = timestamp; // for this to work, we're just going to assume that all the surroundings we see have the same timestamp.
+            if(timestamp + VISION_DELAY_TIME_ALLOWED < currentTimestamp){
+                continue; // this is too old!
+            }
+            if(timestamp <= lastTimestamp){
+                continue; // this isn't new!
+            }
+
             Object extraData = surrounding.getExtraData();
             final Extra2020 extra = extraData instanceof Extra2020 ? (Extra2020) extraData : null;
             Transform2 transform = surrounding.getTransform();

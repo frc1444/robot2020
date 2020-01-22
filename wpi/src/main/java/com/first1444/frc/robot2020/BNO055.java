@@ -62,22 +62,27 @@ public class BNO055 implements AutoCloseable{
         if(pageCache == page){
             return;
         }
-        i2c.write(REG_PAGE0.PAGE_ID, page.value);
-        pageCache = page;
+        boolean aborted = i2c.write(REG_PAGE0.PAGE_ID, page.value);
+        if(!aborted) {
+            pageCache = page;
+        }
     }
+    @Deprecated
     public boolean isConnected(){
         boolean aborted = i2c.write(REG_PAGE0.UNIT_SELECT, 0x0);
         return !aborted;
     }
 
     public CalibrationData getCalibrationData(){
-
         byte[] result = {0};
 
         setPage(Page.PAGE0);
-        i2c.read(REG_PAGE0.CALIB_STAT, 1, result);
+        boolean aborted = i2c.read(REG_PAGE0.CALIB_STAT, 1, result);
         //This actually returns <SYS><GYR><ACC><MAG>
         //3=Calibrated, 0=not. We check SYS status.
+        if(aborted){
+            clearCache();
+        }
 
         return new CalibrationData(result[0]);
     }
@@ -92,19 +97,15 @@ public class BNO055 implements AutoCloseable{
             return;
         }
         setPage(Page.PAGE0);
-        i2c.write(REG_PAGE0.SYS_MODE, mode.val);
+        boolean aborted = i2c.write(REG_PAGE0.SYS_MODE, mode.val);
         currentMode = mode;
-        modeCacheInvalid = false;
+        if(aborted){
+            clearCache();
+        } else {
+            modeCacheInvalid = false;
+        }
     }
 
-    /**
-     * Read and return latest Euler vector data from IMU.
-     * All units are in Radians.<br>
-     * Heading - Yaw/Heading value: 0 - 2PI Clockwise+.<br>
-     * Roll - Roll Value: -PI/2 - PI/2 Clockwise+.<br>
-     * Pitch - Pitch Value: -PI - PI.<br>
-     * @return a EulerData class representing the 3 Euler angles
-     */
     public EulerData getEulerData() {
         IMUMode mode = currentMode;
         if(mode != null) {
@@ -112,8 +113,11 @@ public class BNO055 implements AutoCloseable{
         }
         ByteBuffer result = ByteBuffer.allocateDirect(6);
         setPage(Page.PAGE0);
-        i2c.read(REG_PAGE0.EUL_HEAD_LB, 6, result);
+        boolean aborted = i2c.read(REG_PAGE0.EUL_HEAD_LB, 6, result);
         result.order(ByteOrder.LITTLE_ENDIAN);
+        if(aborted){
+            clearCache();
+        }
 
         return new EulerData(result);
     }

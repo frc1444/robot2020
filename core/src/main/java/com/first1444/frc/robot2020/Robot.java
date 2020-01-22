@@ -146,14 +146,13 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
+                new SurroundingPositionCorrectAction(clock, surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
                 new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
         SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput);
-        swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
         teleopAction = new Actions.ActionMultiplexerBuilder(
                 swerveDriveAction,
                 new OperatorAction(this, robotInput)
@@ -185,8 +184,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
         orientationSystem.run(); // we want to make sure the orientation is correct when we use it
         relativeDistanceAccumulator.run(); // we want to make sure the absolute and relative positions are correct when we use them
+        periodicAction.update(); // does stuff to orientation and absolute position
         actionChooser.update(); // update Actions that control the subsystems
-        dynamicAction.update();
 
         if(robotInput.getSwerveQuickReverseCancel().isJustPressed()){
             for(SwerveModule module : drive.getDrivetrainData().getModules()){
@@ -219,7 +218,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         dashboard.get("y").getStrictSetter().setDouble(position.getY());
         dashboard.get("orientationRadians").getStrictSetter().setDouble(getOrientation().getOrientationRadians());
 
-        periodicAction.update();
+        dynamicAction.update(); // unimportant stuff
     }
 
     @Override
@@ -230,7 +229,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             soundMap.getTeleopDisable().play();
             dynamicAction.add(new Actions.ActionQueueBuilder(
                     new TimedAction(false, clock, 5.0),
-                    Actions.createRunOnce(() -> soundMap.getPostMatchFiveSeconds().play())
+                    Actions.createRunOnce(() -> {
+                        soundMap.getPostMatchFiveSeconds().play();
+                        // We can also release the climb from "brake" mode
+                    })
             ).build());
         } else if(previousMode == FrcMode.AUTONOMOUS){
             soundMap.getAutonomousDisable().play();

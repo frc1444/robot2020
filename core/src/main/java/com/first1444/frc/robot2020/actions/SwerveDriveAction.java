@@ -24,6 +24,7 @@ import static java.util.Objects.requireNonNull;
  * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
  */
 public class SwerveDriveAction extends SimpleAction {
+    private static final double MAX_VISION_TURN_AMOUNT = .7;
     private final SwerveDrive drive;
     private final Orientation orientation;
     private final DistanceAccumulator absoluteDistanceAccumulator;
@@ -47,7 +48,7 @@ public class SwerveDriveAction extends SimpleAction {
         this.absoluteDistanceAccumulator = requireNonNull(absoluteDistanceAccumulator);
         this.input = requireNonNull(input);
 
-        visionYawController = new PIDController(clock, 0.1, .01, 0);
+        visionYawController = new PIDController(clock, 0.04, 0, 0);
         visionYawController.enableContinuousInput(0.0, 360.0);
     }
 
@@ -78,7 +79,11 @@ public class SwerveDriveAction extends SimpleAction {
         if(input.getVisionAlign().isDeadzone()){
             return 0;
         }
-        return input.getVisionAlign().getPosition();
+        double r = input.getVisionAlign().getPosition();
+        if(r < .3){ // We don't want accidental touches to affect this
+            return 0;
+        }
+        return r;
     }
     private double getDriverTurnAmount(){
         if(input.getTurnAmount().isDeadzone()){
@@ -92,7 +97,7 @@ public class SwerveDriveAction extends SimpleAction {
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
 //        System.out.println("Desired angle: " + angle + " current rotation: " + rotation);
         visionYawController.setSetpoint(angle.getDegrees());
-        return -max(-1, min( 1, visionYawController.calculate(rotation.getDegrees())));
+        return -max(-MAX_VISION_TURN_AMOUNT, min(MAX_VISION_TURN_AMOUNT, visionYawController.calculate(rotation.getDegrees())));
     }
     private void driverControl(){
         final Perspective perspective;
