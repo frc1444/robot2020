@@ -65,18 +65,11 @@ public class BNO055 implements AutoCloseable{
         i2c.write(REG_PAGE0.PAGE_ID, page.value);
         pageCache = page;
     }
-
     public boolean isConnected(){
-        return i2c.addressOnly();
+        boolean aborted = i2c.write(REG_PAGE0.UNIT_SELECT, 0x0);
+        return !aborted;
     }
 
-    /**
-     * Check state of System Calibration
-     * @return Returns true if Fully Calibrated
-     */
-    public boolean isCalibrated() {
-        return getCalibrationData().sys;
-    }
     public CalibrationData getCalibrationData(){
 
         byte[] result = {0};

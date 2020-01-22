@@ -152,7 +152,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), robotInput, surroundingProvider);
+        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput);
         swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
         teleopAction = new Actions.ActionMultiplexerBuilder(
                 swerveDriveAction,

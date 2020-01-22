@@ -2,28 +2,34 @@ package com.first1444.frc.robot2020.actions;
 
 import com.first1444.frc.robot2020.Perspective;
 import com.first1444.frc.robot2020.input.RobotInput;
+import com.first1444.frc.robot2020.setpoint.PIDController;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
+import com.first1444.sim.api.distance.DistanceAccumulator;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
+import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import com.first1444.sim.api.sensors.Orientation;
-import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
 import static com.first1444.sim.api.MathUtil.conservePow;
+import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 /**
  * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
  */
 public class SwerveDriveAction extends SimpleAction {
-    private final Clock clock; // we may use this in the future for vision
     private final SwerveDrive drive;
     private final Orientation orientation;
+    private final DistanceAccumulator absoluteDistanceAccumulator;
     private final RobotInput input;
-    private final SurroundingProvider surroundingProvider; // we may use this in the future for vision
+
+    private final PIDController visionYawController;
 
 
     /** The perspective or null to automatically choose the perspective based on the task */
@@ -31,16 +37,18 @@ public class SwerveDriveAction extends SimpleAction {
 
     public SwerveDriveAction(
             Clock clock,
-            SwerveDrive drive, Orientation orientation,
-            RobotInput input,
-            SurroundingProvider surroundingProvider
+            SwerveDrive drive,
+            Orientation orientation, DistanceAccumulator absoluteDistanceAccumulator,
+            RobotInput input
     ) {
         super(true);
-        this.clock = requireNonNull(clock);
         this.drive = requireNonNull(drive);
         this.orientation = requireNonNull(orientation);
+        this.absoluteDistanceAccumulator = requireNonNull(absoluteDistanceAccumulator);
         this.input = requireNonNull(input);
-        this.surroundingProvider = requireNonNull(surroundingProvider);
+
+        visionYawController = new PIDController(clock, 0.1, .01, 0);
+        visionYawController.enableContinuousInput(0.0, 360.0);
     }
 
     /**
@@ -64,8 +72,27 @@ public class SwerveDriveAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        // TODO use input.getVisionAlign() and execute something besides driverControl() if it is held down
         driverControl();
+    }
+    private double getVisionAlignPercent(){
+        if(input.getVisionAlign().isDeadzone()){
+            return 0;
+        }
+        return input.getVisionAlign().getPosition();
+    }
+    private double getDriverTurnAmount(){
+        if(input.getTurnAmount().isDeadzone()){
+            return 0;
+        }
+        return input.getTurnAmount().getPosition();
+    }
+    private double getTargetTurnAmount(){
+        Vector2 position = absoluteDistanceAccumulator.getPosition();
+        Rotation2 rotation = orientation.getOrientation();
+        Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
+//        System.out.println("Desired angle: " + angle + " current rotation: " + rotation);
+        visionYawController.setSetpoint(angle.getDegrees());
+        return -max(-1, min( 1, visionYawController.calculate(rotation.getDegrees())));
     }
     private void driverControl(){
         final Perspective perspective;
@@ -85,12 +112,12 @@ public class SwerveDriveAction extends SimpleAction {
             y = joystick.getCorrectY();
         }
 
-        final double turnAmount;
-        if(input.getTurnAmount().isDeadzone()){
-            turnAmount = 0;
-        } else {
-            turnAmount = input.getTurnAmount().getPosition();
+
+        double visionAlign = getVisionAlignPercent();
+        if(visionAlign <= .3){
+            visionYawController.reset();
         }
+        double turnAmount = visionAlign * getTargetTurnAmount() + (1 - visionAlign) * getDriverTurnAmount();
 
         final InputPart speedInputPart = input.getMovementSpeed();
         final double speed;
