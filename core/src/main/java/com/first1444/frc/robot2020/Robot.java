@@ -16,6 +16,9 @@ import com.first1444.frc.robot2020.actions.TimedAction;
 import com.first1444.frc.robot2020.actions.positioning.AbsolutePositionPacketAction;
 import com.first1444.frc.robot2020.actions.positioning.OutOfBoundsPositionCorrectAction;
 import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrectAction;
+import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
+import com.first1444.frc.robot2020.autonomous.DefaultAutonomousModeCreator;
+import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
@@ -93,8 +96,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final ActionChooser actionChooser;
     /** The action that when updated, allows the driver and operator to control the robot */
     private final Action teleopAction;
-
     private final ActionMultiplexer dynamicAction;
+    private final AutonomousChooserState autonomousChooserState;
+
 
     // region Initialize
     public Robot(
@@ -158,6 +162,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 new OperatorAction(this, robotInput)
         ).canBeDone(false).canRecycle(true).build();
         dynamicAction = new Actions.ActionMultiplexerBuilder().canBeDone(true).canRecycle(true).build();
+
+        autonomousChooserState = new AutonomousChooserState(clock, new DefaultAutonomousModeCreator(new RobotAutonomousActionCreator(this)), dashboardMap);
 
         System.out.println("Finished constructor");
     }
