@@ -15,7 +15,6 @@ import com.first1444.dashboard.bundle.ActiveDashboardBundle
 import com.first1444.frc.robot2020.Constants
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
-import com.first1444.frc.robot2020.input.InputUtil
 import com.first1444.frc.robot2020.packets.AbsolutePositionPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
@@ -54,6 +53,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
 import me.retrodaredevil.controller.gdx.IndexedControllerProvider
 import me.retrodaredevil.controller.implementations.BaseStandardControllerInput
+import me.retrodaredevil.controller.implementations.InputUtil
 import me.retrodaredevil.controller.implementations.mappings.DefaultStandardControllerInputCreator
 import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator
 import me.retrodaredevil.controller.options.OptionValues
@@ -62,7 +62,7 @@ import java.lang.Math.toRadians
 import kotlin.experimental.or
 
 private const val underTrench = true
-private val startingPosition = Vector2(0.0, -6.6)
+private val startingPosition = Vector2(0.0, 4.87)
 private val startingAngleRadians = toRadians(90.0)
 
 private const val maxVelocity = 3.35

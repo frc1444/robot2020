@@ -22,7 +22,7 @@ public enum AutonomousType {
             EnumSet.allOf(BasicMovementType.class)
     ),
     MOVE_TURN_SHOOT(
-            "Move Turn Shoot", "Moves(fwd,back), turn(towards target), then shoots",
+            "Move Turn Shoot", "Moves, turn, then shoots",
             EnumSet.allOf(BasicMovementType.class)
     ),
     SHOOT_IMMEDIATE(

@@ -43,7 +43,8 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
                 changer.change(FieldScreenCreator(uiSkin, UpdateableCreatorMultiplexer(listOf(
                         SupplementaryUpdateableCreator(supplementaryCreator, DashboardFrcDriverStation(bundle.rootDashboard.getSubDashboard("FMSInfo"))),
                         fieldCreator,
-                        exitButtonUpdateableCreator
+                        exitButtonUpdateableCreator,
+                        VisionDebugInfoUpdateableCreator(bundle.rootDashboard)
                 ))).create(changer))
             }
     )

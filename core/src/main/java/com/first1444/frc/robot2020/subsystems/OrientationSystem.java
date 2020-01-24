@@ -7,7 +7,10 @@ import com.first1444.frc.robot2020.DashboardMap;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.sim.api.MathUtil;
 import com.first1444.sim.api.Rotation2;
-import com.first1444.sim.api.sensors.*;
+import com.first1444.sim.api.sensors.MutableOrientation;
+import com.first1444.sim.api.sensors.Orientation;
+import com.first1444.sim.api.sensors.OrientationHandler;
+import com.first1444.sim.api.sensors.OrientationSendable;
 import me.retrodaredevil.controller.input.InputPart;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +35,7 @@ public class OrientationSystem implements Runnable {
         dashboardMap.getUserTab().add("Orientation",
                 new SendableComponent<>(new OrientationSendable(orientation)),
                 (metadata) -> {
-                    new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(9, 1);
+                    new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(2, 0);
                     new GyroMetadataHelper(metadata).setMajorTickSpacing(90.0).setStartingAngle(90).setCounterClockwise(true);
                 }
         );

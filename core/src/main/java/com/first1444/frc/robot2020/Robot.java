@@ -5,6 +5,7 @@ import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
@@ -15,9 +16,10 @@ import com.first1444.frc.robot2020.actions.SwerveDriveAction;
 import com.first1444.frc.robot2020.actions.TimedAction;
 import com.first1444.frc.robot2020.actions.positioning.AbsolutePositionPacketAction;
 import com.first1444.frc.robot2020.actions.positioning.OutOfBoundsPositionCorrectAction;
+import com.first1444.frc.robot2020.actions.positioning.SurroundingDashboardLoggerAction;
 import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrectAction;
 import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
-import com.first1444.frc.robot2020.autonomous.DefaultAutonomousModeCreator;
+import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
 import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
@@ -27,6 +29,7 @@ import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
@@ -140,19 +143,24 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), getOrientation()));
         absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);
-        dashboardMap.getUserTab().add("Position", new SendableComponent<>((Sendable<ActiveComponent>) (title, dashboard) -> new ActiveComponentMultiplexer(title,
-                Arrays.asList(
-                        new PropertyActiveComponent("", dashboard.get("x"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(absoluteDistanceAccumulator.getPosition().getX()))),
-                        new PropertyActiveComponent("", dashboard.get("y"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(absoluteDistanceAccumulator.getPosition().getY())))
-                )
-        )));
+        dashboardMap.getUserTab().add(
+                "Position",
+                new SendableComponent<>((Sendable<ActiveComponent>) (title, dashboard) -> new ActiveComponentMultiplexer(title,
+                        Arrays.asList(
+                                new PropertyActiveComponent("", dashboard.get("x"), ValueProperty.createGetOnly(() -> BasicValue.makeString(Constants.DECIMAL_FORMAT.format(absoluteDistanceAccumulator.getPosition().getX())))),
+                                new PropertyActiveComponent("", dashboard.get("y"), ValueProperty.createGetOnly(() -> BasicValue.makeString(Constants.DECIMAL_FORMAT.format(absoluteDistanceAccumulator.getPosition().getY()))))
+                        )
+                )),
+                metadata -> new ComponentMetadataHelper(metadata).setSize(2, 2).setPosition(4, 0)
+        );
 
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
                 new SurroundingPositionCorrectAction(clock, surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
-                new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator)
+                new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
+                new SurroundingDashboardLoggerAction(clock, surroundingProvider, dashboardMap) // TODO only update this every .1 seconds
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -163,7 +171,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         ).canBeDone(false).canRecycle(true).build();
         dynamicAction = new Actions.ActionMultiplexerBuilder().canBeDone(true).canRecycle(true).build();
 
-        autonomousChooserState = new AutonomousChooserState(clock, new DefaultAutonomousModeCreator(new RobotAutonomousActionCreator(this)), dashboardMap);
+        autonomousChooserState = new AutonomousChooserState(clock, new AutonomousModeCreator(new RobotAutonomousActionCreator(this)), dashboardMap);
 
         System.out.println("Finished constructor");
     }
@@ -263,7 +271,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void autonomousInit() {
-        actionChooser.setNextAction(null);
+        actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(new Transform2(absoluteDistanceAccumulator.getPosition(), getOrientation().getOrientation())));
         soundMap.getAutonomousEnable().play();
     }
     @Override

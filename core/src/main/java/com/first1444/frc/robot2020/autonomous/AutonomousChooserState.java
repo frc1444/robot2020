@@ -48,20 +48,17 @@ public class AutonomousChooserState {
         autonomousChooser = new SimpleMappedChooserProvider<>(key -> onAutonomousChange());
         basicMovementChooser = new SimpleMappedChooserProvider<>();
         final var valueMapSendable = new MutableValueMapSendable<>(AutonomousConfigKey.class);
-        layout.add("Config", new SendableComponent<>(valueMapSendable), (metadata) -> new ComponentMetadataHelper(metadata)
-                .setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES));
         autonomousConfigKeyValueMap = valueMapSendable.getMutableValueMap();
         addAutoOptions();
         updateBasicMovementChooser();
 
         layout.add(
-                "Autonomous Chooser", new SendableComponent<>(new ChooserSendable(autonomousChooser)),
-                metadata -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 0)
+                "Config", new SendableComponent<>(valueMapSendable),
+                (metadata) -> new ComponentMetadataHelper(metadata)
+                        .setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES)
         );
-        layout.add(
-                "Basic Movement", new SendableComponent<>(new ChooserSendable(basicMovementChooser)),
-                metadata -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 1)
-        );
+        layout.add("Autonomous Chooser", new SendableComponent<>(new ChooserSendable(autonomousChooser)));
+        layout.add("Basic Movement", new SendableComponent<>(new ChooserSendable(basicMovementChooser)));
 
         readyToListen = true;
     }
@@ -74,9 +71,10 @@ public class AutonomousChooserState {
 
     public Action createAutonomousAction(Transform2 startingTransform){
         try {
+            AutonomousSettings settings = new AutonomousSettings(autonomousChooser.getSelected(), basicMovementChooser.getSelected());
             return new Actions.ActionQueueBuilder(
                     new AutonomousInputWaitAction(clock, autonomousConfigKeyValueMap.getDouble(AutonomousConfigKey.WAIT_TIME), () -> false, () -> false),
-                    autonomousModeCreator.createAction(new AutonomousSettings(AutonomousType.DO_NOTHING, BasicMovementType.BACKWARD), startingTransform)
+                    autonomousModeCreator.createAction(settings, startingTransform)
             ).build();
         } catch(IllegalArgumentException ex){
             ex.printStackTrace();
