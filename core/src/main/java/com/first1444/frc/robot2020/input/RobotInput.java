@@ -96,6 +96,15 @@ public class RobotInput extends SimpleControllerPart {
         return downDummyInput;
     }
 
+    public InputPart getIntakeSpeed() {
+        return dummyInput;
+    }
+    public InputPart getManualShootSpeed() {
+        return dummyInput;
+    }
+    public InputPart getShootBall() {
+        return dummyInput;
+    }
 
     // region Climb Controls
     /** If pressed, should make the climber go to the stored position*/

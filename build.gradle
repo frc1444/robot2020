@@ -9,6 +9,7 @@ buildscript {
         abstractControllerLibVersion = "v2.3.2"
         abstractDashboardVersion = "e635c7080d"
         jacksonVersion = "2.10.1"
+        def hi = ""
     }
     repositories {
         mavenLocal()

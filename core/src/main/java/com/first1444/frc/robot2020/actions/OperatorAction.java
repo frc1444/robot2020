@@ -41,5 +41,13 @@ public class OperatorAction extends SimpleAction {
                 }
             }
         }
+
+        final double intakeSpeed;
+        if (input.getIntakeSpeed().isDeadzone()) {
+            intakeSpeed = 0;
+        } else {
+            intakeSpeed = input.getIntakeSpeed().getPosition();
+        }
+        robot.getIntake().setIntakeSpeed(intakeSpeed);
     }
 }

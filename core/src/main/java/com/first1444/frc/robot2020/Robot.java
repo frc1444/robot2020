@@ -293,6 +293,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public FrcLogger getLogger(){ return logger; }
 
     public SwerveDrive getDrive(){ return drive; }
+    public Intake getIntake() {
+        return intake;
+    }
     public Turret getTurret(){ return turret; }
     public Orientation getOrientation(){
         return orientationSystem.getOrientation();
