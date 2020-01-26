@@ -19,6 +19,7 @@ import com.first1444.frc.robot2020.packets.AbsolutePositionPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
+import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
@@ -89,16 +90,16 @@ private fun createEntity(data: RobotCreator.Data, updateableData: UpdateableCrea
         shape = PolygonShape().apply {
             setAsBox(inchesToMeters(15.0f / 2), inchesToMeters(15.0f / 2), ZERO, 0.0f)
         }
-    }, FixtureDef().apply {
+    }, FixtureDef().apply { // line that points in direction robot is facing
         isSensor = true
         shape = EdgeShape().apply {
-            set(0f, 0f, .5f, 0f)
+            set(0f, 0f, .3f, 0f)
         }
     }
     ))
 }
-private fun createSwerveDriveData(data: RobotCreator.Data, updateableData: UpdateableCreator.Data, entity: BodyEntity): FourWheelSwerveDriveData {
-   val wheelBody = BodyDef().apply {
+private fun createSwerveDriveData(enabledState: EnabledState, updateableData: UpdateableCreator.Data, entity: BodyEntity): FourWheelSwerveDriveData {
+    val wheelBody = BodyDef().apply {
         type = BodyDef.BodyType.DynamicBody
     }
     val wheelFixture = FixtureDef().apply {
@@ -134,7 +135,7 @@ private fun createSwerveDriveData(data: RobotCreator.Data, updateableData: Updat
         }
         updateableData.worldManager.world.createJoint(joint)
         val module = BodySwerveModule(
-                moduleName, wheelEntity.body, entity.body, maxVelocity, updateableData.clock, data.driverStation,
+                moduleName, wheelEntity.body, entity.body, maxVelocity, updateableData.clock, enabledState,
                 AccelerateSetPointHandler(maxVelocity.toFloat() / .5f, maxVelocity.toFloat() / .2f),
                 AccelerateSetPointHandler(MathUtils.PI2 / .5f)
         )
@@ -145,13 +146,19 @@ private fun createSwerveDriveData(data: RobotCreator.Data, updateableData: Updat
             wheelBase, trackWidth
     )
 }
+private fun createTurret(enabledState: EnabledState, updateableData: UpdateableCreator.Data, entity: BodyEntity): Turret {
+    return GdxTurret(updateableData.worldManager.world, entity, updateableData.clock, enabledState, AccelerateSetPointHandler(MathUtils.PI / .5f)) // spin 180 in half a second
+}
 
 class MyRobotCreator(
         private val dashboardBundle: ActiveDashboardBundle
 ) : RobotCreator {
     override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
+        val clock = SystemNanosClock
         val entity = createEntity(data, updateableData);
-        val swerveDriveData = createSwerveDriveData(data, updateableData, entity)
+        val swerveDriveData = createSwerveDriveData(data.driverStation, updateableData, entity)
+        val turret = createTurret(data.driverStation, updateableData, entity)
+
 
         val playstationProvider = BestNameControllerProvider(listOf("sony", "ps4", "playstation", "wireless controller"))
         val defaultProvider = IndexedControllerProvider(0)
@@ -183,20 +190,21 @@ class MyRobotCreator(
             val visionPacketListener = VisionPacketListener(
                     VisionPacketParser(
                             ObjectMapper(),
-                            updateableData.clock,
+                            clock,
                             mapOf(Pair(1, Rotation2.ZERO))
                     ),
                     "tcp://10.134.223.107:5801" // temporary testing address
             )
             visionPacketListener.start()
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
-                    data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
+                    data.driverStation, PrintStreamFrcLogger(System.err, System.err), clock,
                     shuffleboardMap,
                     joystick, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
-                    DummyIntake(reportMap), DummyBallShooter(reportMap), DummyWheelSpinner(reportMap), DummyClimber(reportMap),
-                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, updateableData.clock)
+                    DummyIntake(reportMap), turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
+                    DummyClimber(reportMap),
+                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, clock)
 //                    visionPacketListener
             )), data.driverStation)
             RobotRunnableMultiplexer(

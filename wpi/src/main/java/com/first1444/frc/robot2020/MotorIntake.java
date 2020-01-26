@@ -4,23 +4,18 @@ import com.first1444.frc.robot2020.subsystems.Intake;
 
 public class MotorIntake implements Intake {
     @Override
-    public void setSpeed(double speed) {
+    public void setIntakeSpeed(double speed) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setDesiredState(State state) {
+    public void setIndexerSpeed(double speed) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public State getDesiredState() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public State getCurrentState() {
-        throw new UnsupportedOperationException();
+    public int getBallCount() {
+        return 0;
     }
 
     @Override

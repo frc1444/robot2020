@@ -13,18 +13,18 @@ import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
-public class MoveToAbsoluteAction extends SimpleAction {
+public class MoveToPosition extends SimpleAction {
     private final SwerveDrive drive;
     private final Orientation orientation;
-    private final DistanceAccumulator absoluteDistanceAccumulator;
+    private final DistanceAccumulator distanceAccumulator;
     private final Vector2 desiredPosition;
     private final SpeedProvider speedProvider;
     @Nullable
     private final DesiredRotationProvider desiredRotationProvider;
 
-    public MoveToAbsoluteAction(
+    public MoveToPosition(
             SwerveDrive drive,
-            Orientation orientation, DistanceAccumulator absoluteDistanceAccumulator,
+            Orientation orientation, DistanceAccumulator distanceAccumulator,
             Vector2 desiredPosition,
             SpeedProvider speedProvider,
             @Nullable DesiredRotationProvider desiredRotationProvider
@@ -32,7 +32,7 @@ public class MoveToAbsoluteAction extends SimpleAction {
         super(true);
         this.drive = requireNonNull(drive);
         this.orientation = requireNonNull(orientation);
-        this.absoluteDistanceAccumulator = requireNonNull(absoluteDistanceAccumulator);
+        this.distanceAccumulator = requireNonNull(distanceAccumulator);
         this.desiredPosition = requireNonNull(desiredPosition);
         this.speedProvider = requireNonNull(speedProvider);
         this.desiredRotationProvider = desiredRotationProvider;
@@ -41,9 +41,9 @@ public class MoveToAbsoluteAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        Vector2 absolutePosition = absoluteDistanceAccumulator.getPosition();
-        double translateSpeed = speedProvider.getSpeed(absolutePosition);
-        Vector2 offsetVector = desiredPosition.minus(absolutePosition);
+        Vector2 position = distanceAccumulator.getPosition();
+        double translateSpeed = speedProvider.getSpeed(position);
+        Vector2 offsetVector = desiredPosition.minus(position);
         if(offsetVector.compareTo(inchesToMeters(4)) < 0){
             setDone(true);
             return;
@@ -53,7 +53,7 @@ public class MoveToAbsoluteAction extends SimpleAction {
         if(desiredRotationProvider == null){
             turnAmount = 0;
         } else {
-            Rotation2 rotation = desiredRotationProvider.getDesiredRotation(absolutePosition);
+            Rotation2 rotation = desiredRotationProvider.getDesiredRotation(position);
             double minChangeDegrees = MathUtil.minChange(rotation.getDegrees(), orientation.getOrientationDegrees(), 360);
             turnAmount = .75 * max(-1, min(1, minChangeDegrees / -40));
         }

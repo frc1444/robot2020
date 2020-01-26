@@ -21,7 +21,6 @@ import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrec
 import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
-import com.first1444.frc.robot2020.input.DefaultRobotInput;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
 import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
@@ -78,6 +77,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final OrientationSystem orientationSystem;
     private final SwerveDrive drive;
     private final Intake intake;
+    private final Turret turret;
     private final BallShooter ballShooter;
     private final WheelSpinner wheelSpinner;
     private final Climber climber;
@@ -112,7 +112,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             StandardControllerInput controller, ControllerRumble rumble,
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
-            Intake intake, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
+            Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
             SurroundingProvider surroundingProvider
     ){
         this.driverStation = driverStation;
@@ -120,10 +120,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.clock = clock;
         this.dashboardMap = dashboardMap;
         this.intake = intake;
+        this.turret = turret;
         this.ballShooter = ballShooter;
         this.wheelSpinner = wheelSpinner;
         this.climber = climber;
-        robotInput = new DefaultRobotInput(
+        robotInput = new RobotInput(
                 controller,
                 rumble
         );
@@ -219,6 +220,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         // update subsystems
         drive.run();
         intake.run();
+        turret.run();
         ballShooter.run();
         wheelSpinner.run();
         climber.run();
@@ -245,7 +247,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                     new TimedAction(false, clock, 5.0),
                     Actions.createRunOnce(() -> {
                         soundMap.getPostMatchFiveSeconds().play();
-                        // We can also release the climb from "brake" mode
                     })
             ).build());
         } else if(previousMode == FrcMode.AUTONOMOUS){
@@ -291,8 +292,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public FrcLogger getLogger(){ return logger; }
 
     public SwerveDrive getDrive(){ return drive; }
+    public Turret getTurret(){ return turret; }
     public Orientation getOrientation(){
         return orientationSystem.getOrientation();
+    }
+    public DistanceAccumulator getRelativeDistanceAccumulator(){
+        return relativeDistanceAccumulator;
     }
     public DistanceAccumulator getAbsoluteDistanceAccumulator(){
         return absoluteDistanceAccumulator;

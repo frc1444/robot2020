@@ -11,36 +11,30 @@ public class DummyIntake implements Intake {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
 
-    private double speed;
-    private State desiredState = State.IN;
+    private double intakeSpeed;
+    private double indexerSpeed;
 
     public DummyIntake(ReportMap reportMap) {
         this.reportMap = reportMap;
     }
 
     @Override
-    public void setSpeed(double speed) {
-        this.speed = speed;
+    public void setIntakeSpeed(double speed) {
+        this.intakeSpeed = speed;
     }
 
     @Override
-    public void setDesiredState(State state) {
-        this.desiredState = requireNonNull(state);
+    public void setIndexerSpeed(double speed) {
+        this.indexerSpeed = speed;
     }
 
     @Override
-    public State getDesiredState() {
-        return desiredState;
+    public int getBallCount() {
+        return 0;
     }
-
-    @Override
-    public State getCurrentState() {
-        return desiredState;
-    }
-
     @Override
     public void run() {
-        reportMap.report("Intake Speed", FORMAT.format(speed));
-        reportMap.report("Intake Desired State", desiredState.toString());
+        reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
+        reportMap.report("Indexer Speed", FORMAT.format(indexerSpeed));
     }
 }

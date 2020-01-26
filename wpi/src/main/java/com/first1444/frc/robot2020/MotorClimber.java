@@ -9,17 +9,12 @@ public class MotorClimber implements Climber {
     }
 
     @Override
-    public void lockCurrentPosition() {
+    public void storedPosition() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setNeutralState(NeutralState neutralState) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public NeutralState getNeutralState() {
+    public void startingPosition() {
         throw new UnsupportedOperationException();
     }
 

@@ -2,7 +2,7 @@ package com.first1444.frc.util.autonomous.creator;
 
 import com.first1444.frc.util.autonomous.actions.TurnToOrientation;
 import com.first1444.frc.util.autonomous.actions.movement.DesiredRotationProvider;
-import com.first1444.frc.util.autonomous.actions.movement.MoveToAbsoluteAction;
+import com.first1444.frc.util.autonomous.actions.movement.MoveToPosition;
 import com.first1444.frc.util.autonomous.actions.movement.SpeedProvider;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
@@ -10,18 +10,21 @@ import com.first1444.sim.api.distance.DistanceAccumulator;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
 import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.Actions;
 import org.jetbrains.annotations.Nullable;
 
 public class DefaultSwerveDriveActionCreator implements SwerveDriveActionCreator {
 
     private final SwerveDrive swerveDrive;
     private final Orientation orientation;
-    private final DistanceAccumulator distanceAccumulator;
+    private final DistanceAccumulator relativeDistanceAccumulator;
+    private final DistanceAccumulator absoluteDistanceAccumulator;
 
-    public DefaultSwerveDriveActionCreator(SwerveDrive swerveDrive, Orientation orientation, DistanceAccumulator distanceAccumulator) {
+    public DefaultSwerveDriveActionCreator(SwerveDrive swerveDrive, Orientation orientation, DistanceAccumulator relativeDistanceAccumulator, DistanceAccumulator absoluteDistanceAccumulator) {
         this.swerveDrive = swerveDrive;
         this.orientation = orientation;
-        this.distanceAccumulator = distanceAccumulator;
+        this.relativeDistanceAccumulator = relativeDistanceAccumulator;
+        this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
     }
 
     @Override
@@ -31,6 +34,15 @@ public class DefaultSwerveDriveActionCreator implements SwerveDriveActionCreator
 
     @Override
     public Action createMoveToAbsolute(Vector2 position, SpeedProvider speedProvider, @Nullable DesiredRotationProvider desiredRotationProvider) {
-        return new MoveToAbsoluteAction(swerveDrive, orientation, distanceAccumulator, position, speedProvider, desiredRotationProvider);
+        return new MoveToPosition(swerveDrive, orientation, absoluteDistanceAccumulator, position, speedProvider, desiredRotationProvider);
+    }
+
+    @Override
+    public Action createMoveRelative(Vector2 vector, SpeedProvider speedProvider, @Nullable DesiredRotationProvider desiredRotationProvider) {
+        return Actions.createDynamicActionRunner(() -> {
+            Vector2 startingPosition = relativeDistanceAccumulator.getPosition();
+            Vector2 desiredPosition = startingPosition.plus(vector);
+            return new MoveToPosition(swerveDrive, orientation, relativeDistanceAccumulator, desiredPosition, speedProvider, desiredRotationProvider);
+        });
     }
 }

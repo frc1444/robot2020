@@ -23,4 +23,15 @@ public interface SwerveDriveActionCreator {
         return createMoveToAbsolute(position, speedProvider, null);
     }
 
+    default Action createMoveRelative(Vector2 vector, double speed, @Nullable Rotation2 faceDirection) {
+        return createMoveRelative(vector, new ConstantSpeedProvider(speed), faceDirection == null ? null : new ConstantRotationProvider(faceDirection));
+    }
+    default Action createMoveRelative(Vector2 vector, double speed) {
+        return createMoveRelative(vector, speed, null);
+    }
+    default Action createMoveRelative(Vector2 vector, SpeedProvider speedProvider) {
+        return createMoveRelative(vector, speedProvider, null);
+    }
+    Action createMoveRelative(Vector2 vector, SpeedProvider speedProvider, @Nullable DesiredRotationProvider desiredRotationProvider);
+
 }

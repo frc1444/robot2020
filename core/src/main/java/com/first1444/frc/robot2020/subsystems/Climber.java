@@ -6,22 +6,7 @@ public interface Climber extends Runnable {
      */
     void setRawSpeed(double speed);
 
-    /**
-     * Locks the position. This should be called once
-     */
-    void lockCurrentPosition();
+    void storedPosition();
+    void startingPosition();
 
-    void setNeutralState(NeutralState neutralState);
-    NeutralState getNeutralState();
-
-    enum NeutralState {
-        /**
-         * Without using power, this applies a "brake" to the motor by shorting the wires together
-         */
-        BRAKE,
-        /**
-         * This lets the motor coast
-         */
-        COAST
-    }
 }
