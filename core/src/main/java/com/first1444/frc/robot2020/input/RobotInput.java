@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 
 public class RobotInput extends SimpleControllerPart {
     private final InputPart dummyInput = new DummyInputPart(AxisType.DIGITAL, 0.0);
+    private final InputPart downDummyInput = new DummyInputPart(AxisType.DIGITAL, 1.0);
 
     private final StandardControllerInput controller;
     private final ControllerRumble rumble;
@@ -32,7 +33,7 @@ public class RobotInput extends SimpleControllerPart {
         }
         partUpdater.addPartsAssertNonePresent(
                 controller,
-                dummyInput
+                dummyInput, downDummyInput
         ); // add the controllers as children
     }
 
@@ -83,12 +84,18 @@ public class RobotInput extends SimpleControllerPart {
         return controller.getFaceDown(); // temporary
     }
     public InputPart getTurretLeftOrient(){
-        return controller.getFaceRight(); // temporary
+        return controller.getRightStick(); // temporary
     }
     public InputPart getTurretRightOrient(){
-        return dummyInput;
+        return controller.getFaceRight(); // temporary
     }
     // endregion
+
+    /** When pressed, this enables the turret to auto target using vision or absolute position */
+    public InputPart getEnableTurretAutoTarget(){
+        return downDummyInput;
+    }
+
 
     // region Climb Controls
     /** If pressed, should make the climber go to the stored position*/

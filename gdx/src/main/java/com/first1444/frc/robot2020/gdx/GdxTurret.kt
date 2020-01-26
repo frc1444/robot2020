@@ -43,7 +43,11 @@ class GdxTurret(
         world.createJoint(joint)
     }
     override fun setDesiredRotation(rotation: Rotation2) {
-        desiredRotation = rotation
+        desiredRotation = when {
+            rotation.radians > Turret.MAX_ROTATION.radians -> Turret.MAX_ROTATION
+            rotation.radians < Turret.MIN_ROTATION.radians -> Turret.MIN_ROTATION
+            else -> rotation
+        }
     }
     override fun run() {
         val timestamp = clock.timeSeconds

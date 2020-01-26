@@ -274,6 +274,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public void autonomousInit() {
         actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(new Transform2(absoluteDistanceAccumulator.getPosition(), getOrientation().getOrientation())));
         soundMap.getAutonomousEnable().play();
+        climber.storedPosition();
     }
     @Override
     public void autonomousPeriodic() {
