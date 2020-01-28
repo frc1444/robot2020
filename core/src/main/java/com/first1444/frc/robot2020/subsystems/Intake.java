@@ -10,8 +10,6 @@ public interface Intake extends Runnable {
      */
     void setIntakeSpeed(double speed);
 
-    void setIndexerSpeed(double speed);
-
     /**
      *
      * @return The number of balls currently stored

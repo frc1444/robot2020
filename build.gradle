@@ -5,11 +5,10 @@ buildscript {
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "b7deee8225"
+        roboSimVersion = "ed78314e4e"
         abstractControllerLibVersion = "v2.3.2"
         abstractDashboardVersion = "e635c7080d"
         jacksonVersion = "2.10.1"
-        def hi = ""
     }
     repositories {
         mavenLocal()

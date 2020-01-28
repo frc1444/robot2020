@@ -19,6 +19,7 @@ import com.first1444.frc.robot2020.packets.AbsolutePositionPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
+import com.first1444.frc.robot2020.subsystems.Intake
 import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
@@ -62,41 +63,54 @@ import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
 import kotlin.experimental.or
 
-private const val underTrench = true
-private val startingPosition = Vector2(0.0, 4.87)
-private val startingAngleRadians = toRadians(90.0)
+private const val GOES_UNDER_TRENCH = true
+private val STARTING_POSITION = Vector2(0.0, 4.87)
+private val STARTING_ANGLE_RADIANS = toRadians(90.0)
 
 private const val maxVelocity = 3.35
 private val SWERVE = Constants.Swerve2019.INSTANCE
-private val wheelBase = SWERVE.wheelBase // length
-private val trackWidth = SWERVE.trackWidth // width
+private val WHEEL_BASE = SWERVE.wheelBase // length
+private val TRACK_WIDTH = SWERVE.trackWidth // width
+private val INTAKE_EXTEND = inchesToMeters(6.0f)
+private val INTAKE_WIDTH = inchesToMeters(12.0f)
 
 private fun createEntity(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): BodyEntity {
     return ActorBodyEntity(updateableData.contentStage, updateableData.worldManager.world, BodyDef().apply {
         type = BodyDef.BodyType.DynamicBody
-        position.set(startingPosition)
-        angle = startingAngleRadians.toFloat()
+        position.set(STARTING_POSITION)
+        angle = STARTING_ANGLE_RADIANS.toFloat()
     }, listOf(FixtureDef().apply {
         restitution = .2f
         shape = PolygonShape().apply {
-            setAsBox((wheelBase / 2).toFloat(), (trackWidth / 2).toFloat(), ZERO, 0.0f)
+            setAsBox((WHEEL_BASE / 2).toFloat(), (TRACK_WIDTH / 2).toFloat(), ZERO, 0.0f)
         }
-        val area = wheelBase * trackWidth
+        val area = WHEEL_BASE * TRACK_WIDTH
         density = 1.0f / area.toFloat()
-    }, FixtureDef().apply { // the box that collides with the trench
-        if(!underTrench) {
-            filter.categoryBits = FieldSetup2020.TRENCH_MASK_BITS or 1
-        }
-        shape = PolygonShape().apply {
-            setAsBox(inchesToMeters(15.0f / 2), inchesToMeters(15.0f / 2), ZERO, 0.0f)
-        }
     }, FixtureDef().apply { // line that points in direction robot is facing
         isSensor = true
         shape = EdgeShape().apply {
             set(0f, 0f, .3f, 0f)
         }
     }
-    ))
+    )).also { entity ->
+        @Suppress("ConstantConditionIf")
+        if(!GOES_UNDER_TRENCH){
+            entity.body.createFixture(FixtureDef().apply { // the box that collides with the trench
+                filter.categoryBits = FieldSetup2020.TRENCH_MASK_BITS or 1
+                shape = PolygonShape().apply {
+                    setAsBox(inchesToMeters(15.0f / 2), inchesToMeters(15.0f / 2), ZERO, 0.0f)
+                }
+            })
+        }
+        entity.body.createFixture(FixtureDef().apply {
+            isSensor = true
+            shape = PolygonShape().apply {
+                setAsBox(INTAKE_EXTEND / 2, INTAKE_WIDTH / 2, gdxVector(WHEEL_BASE.toFloat() / 2 + INTAKE_EXTEND / 2, 0f), 0f)
+            }
+        }).apply {
+            userData = IntakeUserData()
+        }
+    }
 }
 private fun createSwerveDriveData(enabledState: EnabledState, updateableData: UpdateableCreator.Data, entity: BodyEntity): FourWheelSwerveDriveData {
     val wheelBody = BodyDef().apply {
@@ -113,10 +127,10 @@ private fun createSwerveDriveData(enabledState: EnabledState, updateableData: Up
     }
 
 
-    val frPosition = Vector2(wheelBase / 2, -trackWidth / 2)
-    val flPosition = Vector2(wheelBase / 2, trackWidth / 2)
-    val rlPosition = Vector2(-wheelBase / 2, trackWidth / 2)
-    val rrPosition = Vector2(-wheelBase / 2, -trackWidth / 2)
+    val frPosition = Vector2(WHEEL_BASE / 2, -TRACK_WIDTH / 2)
+    val flPosition = Vector2(WHEEL_BASE / 2, TRACK_WIDTH / 2)
+    val rlPosition = Vector2(-WHEEL_BASE / 2, TRACK_WIDTH / 2)
+    val rrPosition = Vector2(-WHEEL_BASE / 2, -TRACK_WIDTH / 2)
 
     val moduleList = ArrayList<SwerveModule>(4)
     for((moduleName, position) in listOf(
@@ -125,7 +139,7 @@ private fun createSwerveDriveData(enabledState: EnabledState, updateableData: Up
             Pair("rear left", rlPosition),
             Pair("rear right", rrPosition))){
         val wheelEntity = ActorBodyEntity(updateableData.contentStage, updateableData.worldManager.world, wheelBody, listOf(wheelFixture))
-        wheelEntity.setTransformRadians(position.rotateRadians(startingAngleRadians) + startingPosition, startingAngleRadians.toFloat())
+        wheelEntity.setTransformRadians(position.rotateRadians(STARTING_ANGLE_RADIANS) + STARTING_POSITION, STARTING_ANGLE_RADIANS.toFloat())
         val joint = RevoluteJointDef().apply {
             bodyA = entity.body
             bodyB = wheelEntity.body
@@ -143,7 +157,7 @@ private fun createSwerveDriveData(enabledState: EnabledState, updateableData: Up
     }
     return FourWheelSwerveDriveData(
             moduleList[0], moduleList[1], moduleList[2], moduleList[3],
-            wheelBase, trackWidth
+            WHEEL_BASE, TRACK_WIDTH
     )
 }
 private fun createTurret(enabledState: EnabledState, updateableData: UpdateableCreator.Data, entity: BodyEntity): Turret {
@@ -153,11 +167,30 @@ private fun createTurret(enabledState: EnabledState, updateableData: UpdateableC
 class MyRobotCreator(
         private val dashboardBundle: ActiveDashboardBundle
 ) : RobotCreator {
-    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
-        val clock = SystemNanosClock
+    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): Updateable {
+        val networkTable = NetworkTableInstance.getDefault()
+        networkTable.startServer()
+        val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))
+        val shuffleboardMap = DefaultDashboardMap(dashboardBundle)
+        val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
+
+        val preciseClock = SystemNanosClock
         val entity = createEntity(data, updateableData);
         val swerveDriveData = createSwerveDriveData(data.driverStation, updateableData, entity)
         val turret = createTurret(data.driverStation, updateableData, entity)
+        val intakeListener: IntakeListener
+        val intake: Intake
+        run {
+            val speedHolder = doubleArrayOf(0.0)
+            intake = object : DummyIntake(reportMap) {
+                override fun setIntakeSpeed(speed: Double) {
+                    super.setIntakeSpeed(speed)
+                    speedHolder[0] = speed
+                }
+            }
+            intakeListener = IntakeListener(updateableData.worldManager) { speedHolder[0] }
+        }
+        updateableData.worldManager.world.setContactListener(intakeListener)
 
 
         val playstationProvider = BestNameControllerProvider(listOf("sony", "ps4", "playstation", "wireless controller"))
@@ -181,30 +214,25 @@ class MyRobotCreator(
             BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         }
         val robotCreator = RunnableCreator.wrap {
-            val networkTable = NetworkTableInstance.getDefault()
-            networkTable.startServer()
-            val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))
-            val shuffleboardMap = DefaultDashboardMap(dashboardBundle)
-            val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
 
             val visionPacketListener = VisionPacketListener(
                     VisionPacketParser(
                             ObjectMapper(),
-                            clock,
+                            preciseClock,
                             mapOf(Pair(1, Rotation2.ZERO))
                     ),
                     "tcp://10.134.223.107:5801" // temporary testing address
             )
             visionPacketListener.start()
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
-                    data.driverStation, PrintStreamFrcLogger(System.err, System.err), clock,
+                    data.driverStation, PrintStreamFrcLogger(System.err, System.err), preciseClock,
                     shuffleboardMap,
                     joystick, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
-                    DummyIntake(reportMap), turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
+                    intake, turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
                     DummyClimber(reportMap),
-                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, clock)
+                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, preciseClock)
 //                    visionPacketListener
             )), data.driverStation)
             RobotRunnableMultiplexer(
@@ -222,9 +250,10 @@ class MyRobotCreator(
                     })
             )
         }
-        return CloseableUpdateableMultiplexer(listOf(
-                CloseableUpdateable.fromUpdateable(entity),
-                RobotUpdateable(robotCreator)
+        return UpdateableMultiplexer(listOf(
+                entity,
+                RobotUpdateable(robotCreator),
+                intakeListener
         ))
     }
 
@@ -233,7 +262,7 @@ class MySupplementaryRobotCreator(
         private val dashboardBundle: ActiveDashboardBundle,
         private val serverName: String
 ) : RobotCreator {
-    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
+    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): Updateable {
         val entity = createEntity(data, updateableData)
 //        val swerveDriveData = createSwerveDriveData(data, updateableData, entity)
 
@@ -280,11 +309,11 @@ class MySupplementaryRobotCreator(
                 }
             }
         })
-        return CloseableUpdateableMultiplexer(listOf(
-                CloseableUpdateable.fromUpdateable(entity),
+        return UpdateableMultiplexer(listOf(
+                entity,
                 RobotUpdateable(robotCreator),
-                CloseableUpdateable.fromUpdateable(PacketQueueSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, packetQueueMaster.create())),
-                object : CloseableUpdateable {
+                PacketQueueSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, packetQueueMaster.create()),
+                object : Updateable {
                     override fun update(delta: Float) {}
                     override fun close() {
                         packetSender.close()

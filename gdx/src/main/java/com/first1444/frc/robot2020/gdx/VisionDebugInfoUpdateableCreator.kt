@@ -6,13 +6,13 @@ import com.first1444.dashboard.BasicDashboard
 import com.first1444.dashboard.value.BasicValueType
 import com.first1444.frc.robot2020.Constants
 import com.first1444.frc.robot2020.actions.positioning.SurroundingDashboardLoggerAction
-import com.first1444.sim.gdx.CloseableUpdateable
+import com.first1444.sim.gdx.Updateable
 import com.first1444.sim.gdx.init.UpdateableCreator
 
 class VisionDebugInfoUpdateableCreator(
         private val rootDashboard: BasicDashboard
 ) : UpdateableCreator {
-    override fun create(data: UpdateableCreator.Data): CloseableUpdateable {
+    override fun create(data: UpdateableCreator.Data): Updateable {
         val group = Table().apply {
             setFillParent(true)
         }
@@ -29,7 +29,7 @@ class VisionDebugInfoUpdateableCreator(
             add(label)
         }
         data.uiStage.addActor(table)
-        return object : CloseableUpdateable {
+        return object : Updateable {
             override fun update(delta: Float) {
                 val dashboard = rootDashboard.getSubDashboard(SurroundingDashboardLoggerAction.SURROUNDING_DEBUG_DASHBOARD)
                 val timeDifferenceValue = dashboard[SurroundingDashboardLoggerAction.SURROUNDING_TIME_DIFFERENCE_KEY].getter.value

@@ -12,7 +12,6 @@ public class DummyIntake implements Intake {
     private final ReportMap reportMap;
 
     private double intakeSpeed;
-    private double indexerSpeed;
 
     public DummyIntake(ReportMap reportMap) {
         this.reportMap = reportMap;
@@ -24,17 +23,11 @@ public class DummyIntake implements Intake {
     }
 
     @Override
-    public void setIndexerSpeed(double speed) {
-        this.indexerSpeed = speed;
-    }
-
-    @Override
     public int getBallCount() {
         return 0;
     }
     @Override
     public void run() {
         reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
-        reportMap.report("Indexer Speed", FORMAT.format(indexerSpeed));
     }
 }

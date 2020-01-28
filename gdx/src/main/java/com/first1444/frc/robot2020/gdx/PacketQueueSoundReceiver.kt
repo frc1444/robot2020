@@ -1,6 +1,5 @@
 package com.first1444.frc.robot2020.gdx
 
-import com.first1444.frc.robot2020.packets.Packet
 import com.first1444.frc.robot2020.packets.SoundPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueue
 import com.first1444.sim.api.sound.Sound
@@ -23,6 +22,11 @@ class PacketQueueSoundReceiver(
     private fun play(string: String){
         val sound = cache.getOrPut(string) { soundCreator.create(string) }
         sound.play()
+    }
+
+    override fun close() {
+        soundCreator.close()
+        packetQueue.close()
     }
 
 }

@@ -5,6 +5,7 @@ import me.retrodaredevil.controller.input.AxisType;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.input.implementations.DummyInputPart;
+import me.retrodaredevil.controller.input.implementations.TwoWayInput;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.RumbleCapableController;
@@ -18,6 +19,7 @@ public class RobotInput extends SimpleControllerPart {
 
     private final StandardControllerInput controller;
     private final ControllerRumble rumble;
+    private final InputPart intakeSpeed;
 
     public RobotInput(StandardControllerInput controller, ControllerRumble rumble) {
         this.controller = requireNonNull(controller);
@@ -31,8 +33,15 @@ public class RobotInput extends SimpleControllerPart {
                 this.rumble = DisconnectedRumble.getInstance();
             }
         }
+        intakeSpeed = new TwoWayInput(dummyInput, controller.getRightStick()){
+            { // these are already updated
+                partUpdater.removePart(dummyInput);
+                partUpdater.removePart(controller.getRightStick()); // temporary
+            }
+        }; // this doesn't need to be updated because what it relies on is already updated
         partUpdater.addPartsAssertNonePresent(
                 controller,
+                intakeSpeed,
                 dummyInput, downDummyInput
         ); // add the controllers as children
     }
@@ -81,13 +90,13 @@ public class RobotInput extends SimpleControllerPart {
 
     // region Turret Controls
     public InputPart getTurretCenterOrient(){
-        return controller.getFaceDown(); // temporary
+        return dummyInput;
     }
     public InputPart getTurretLeftOrient(){
-        return controller.getRightStick(); // temporary
+        return dummyInput;
     }
     public InputPart getTurretRightOrient(){
-        return controller.getFaceRight(); // temporary
+        return dummyInput;
     }
     // endregion
 
@@ -97,7 +106,7 @@ public class RobotInput extends SimpleControllerPart {
     }
 
     public InputPart getIntakeSpeed() {
-        return dummyInput;
+        return intakeSpeed;
     }
     public InputPart getManualShootSpeed() {
         return dummyInput;
