@@ -14,10 +14,7 @@ import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
 import com.first1444.frc.robot2020.actions.OperatorAction;
 import com.first1444.frc.robot2020.actions.SwerveDriveAction;
 import com.first1444.frc.robot2020.actions.TimedAction;
-import com.first1444.frc.robot2020.actions.positioning.AbsolutePositionPacketAction;
-import com.first1444.frc.robot2020.actions.positioning.OutOfBoundsPositionCorrectAction;
-import com.first1444.frc.robot2020.actions.positioning.SurroundingDashboardLoggerAction;
-import com.first1444.frc.robot2020.actions.positioning.SurroundingPositionCorrectAction;
+import com.first1444.frc.robot2020.actions.positioning.*;
 import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
@@ -28,6 +25,7 @@ import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
@@ -50,6 +48,7 @@ import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
 import me.retrodaredevil.controller.output.ControllerRumble;
+import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
 import me.retrodaredevil.controller.types.StandardControllerInput;
 import org.jetbrains.annotations.Nullable;
 
@@ -109,7 +108,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             FrcLogger logger,
             Clock clock,
             DashboardMap dashboardMap,
-            StandardControllerInput controller, ControllerRumble rumble,
+            StandardControllerInput controller, LogitechAttack3JoystickControllerInput joystick, ControllerRumble rumble,
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
@@ -155,17 +154,19 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 metadata -> new ComponentMetadataHelper(metadata).setSize(2, 2).setPosition(4, 0)
         );
 
+        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput);
+        swerveDriveAction.setPerspective(new Perspective(Rotation2.ZERO, true, Constants.DRIVER_STATION_2_DRIVER_LOCATION));
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
                 new SurroundingPositionCorrectAction(clock, surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
+                new PerspectiveLocationPacketAction(packetQueueCreator.create(), swerveDriveAction),
                 new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
                 new SurroundingDashboardLoggerAction(clock, surroundingProvider, dashboardMap) // TODO only update this every .1 seconds
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
-        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput);
         teleopAction = new Actions.ActionMultiplexerBuilder(
                 swerveDriveAction,
                 new OperatorAction(this, robotInput)

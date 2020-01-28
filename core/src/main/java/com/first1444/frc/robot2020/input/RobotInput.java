@@ -19,7 +19,6 @@ public class RobotInput extends SimpleControllerPart {
 
     private final StandardControllerInput controller;
     private final ControllerRumble rumble;
-    private final InputPart intakeSpeed;
 
     public RobotInput(StandardControllerInput controller, ControllerRumble rumble) {
         this.controller = requireNonNull(controller);
@@ -33,15 +32,8 @@ public class RobotInput extends SimpleControllerPart {
                 this.rumble = DisconnectedRumble.getInstance();
             }
         }
-        intakeSpeed = new TwoWayInput(dummyInput, controller.getRightStick()){
-            { // these are already updated
-                partUpdater.removePart(dummyInput);
-                partUpdater.removePart(controller.getRightStick()); // temporary
-            }
-        }; // this doesn't need to be updated because what it relies on is already updated
         partUpdater.addPartsAssertNonePresent(
                 controller,
-                intakeSpeed,
                 dummyInput, downDummyInput
         ); // add the controllers as children
     }
@@ -106,7 +98,7 @@ public class RobotInput extends SimpleControllerPart {
     }
 
     public InputPart getIntakeSpeed() {
-        return intakeSpeed;
+        return controller.getRightStick();
     }
     public InputPart getManualShootSpeed() {
         return dummyInput;

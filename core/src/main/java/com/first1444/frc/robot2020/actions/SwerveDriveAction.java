@@ -131,14 +131,23 @@ public class SwerveDriveAction extends SimpleAction {
         } else {
             speed = conservePow(speedInputPart.getPosition(), 2);
         }
+        //noinspection SuspiciousNameCombination
+        final Vector2 rawTranslation = new Vector2(y, -x);
         final Vector2 translation;
         double offsetRadians = perspective.getOffsetRadians();
         double orientationRadians = orientation.getOrientationRadians();
-        if(perspective.isUseGyro()){
-            translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
+        Vector2 location = perspective.getLocation();
+        if(location != null){
+            double a = absoluteDistanceAccumulator.getPosition().minus(location).getAngle().getRadians() + offsetRadians;
+            if(perspective.isUseGyro()){
+                translation = rawTranslation.rotateRadians(a - orientationRadians);
+            } else {
+                translation = rawTranslation.rotateRadians(a);
+            }
+        } else if(perspective.isUseGyro()){
+            translation = rawTranslation.rotateRadians(offsetRadians - orientationRadians);
         } else {
-            //noinspection SuspiciousNameCombination
-            translation = new Vector2(y, -x).rotateRadians(offsetRadians);
+            translation = rawTranslation.rotateRadians(offsetRadians);
         }
 
 //        System.out.println("x=" + translation.getX() + " y=" + translation.getY());

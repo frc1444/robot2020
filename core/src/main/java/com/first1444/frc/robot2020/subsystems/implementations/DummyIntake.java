@@ -14,7 +14,7 @@ public class DummyIntake implements Intake {
     private double intakeSpeed;
 
     public DummyIntake(ReportMap reportMap) {
-        this.reportMap = reportMap;
+        this.reportMap = requireNonNull(reportMap);
     }
 
     @Override
@@ -29,5 +29,8 @@ public class DummyIntake implements Intake {
     @Override
     public void run() {
         reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
+    }
+    public double getIntakeSpeed(){
+        return intakeSpeed;
     }
 }

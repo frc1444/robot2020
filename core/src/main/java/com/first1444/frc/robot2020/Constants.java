@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.valuemap.MutableValueMap;
+import com.first1444.sim.api.Vector2;
 
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -16,6 +17,11 @@ public final class Constants {
     public static final Map<String, BasicValue> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", BasicValue.FALSE);
 
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
+
+    private static final double PERSPECTIVE_BACK = 2.0;
+    public static final Vector2 DRIVER_STATION_1_DRIVER_LOCATION = new Vector2(-3.667, -8.000 - PERSPECTIVE_BACK);
+    public static final Vector2 DRIVER_STATION_2_DRIVER_LOCATION = new Vector2(-0.667, -8.500 - PERSPECTIVE_BACK);
+    public static final Vector2 DRIVER_STATION_3_DRIVER_LOCATION = new Vector2(-3.042, -8.300 - PERSPECTIVE_BACK);
 
     public enum Swerve2018 implements SwerveSetup{
         INSTANCE;

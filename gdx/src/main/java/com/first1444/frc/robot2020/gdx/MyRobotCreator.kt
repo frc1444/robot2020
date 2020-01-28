@@ -16,6 +16,7 @@ import com.first1444.frc.robot2020.Constants
 import com.first1444.frc.robot2020.DefaultDashboardMap
 import com.first1444.frc.robot2020.Robot
 import com.first1444.frc.robot2020.packets.AbsolutePositionPacket
+import com.first1444.frc.robot2020.packets.PerspectiveLocationPacket
 import com.first1444.frc.robot2020.packets.transfer.PacketQueueMaster
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
@@ -56,6 +57,7 @@ import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
 import me.retrodaredevil.controller.gdx.IndexedControllerProvider
 import me.retrodaredevil.controller.implementations.BaseStandardControllerInput
 import me.retrodaredevil.controller.implementations.InputUtil
+import me.retrodaredevil.controller.implementations.mappings.DefaultLogitechAttack3JoystickInputCreator
 import me.retrodaredevil.controller.implementations.mappings.DefaultStandardControllerInputCreator
 import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator
 import me.retrodaredevil.controller.options.OptionValues
@@ -181,14 +183,9 @@ class MyRobotCreator(
         val intakeListener: IntakeListener
         val intake: Intake
         run {
-            val speedHolder = doubleArrayOf(0.0)
-            intake = object : DummyIntake(reportMap) {
-                override fun setIntakeSpeed(speed: Double) {
-                    super.setIntakeSpeed(speed)
-                    speedHolder[0] = speed
-                }
-            }
-            intakeListener = IntakeListener(updateableData.worldManager) { speedHolder[0] }
+            val dummyIntake = DummyIntake(reportMap)
+            intake = dummyIntake
+            intakeListener = IntakeListener(updateableData.worldManager, dummyIntake::getIntakeSpeed)
         }
         updateableData.worldManager.world.setContactListener(intakeListener)
 
@@ -199,7 +196,7 @@ class MyRobotCreator(
                 if(playstationProvider.isConnected || !defaultProvider.isConnected) playstationProvider else defaultProvider,
                 true
         )
-        val joystick = if(playstationProvider.isConnected || !defaultProvider.isConnected){
+        val controller = if(playstationProvider.isConnected || !defaultProvider.isConnected){
             val osName = System.getProperty("os.name").toLowerCase()
             if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) {
                 println("*nix ps4")
@@ -213,6 +210,8 @@ class MyRobotCreator(
             // NOTE: I have "physicalLocationSwapped" set to true because I test with a Nintendo controller most of the time
             BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         }
+        val joystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(IndexedControllerProvider(2)))
+
         val robotCreator = RunnableCreator.wrap {
 
             val visionPacketListener = VisionPacketListener(
@@ -227,7 +226,7 @@ class MyRobotCreator(
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), preciseClock,
                     shuffleboardMap,
-                    joystick, DisconnectedRumble.getInstance(),
+                    controller, joystick, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     intake, turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
@@ -291,22 +290,16 @@ class MySupplementaryRobotCreator(
         }
         val packetSender = ZMQPacketSender.create(ObjectMapper(), "tcp://$serverName:5808")
         val packetQueueMaster = PacketQueueMaster(ZMQPacketQueue.create(ObjectMapper(), "tcp://$serverName:5809"), true)
-        updateableData.uiStage.addListener(object : ClickListener(){
-            val temp1 = Vector3()
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                val count = tapCount
-                if(count == 2){
-                    temp1.set(x, y, 0f)
-//                    println("1 x=${temp1.x} y=${temp1.y}") // bottom left 0 0
-                    updateableData.uiStage.viewport.project(temp1) // now temp1 is in screen coordinates
-//                    println("2 x=${temp1.x} y=${temp1.y}") //
-                    updateableData.contentStage.viewport.unproject(temp1) // temp1 is now in world coordinates
-                    temp1.y *= -1
-//                    println("3 x=${temp1.x} y=${temp1.y}")
-                    val absoluteX = temp1.x.toDouble()
-                    val absoluteY = temp1.y.toDouble()
-                    packetSender.send(AbsolutePositionPacket(Vector2(absoluteX, absoluteY)))
-                }
+        updateableData.uiStage.addListener(createClickListener(updateableData, 0) { _, x, y ->
+            val count = tapCount
+            if (count == 2) {
+                packetSender.send(AbsolutePositionPacket(Vector2(x, y)))
+            }
+        })
+        updateableData.uiStage.addListener(createClickListener(updateableData, 1) { _, x, y ->
+            val count = tapCount
+            if(count == 2){
+                packetSender.send(PerspectiveLocationPacket(Vector2(x, y)))
             }
         })
         return UpdateableMultiplexer(listOf(
@@ -321,6 +314,20 @@ class MySupplementaryRobotCreator(
                     }
                 }
         ))
+    }
+    private inline fun createClickListener(updateableData: UpdateableCreator.Data, button: Int, crossinline clicked: ClickListener.(event: InputEvent, x: Double, y: Double) -> Unit): ClickListener {
+        return object : ClickListener(button){
+            val temp1 = Vector3()
+            override fun clicked(event: InputEvent, x: Float, y: Float) {
+                temp1.set(x, y, 0f)
+                updateableData.uiStage.viewport.project(temp1) // now temp1 is in screen coordinates
+                updateableData.contentStage.viewport.unproject(temp1) // temp1 is now in world coordinates
+                temp1.y *= -1
+                val absoluteX = temp1.x.toDouble()
+                val absoluteY = temp1.y.toDouble()
+                clicked(this, event, absoluteX, absoluteY)
+            }
+        }
     }
 
 }

@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonSubTypes({
         @JsonSubTypes.Type(SoundPacket.class),
-        @JsonSubTypes.Type(AbsolutePositionPacket.class)
+        @JsonSubTypes.Type(AbsolutePositionPacket.class),
+        @JsonSubTypes.Type(PerspectiveLocationPacket.class)
 })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "packetType")
 public interface Packet {
