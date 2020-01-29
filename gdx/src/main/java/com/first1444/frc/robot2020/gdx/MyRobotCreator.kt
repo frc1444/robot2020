@@ -3,10 +3,7 @@ package com.first1444.frc.robot2020.gdx
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.physics.box2d.BodyDef
-import com.badlogic.gdx.physics.box2d.EdgeShape
-import com.badlogic.gdx.physics.box2d.FixtureDef
-import com.badlogic.gdx.physics.box2d.PolygonShape
+import com.badlogic.gdx.physics.box2d.*
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -302,9 +299,18 @@ class MySupplementaryRobotCreator(
                 packetSender.send(PerspectiveLocationPacket(Vector2(x, y)))
             }
         })
+        val perspectiveBody = updateableData.worldManager.world.createBody(BodyDef()).apply {
+            createFixture(FixtureDef().apply {
+                isSensor = true
+                shape = CircleShape().apply {
+                    radius = .1f
+                }
+            })
+        }
         return UpdateableMultiplexer(listOf(
                 entity,
                 RobotUpdateable(robotCreator),
+                PerspectiveBodyUpdater(packetQueueMaster.create(), perspectiveBody),
                 PacketQueueSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, packetQueueMaster.create()),
                 object : Updateable {
                     override fun update(delta: Float) {}

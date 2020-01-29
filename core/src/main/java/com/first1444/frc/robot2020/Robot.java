@@ -20,12 +20,14 @@ import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
 import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
+import com.first1444.frc.robot2020.perspective.FirstPersonPerspectiveOverride;
+import com.first1444.frc.robot2020.perspective.PerspectiveHandler;
+import com.first1444.frc.robot2020.perspective.PerspectiveProviderMultiplexer;
 import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
@@ -154,14 +156,21 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 metadata -> new ComponentMetadataHelper(metadata).setSize(2, 2).setPosition(4, 0)
         );
 
-        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput);
-        swerveDriveAction.setPerspective(new Perspective(Rotation2.ZERO, true, Constants.DRIVER_STATION_2_DRIVER_LOCATION));
+        PerspectiveHandler perspectiveHandler = new PerspectiveHandler(dashboardMap);
+        SwerveDriveAction swerveDriveAction = new SwerveDriveAction(
+                clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput,
+                new PerspectiveProviderMultiplexer(Arrays.asList(
+                        new FirstPersonPerspectiveOverride(robotInput),
+                        perspectiveHandler
+                ))
+        );
+        perspectiveHandler.setToLocation(Constants.DRIVER_STATION_2_DRIVER_LOCATION);
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
                 new SurroundingPositionCorrectAction(clock, surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
-                new PerspectiveLocationPacketAction(packetQueueCreator.create(), swerveDriveAction),
+                new PerspectiveLocationPacketAction(packetQueueCreator.create(), perspectiveHandler),
                 new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
                 new SurroundingDashboardLoggerAction(clock, surroundingProvider, dashboardMap) // TODO only update this every .1 seconds
         ).build();

@@ -1,11 +1,11 @@
 package com.first1444.frc.robot2020.actions;
 
-import com.first1444.frc.robot2020.Perspective;
+import com.first1444.frc.robot2020.perspective.Perspective;
 import com.first1444.frc.robot2020.input.RobotInput;
+import com.first1444.frc.robot2020.perspective.PerspectiveProvider;
 import com.first1444.frc.robot2020.setpoint.PIDController;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
-import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.DistanceAccumulator;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
@@ -33,32 +33,23 @@ public class SwerveDriveAction extends SimpleAction {
     private final PIDController visionYawController;
 
 
-    /** The perspective or null to automatically choose the perspective based on the task */
-    private Perspective perspective = Perspective.DRIVER_STATION;
+    private final PerspectiveProvider perspectiveProvider;
 
     public SwerveDriveAction(
             Clock clock,
             SwerveDrive drive,
             Orientation orientation, DistanceAccumulator absoluteDistanceAccumulator,
-            RobotInput input
-    ) {
+            RobotInput input,
+            PerspectiveProvider perspectiveProvider) {
         super(true);
         this.drive = requireNonNull(drive);
         this.orientation = requireNonNull(orientation);
         this.absoluteDistanceAccumulator = requireNonNull(absoluteDistanceAccumulator);
         this.input = requireNonNull(input);
+        this.perspectiveProvider = requireNonNull(perspectiveProvider);
 
         visionYawController = new PIDController(clock, 0.04, 0, 0);
         visionYawController.enableContinuousInput(0.0, 360.0);
-    }
-
-    /**
-     *
-     * @param perspective The perspective or null to automatically choose the perspective based on the task
-     */
-    public void setPerspective(Perspective perspective){
-        requireNonNull(perspective);
-        this.perspective = perspective;
     }
 
     @Override
@@ -100,11 +91,9 @@ public class SwerveDriveAction extends SimpleAction {
         return -max(-MAX_VISION_TURN_AMOUNT, min(MAX_VISION_TURN_AMOUNT, visionYawController.calculate(rotation.getDegrees())));
     }
     private void driverControl(){
-        final Perspective perspective;
-        if(input.getFirstPersonHoldButton().isDown()){
-            perspective = Perspective.ROBOT_FORWARD_CAM;
-        } else {
-            perspective = this.perspective;
+        final Perspective perspective = perspectiveProvider.getPerspective();
+        if(perspective == null){
+            throw new NullPointerException("perspective is null from " + perspectiveProvider);
         }
 
         final JoystickPart joystick = input.getMovementJoy();
