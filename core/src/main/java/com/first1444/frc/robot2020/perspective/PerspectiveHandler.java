@@ -7,6 +7,8 @@ import com.first1444.sim.api.Vector2;
 
 public class PerspectiveHandler implements PerspectiveProvider {
     public static final String PERSPECTIVE_DASHBOARD = "Perspective Data";
+    public static final String LOCATION_KEY = "Location";
+    public static final String IS_LOCATION_USED_KEY = "Location Used";
 
     private final BasicDashboard dashboard;
 
@@ -22,12 +24,20 @@ public class PerspectiveHandler implements PerspectiveProvider {
 
     public void setToLocation(Vector2 location){
         perspective = new Perspective(Rotation2.ZERO, true, location);
-        System.out.println("Changed perspective location to " + location);
+        updateDashboard();
     }
     public void setToDriverStation(){
         perspective = Perspective.DRIVER_STATION;
+        updateDashboard();
     }
     private void updateDashboard(){
-
+        Perspective perspective = this.perspective;
+        Vector2 location = perspective.getLocation();
+        dashboard.get(IS_LOCATION_USED_KEY).getStrictSetter().setBoolean(location != null);
+        if(location != null){
+            dashboard.get(LOCATION_KEY).getStrictSetter().setDoubleArray(new double[] { location.getX(), location.getY() });
+        } else {
+            dashboard.get(LOCATION_KEY).getStrictSetter().setDoubleArray(new double[] { 0.0, 0.0 });
+        }
     }
 }

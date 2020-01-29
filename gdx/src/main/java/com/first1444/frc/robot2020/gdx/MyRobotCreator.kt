@@ -310,7 +310,7 @@ class MySupplementaryRobotCreator(
         return UpdateableMultiplexer(listOf(
                 entity,
                 RobotUpdateable(robotCreator),
-                PerspectiveBodyUpdater(packetQueueMaster.create(), perspectiveBody),
+                PerspectiveBodyUpdater(dashboardBundle, perspectiveBody),
                 PacketQueueSoundReceiver(GdxSoundCreator { Gdx.files.internal(it) }, packetQueueMaster.create()),
                 object : Updateable {
                     override fun update(delta: Float) {}

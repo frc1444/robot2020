@@ -12,7 +12,7 @@ import java.util.List;
 public class SurroundingDashboardLoggerAction extends SimpleAction {
     public static final String SURROUNDING_DEBUG_DASHBOARD = "Surrounding Debug";
     public static final String SURROUNDING_COUNT_KEY = "Surrounding Count";
-    /** The key used to retreive a double or boolean. If double, represents time difference. If boolean, will be false. Booleans represent no surroundings*/
+    /** The key used to retrieve a double or boolean. If double, represents time difference. If boolean, will be false. Booleans represent no surroundings*/
     public static final String SURROUNDING_TIME_DIFFERENCE_KEY = "Time Difference";
     private final Clock clock;
     private final SurroundingProvider surroundingProvider;
