@@ -97,9 +97,9 @@ public class WpiRunnableCreator implements RunnableCreator {
 
         final Clock clock = new WpiClock();
         VisionPacketListener visionPacketListener = new VisionPacketListener(
+                clock,
                 new VisionPacketParser(
                         new ObjectMapper(),
-                        clock,
                         Map.of(1, Rotation2.ZERO)
                 ),
                 "tcp://10.14.44.5:5801"

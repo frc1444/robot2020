@@ -2,6 +2,8 @@ package com.first1444.frc.robot2020.autonomous.actions.vision;
 
 import com.first1444.frc.robot2020.autonomous.actions.DistanceAwayLinkedAction;
 import com.first1444.frc.robot2020.sound.SoundMap;
+import com.first1444.frc.robot2020.vision.VisionInstant;
+import com.first1444.frc.robot2020.vision.VisionProvider;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
@@ -10,9 +12,11 @@ import com.first1444.sim.api.drivetrain.StrafeDrive;
 import com.first1444.sim.api.selections.Selector;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.surroundings.Surrounding;
-import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
+
+import java.util.Collections;
+import java.util.List;
 
 import static com.first1444.sim.api.MathUtil.minChange;
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
@@ -28,7 +32,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
     private static final double TARGET_VALIDITY_DURATION = .5;
 
     private final Clock clock;
-    private final SurroundingProvider surroundingProvider;
+    private final VisionProvider visionProvider;
     private final Selector<Surrounding> surroundingSelector;
     private final StrafeDrive drive;
     private final Orientation orientation; // We won't need this until we start estimating after we lose a target
@@ -49,7 +53,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 
     StrafeLineUpAction(
             Clock clock,
-            SurroundingProvider surroundingProvider,
+            VisionProvider visionProvider,
             Selector<Surrounding> surroundingSelector,
             StrafeDrive drive, Orientation orientation,
             Rotation2 desiredSurroundingRotation,
@@ -58,7 +62,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
     ) {
         super(false);
         this.clock = clock;
-        this.surroundingProvider = surroundingProvider;
+        this.visionProvider = visionProvider;
         this.surroundingSelector = surroundingSelector;
         this.drive = drive;
         this.orientation = orientation;
@@ -75,7 +79,14 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
     protected void onUpdate() {
         super.onUpdate();
         final double now = clock.getTimeSeconds();
-        final Surrounding surrounding = surroundingSelector.select(surroundingProvider.getSurroundings());
+        final List<Surrounding> surroundingList;
+        VisionInstant instant = visionProvider.getVisionInstant();
+        if(instant == null){
+            surroundingList = Collections.emptyList();
+        } else {
+            surroundingList = instant.getSurroundings();
+        }
+        final Surrounding surrounding = surroundingSelector.select(surroundingList);
         final boolean failed;
         if(surrounding != null && surrounding.getTimestamp() + TARGET_VALIDITY_DURATION >= now){
             if(!hasFound){

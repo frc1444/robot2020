@@ -23,6 +23,7 @@ import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
+import com.first1444.frc.robot2020.vision.SimpleInstantVisionProvider
 import com.first1444.frc.robot2020.vision.VisionPacketListener
 import com.first1444.frc.robot2020.vision.VisionPacketParser
 import com.first1444.frc.util.reportmap.DashboardReportMap
@@ -54,7 +55,6 @@ import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
 import me.retrodaredevil.controller.gdx.IndexedControllerProvider
 import me.retrodaredevil.controller.implementations.BaseStandardControllerInput
 import me.retrodaredevil.controller.implementations.InputUtil
-import me.retrodaredevil.controller.implementations.mappings.DefaultLogitechAttack3JoystickInputCreator
 import me.retrodaredevil.controller.implementations.mappings.DefaultStandardControllerInputCreator
 import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator
 import me.retrodaredevil.controller.options.OptionValues
@@ -212,9 +212,9 @@ class MyRobotCreator(
         val robotCreator = RunnableCreator.wrap {
 
             val visionPacketListener = VisionPacketListener(
+                    preciseClock,
                     VisionPacketParser(
                             ObjectMapper(),
-                            preciseClock,
                             mapOf(Pair(1, Rotation2.ZERO))
                     ),
                     "tcp://10.134.223.107:5801" // temporary testing address
@@ -228,7 +228,7 @@ class MyRobotCreator(
                     swerveDriveData,
                     intake, turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
                     DummyClimber(reportMap),
-                    VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, preciseClock)
+                    SimpleInstantVisionProvider(VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, preciseClock), preciseClock)
 //                    visionPacketListener
             )), data.driverStation)
             RobotRunnableMultiplexer(

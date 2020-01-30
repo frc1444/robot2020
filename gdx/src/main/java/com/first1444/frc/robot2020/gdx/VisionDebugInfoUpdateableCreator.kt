@@ -35,7 +35,7 @@ class VisionDebugInfoUpdateableCreator(
                 val timeDifferenceValue = dashboard[SurroundingDashboardLoggerAction.SURROUNDING_TIME_DIFFERENCE_KEY].getter.value
                 if(timeDifferenceValue != null && timeDifferenceValue.type == BasicValueType.DOUBLE){
                     val timeDifference = (timeDifferenceValue.value as Number).toDouble()
-                    val visionTargetCount = dashboard[SurroundingDashboardLoggerAction.SURROUNDING_COUNT_KEY].getter.getNumber(0).toInt()
+                    val visionTargetCount = dashboard[SurroundingDashboardLoggerAction.SURROUNDING_COUNT_KEY].getter.getNumber(-1).toInt()
                     label.setText("Vision: $visionTargetCount\n${Constants.DECIMAL_FORMAT.format(timeDifference)}s ago")
                 } else {
                     label.setText("No Vision")

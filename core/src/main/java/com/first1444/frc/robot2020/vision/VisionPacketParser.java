@@ -22,26 +22,24 @@ import java.util.Map;
 
 public class VisionPacketParser {
     private final ObjectMapper mapper;
-    private final Clock clock;
     // TODO instead of using a map, maybe create an interface so that if we have a turret, we can adjust the angle based on that
     private final Map<Integer, Rotation2> cameraOffsetMap;
 
-    public VisionPacketParser(ObjectMapper mapper, Clock clock, Map<Integer, Rotation2> cameraOffsetMap) {
+    public VisionPacketParser(ObjectMapper mapper, Map<Integer, Rotation2> cameraOffsetMap) {
         this.mapper = mapper;
-        this.clock = clock;
         this.cameraOffsetMap = cameraOffsetMap;
     }
 
-    public List<Surrounding> parseSurroundings(String jsonString) throws IOException {
+    public List<Surrounding> parseSurroundings(double timestamp, String jsonString) throws IOException {
         List<VisionInstant> instants = mapper.readValue(jsonString, mapper.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class));
-        return parseSurroundings(clock.getTimeSeconds(), instants);
+        return parseSurroundings(timestamp, instants);
     }
     private List<Surrounding> parseSurroundings(double timestamp, List<VisionInstant> instants) throws IOException {
         final List<Surrounding> surroundings = new ArrayList<>();
         for(VisionInstant instant : instants){
             final Rotation2 offset = cameraOffsetMap.get(instant.cameraId);
             if(offset == null){
-                throw new IOException("The JSON requested cameraId=" + instant.cameraId + " but we don't have an offset rotation definedin cameraOffsetMap=" + cameraOffsetMap);
+                throw new IOException("The JSON requested cameraId=" + instant.cameraId + " but we don't have an offset rotation defined in cameraOffsetMap=" + cameraOffsetMap);
             }
             for (VisionPacket packet : instant.packets) {
                 final Surrounding surrounding = new Surrounding(

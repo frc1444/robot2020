@@ -1,22 +1,22 @@
 package com.first1444.frc.robot2020.vision;
 
+import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.surroundings.Surrounding;
-import com.first1444.sim.api.surroundings.SurroundingProvider;
-import org.jetbrains.annotations.NotNull;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
-public class VisionPacketListener implements SurroundingProvider, AutoCloseable {
-    private final String address;
+public class VisionPacketListener implements VisionProvider, AutoCloseable {
+    private final Clock clock;
     private final VisionPacketParser parser;
+    private final String address;
     private final Thread thread;
-    private List<Surrounding> surroundingList = null;
-    public VisionPacketListener(VisionPacketParser parser, String address){
+    private VisionInstant instant = null;
+    public VisionPacketListener(Clock clock, VisionPacketParser parser, String address){
+        this.clock = clock;
         this.parser = parser;
         this.address = address;
         Thread thread = new Thread(this::run);
@@ -33,17 +33,11 @@ public class VisionPacketListener implements SurroundingProvider, AutoCloseable 
         thread.interrupt();
     }
 
-    @NotNull
     @Override
-    public List<Surrounding> getSurroundings() {
-        final List<Surrounding> r;
+    public VisionInstant getVisionInstant() {
         synchronized (this) {
-            r = this.surroundingList;
+            return this.instant;
         }
-        if(r == null){
-            return Collections.emptyList();
-        }
-        return r;
     }
 
     private void run() {
@@ -56,10 +50,12 @@ public class VisionPacketListener implements SurroundingProvider, AutoCloseable 
             while (!Thread.currentThread().isInterrupted()) {
                 final String reply = socket.recvStr(0);
                 if(reply != null) {
+                    double timestamp = clock.getTimeSeconds();
                     try {
-                        List<Surrounding> surroundings = parser.parseSurroundings(reply);
+                        List<Surrounding> surroundings = parser.parseSurroundings(timestamp, reply);
+                        VisionInstant instant = new VisionInstant(surroundings, timestamp);
                         synchronized (this){
-                            surroundingList = surroundings;
+                            this.instant = instant;
                         }
                     } catch (IOException e) {
                         e.printStackTrace();

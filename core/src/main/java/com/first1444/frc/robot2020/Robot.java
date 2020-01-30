@@ -27,6 +27,7 @@ import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
+import com.first1444.frc.robot2020.vision.VisionProvider;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
@@ -44,7 +45,6 @@ import com.first1444.sim.api.scheduler.match.MatchSchedulerRunnable;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.sensors.OrientationHandler;
-import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
@@ -114,7 +114,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
-            SurroundingProvider surroundingProvider
+            VisionProvider visionProvider
     ){
         this.driverStation = driverStation;
         this.logger = logger;
@@ -168,11 +168,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(clock, surroundingProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
+                new SurroundingPositionCorrectAction(clock, visionProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
                 new PerspectiveLocationPacketAction(packetQueueCreator.create(), perspectiveHandler),
                 new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
-                new SurroundingDashboardLoggerAction(clock, surroundingProvider, dashboardMap) // TODO only update this every .1 seconds
+                new SurroundingDashboardLoggerAction(clock, visionProvider, dashboardMap) // TODO only update this every .1 seconds
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
