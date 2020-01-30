@@ -7,6 +7,9 @@ import com.first1444.frc.robot2020.perspective.PerspectiveHandler;
 import com.first1444.sim.api.Vector2;
 import me.retrodaredevil.action.SimpleAction;
 
+/**
+ * Listens for {@link PerspectiveLocationPacket}s.
+ */
 public class PerspectiveLocationPacketAction extends SimpleAction {
     private final PacketQueue packetQueue;
     private final PerspectiveHandler perspectiveHandler;
@@ -26,7 +29,8 @@ public class PerspectiveLocationPacketAction extends SimpleAction {
             if(packet instanceof PerspectiveLocationPacket){
                 PerspectiveLocationPacket absolutePositionPacket = (PerspectiveLocationPacket) packet;
                 Vector2 location = absolutePositionPacket.getLocation();
-                perspectiveHandler.setToLocation(location);
+                perspectiveHandler.setPerspectiveLocation(location);
+                perspectiveHandler.setToPointOriented();
             }
         }
     }

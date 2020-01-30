@@ -164,7 +164,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                         perspectiveHandler
                 ))
         );
-        perspectiveHandler.setToLocation(Constants.DRIVER_STATION_2_DRIVER_LOCATION);
+        perspectiveHandler.setPerspectiveLocation(Constants.DRIVER_STATION_2_DRIVER_LOCATION);
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
