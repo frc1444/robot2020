@@ -22,8 +22,8 @@ class VisionPacketParserTest {
         Path path = new File(getClass().getResource("example_json.json").getFile()).toPath();
         String json = Files.readString(path);
         System.out.println(json);
-        VisionPacketParser parser = new VisionPacketParser(new ObjectMapper(), SystemMillisClock.INSTANCE, Map.of(1, Rotation2.ZERO));
-        List<Surrounding> surroundings = parser.parseSurroundings(json);
+        VisionPacketParser parser = new VisionPacketParser(new ObjectMapper(), Map.of(1, Rotation2.ZERO));
+        List<Surrounding> surroundings = parser.parseSurroundings(0.0, json);
         assertEquals(1, surroundings.size());
         Surrounding surrounding = surroundings.get(0);
         System.out.println(surrounding);
