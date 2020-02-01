@@ -131,7 +131,7 @@ public final class Constants {
 
         @Override
         public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 869)
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 55)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }

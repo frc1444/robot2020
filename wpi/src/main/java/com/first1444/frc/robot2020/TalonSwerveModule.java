@@ -142,7 +142,6 @@ public class TalonSwerveModule implements SwerveModule {
     @Override
     public void setTargetSpeed(double speed) {
         this.speed = speed;
-        isDisabled = false;
     }
 
 
@@ -161,7 +160,6 @@ public class TalonSwerveModule implements SwerveModule {
     @Override
     public void setTargetAngleDegrees(double positionDegrees) {
         this.targetPositionDegrees = positionDegrees;
-        isDisabled = false;
     }
 
     @Override
@@ -226,7 +224,11 @@ public class TalonSwerveModule implements SwerveModule {
                 return true;
             }
             if(event == SwerveModuleEvent.DISABLE){
-                isDisabled = true;
+                if(o instanceof Boolean){
+                    isDisabled = (Boolean) o;
+                } else {
+                    System.err.println(o + " was passed for swerve module event disable data.");
+                }
                 return true;
             }
             return false;

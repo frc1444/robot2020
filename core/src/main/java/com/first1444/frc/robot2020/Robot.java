@@ -262,6 +262,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         } else if(previousMode == FrcMode.AUTONOMOUS){
             soundMap.getAutonomousDisable().play();
         }
+        for(SwerveModule module : drive.getDrivetrainData().getModules()){
+            module.getEventHandler().handleEvent(SwerveModuleEvent.DISABLE, false);
+        }
     }
 
     @Override
@@ -294,7 +297,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public void testInit() {
         dashboardMap.getLiveWindow().setEnabled(true);
         for(SwerveModule module : drive.getDrivetrainData().getModules()){
-            module.getEventHandler().handleEvent(SwerveModuleEvent.DISABLE, null);
+            module.getEventHandler().handleEvent(SwerveModuleEvent.DISABLE, true);
         }
     }
     // endregion
