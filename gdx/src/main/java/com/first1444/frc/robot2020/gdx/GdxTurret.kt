@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020.gdx
 import com.badlogic.gdx.physics.box2d.*
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
 import com.first1444.frc.robot2020.subsystems.Turret
+import com.first1444.frc.robot2020.subsystems.implementations.BaseTurret
 import com.first1444.sim.api.Clock
 import com.first1444.sim.api.EnabledState
 import com.first1444.sim.api.Rotation2
@@ -15,8 +16,7 @@ class GdxTurret(
         private val clock: Clock,
         private val enabledState: EnabledState,
         private val angleRadiansSetPointHandler: SetPointHandler
-) : Turret {
-    private var desiredRotation: Rotation2 = Rotation2.ZERO
+) : BaseTurret() {
     private var lastTimestamp: Double? = null
 
     @Suppress("JoinDeclarationAndAssignment")
@@ -42,14 +42,7 @@ class GdxTurret(
         }
         world.createJoint(joint)
     }
-    override fun setDesiredRotation(rotation: Rotation2) {
-        desiredRotation = when {
-            rotation.radians > Turret.MAX_ROTATION.radians -> Turret.MAX_ROTATION
-            rotation.radians < Turret.MIN_ROTATION.radians -> Turret.MIN_ROTATION
-            else -> rotation
-        }
-    }
-    override fun run() {
+    override fun run(desiredState: Turret.DesiredState) {
         val timestamp = clock.timeSeconds
         val lastTimestamp = this.lastTimestamp
         this.lastTimestamp = timestamp
@@ -57,11 +50,17 @@ class GdxTurret(
             val delta = timestamp - lastTimestamp
 
             val isEnabled = enabledState.isEnabled
-            if(isEnabled){
-                angleRadiansSetPointHandler.setDesired(desiredRotation.radians.toFloat())
-                angleRadiansSetPointHandler.update(delta.toFloat())
+            val desiredRotation = desiredState.desiredRotation
+            if(desiredRotation != null){
+                if(isEnabled){
+                    angleRadiansSetPointHandler.setDesired(desiredRotation.radians.toFloat())
+                    angleRadiansSetPointHandler.update(delta.toFloat())
+                }
+                body.setTransform(body.position, angleRadiansSetPointHandler.calculated + entity.rotationRadians)
+            } else {
+                val rawSpeed = -desiredState.rawSpeed!!
+                body.setTransform(body.position, (delta * rawSpeed).toFloat() + entity.rotationRadians)
             }
-            body.setTransform(body.position, angleRadiansSetPointHandler.calculated + entity.rotationRadians)
         }
     }
 

@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
-    private static final boolean DUMMY_SWERVE = false;
+    private static final boolean DUMMY_SWERVE = true;
     private static final SwerveSetup SWERVE = Constants.Swerve2019.INSTANCE;
 
     @Override
@@ -110,7 +110,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 new BNOOrientationHandler(gyro),
                 data,
-                new DummyIntake(reportMap), new DummyTurret(reportMap), new DummyBallShooter(reportMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                new DummyIntake(reportMap), new MotorTurret(), new MotorBallShooter(), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 visionPacketListener
         );
         return new RobotRunnableMultiplexer(Arrays.asList(

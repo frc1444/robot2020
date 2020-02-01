@@ -127,7 +127,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.climber = climber;
         robotInput = new RobotInput(
                 controller,
-                rumble
+                joystick, rumble
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
@@ -309,6 +309,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public Intake getIntake() {
         return intake;
     }
+    public BallShooter getBallShooter(){ return ballShooter; }
     public Turret getTurret(){ return turret; }
     public Orientation getOrientation(){
         return orientationSystem.getOrientation();

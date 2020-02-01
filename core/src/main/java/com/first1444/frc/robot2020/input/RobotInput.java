@@ -5,11 +5,14 @@ import me.retrodaredevil.controller.input.AxisType;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.input.implementations.DummyInputPart;
-import me.retrodaredevil.controller.input.implementations.TwoWayInput;
+import me.retrodaredevil.controller.input.implementations.LowestPositionInputPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
+import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
 import me.retrodaredevil.controller.types.RumbleCapableController;
 import me.retrodaredevil.controller.types.StandardControllerInput;
+
+import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
 
@@ -18,10 +21,15 @@ public class RobotInput extends SimpleControllerPart {
     private final InputPart downDummyInput = new DummyInputPart(AxisType.DIGITAL, 1.0);
 
     private final StandardControllerInput controller;
+    private final LogitechAttack3JoystickControllerInput joystick;
     private final ControllerRumble rumble;
 
-    public RobotInput(StandardControllerInput controller, ControllerRumble rumble) {
+    private final InputPart turretRawControl;
+    private final InputPart manualShootSpeed;
+
+    public RobotInput(StandardControllerInput controller, LogitechAttack3JoystickControllerInput joystick, ControllerRumble rumble) {
         this.controller = requireNonNull(controller);
+        this.joystick = joystick;
         if(rumble != null){
             partUpdater.addPartAssertNotPresent(rumble);
             this.rumble = rumble;
@@ -32,8 +40,13 @@ public class RobotInput extends SimpleControllerPart {
                 this.rumble = DisconnectedRumble.getInstance();
             }
         }
+        turretRawControl = new LowestPositionInputPart(false, Arrays.asList(joystick.getThumbLower(), joystick.getMainJoystick().getXAxis()), false);
+        manualShootSpeed = new LowestPositionInputPart(false, Arrays.asList(joystick.getThumbUpper(), joystick.getMainJoystick().getYAxis()), false);
         partUpdater.addPartsAssertNonePresent(
                 controller,
+                joystick,
+                turretRawControl,
+                manualShootSpeed,
                 dummyInput, downDummyInput
         ); // add the controllers as children
     }
@@ -90,18 +103,22 @@ public class RobotInput extends SimpleControllerPart {
     public InputPart getTurretRightOrient(){
         return dummyInput;
     }
+    public InputPart getTurretRawControl(){
+        return turretRawControl;
+    }
     // endregion
 
     /** When pressed, this enables the turret to auto target using vision or absolute position */
     public InputPart getEnableTurretAutoTarget(){
-        return downDummyInput;
+//        return downDummyInput;
+        return dummyInput;
     }
 
     public InputPart getIntakeSpeed() {
         return controller.getRightStick();
     }
     public InputPart getManualShootSpeed() {
-        return dummyInput;
+        return manualShootSpeed;
     }
     public InputPart getShootBall() {
         return dummyInput;
