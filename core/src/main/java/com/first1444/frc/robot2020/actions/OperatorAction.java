@@ -34,7 +34,7 @@ public class OperatorAction extends SimpleAction {
             InputPart rawSpeedPart = input.getTurretRawControl();
             if(!rawSpeedPart.isDeadzone()){
                 robot.getTurret().setRawSpeed(rawSpeedPart.getPosition());
-                System.out.println("Setting speed to " + rawSpeedPart.getPosition());
+//                System.out.println("Setting speed to " + rawSpeedPart.getPosition());
             } else if(input.getEnableTurretAutoTarget().isDown()) {
                 Vector2 position = robot.getAbsoluteDistanceAccumulator().getPosition();
                 Rotation2 rotation = robot.getOrientation().getOrientation();
@@ -50,7 +50,7 @@ public class OperatorAction extends SimpleAction {
         if(input.getManualShootSpeed().isDeadzone()){
             shootSpeed = 0;
         } else {
-            shootSpeed = input.getManualShootSpeed().getPosition();
+            shootSpeed = input.getManualShootSpeed().getPosition() * .55 + .45;
         }
         robot.getBallShooter().setSpeed(shootSpeed);
 

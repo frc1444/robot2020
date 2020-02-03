@@ -6,6 +6,9 @@ import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.input.implementations.DummyInputPart;
 import me.retrodaredevil.controller.input.implementations.LowestPositionInputPart;
+import me.retrodaredevil.controller.input.implementations.ScaledInputPart;
+import me.retrodaredevil.controller.input.implementations.SensitiveInputPart;
+import me.retrodaredevil.controller.options.OptionValues;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
@@ -41,11 +44,21 @@ public class RobotInput extends SimpleControllerPart {
             }
         }
         turretRawControl = new LowestPositionInputPart(false, Arrays.asList(joystick.getThumbLower(), joystick.getMainJoystick().getXAxis()), false);
-        manualShootSpeed = new LowestPositionInputPart(false, Arrays.asList(joystick.getThumbUpper(), joystick.getMainJoystick().getYAxis()), false);
+        InputPart scaledSlider = new ScaledInputPart(AxisType.ANALOG, new SensitiveInputPart(
+                joystick.getSlider(),
+                OptionValues.createImmutableAnalogRangedOptionValue(1.0),
+                OptionValues.createImmutableBooleanOptionValue(true), // TODO when we update abstract-controller-lib, we can remove this
+                true
+        ), true);
+        manualShootSpeed = new LowestPositionInputPart(false, Arrays.asList(
+                joystick.getCenterLeft(),
+                scaledSlider
+        ), false);
         partUpdater.addPartsAssertNonePresent(
                 controller,
                 joystick,
                 turretRawControl,
+                scaledSlider,
                 manualShootSpeed,
                 dummyInput, downDummyInput
         ); // add the controllers as children

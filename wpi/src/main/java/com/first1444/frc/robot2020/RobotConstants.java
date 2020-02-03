@@ -5,7 +5,7 @@ public final class RobotConstants {
 
     public static final int PID_INDEX = 0;
     public static final int SLOT_INDEX = 0;
-    public static final int INIT_TIMEOUT = 10;
+    public static final int INIT_TIMEOUT = 0;
     /** Should be used for the timeout when calling a CTRE function that is rarely called, and is not during initialization time*/
     public static final int LOOP_TIMEOUT = 3;
     /** Should be used for the timeout when calling a CTRE function that is constantly called*/
@@ -21,4 +21,6 @@ public final class RobotConstants {
     public static final int MAX_SWERVE_DRIVE_RPM = MAX_CIM_RPM;
     /** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
     public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
+
+    public static final int TALON_FX_ENCODER_COUNTS_PER_REVOLUTION = 2048;
 }
