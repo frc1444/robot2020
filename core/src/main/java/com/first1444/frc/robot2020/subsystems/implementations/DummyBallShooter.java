@@ -8,7 +8,7 @@ import java.text.DecimalFormat;
 public class DummyBallShooter implements BallShooter {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
-    private double speed;
+    private double rpm;
 
     public DummyBallShooter(ReportMap reportMap) {
         this.reportMap = reportMap;
@@ -16,12 +16,12 @@ public class DummyBallShooter implements BallShooter {
 
     @Override
     public void run() {
-        reportMap.report("Ball Shooter Speed", FORMAT.format(speed));
-        speed = 0;
+        reportMap.report("Ball Shooter RPM", FORMAT.format(rpm));
+        rpm = 0;
     }
 
     @Override
-    public void setSpeed(double speed) {
-        this.speed = speed;
+    public void setRpm(double rpm) {
+        this.rpm = rpm;
     }
 }

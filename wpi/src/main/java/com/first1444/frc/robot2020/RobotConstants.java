@@ -23,4 +23,11 @@ public final class RobotConstants {
     public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
 
     public static final int TALON_FX_ENCODER_COUNTS_PER_REVOLUTION = 2048;
+
+    public static final class CAN {
+        private CAN(){ throw new UnsupportedOperationException(); }
+
+        public static final int TURRET = 21;
+        public static final int SHOOTER = 23;
+    }
 }

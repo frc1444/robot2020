@@ -10,7 +10,7 @@ public class MotorTurret extends BaseTurret {
     private final TalonSRX talon;
 
     public MotorTurret() {
-        talon = new TalonSRX(21);
+        talon = new TalonSRX(RobotConstants.CAN.TURRET);
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
 
     }
@@ -21,7 +21,7 @@ public class MotorTurret extends BaseTurret {
         if(rotation != null){
             // TODO set desired rotation
         } else {
-            double speed = desiredState.getRawSpeed() * -.3;
+            double speed = desiredState.getRawSpeedCounterClockwise() * .3;
             talon.set(ControlMode.PercentOutput, speed);
         }
     }

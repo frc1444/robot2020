@@ -6,7 +6,6 @@ import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.implementations.BaseTurret
 import com.first1444.sim.api.Clock
 import com.first1444.sim.api.EnabledState
-import com.first1444.sim.api.Rotation2
 import com.first1444.sim.gdx.entity.BodyEntity
 import com.first1444.sim.gdx.velocity.SetPointHandler
 
@@ -58,7 +57,7 @@ class GdxTurret(
                 }
                 body.setTransform(body.position, angleRadiansSetPointHandler.calculated + entity.rotationRadians)
             } else {
-                val rawSpeed = -desiredState.rawSpeed!!
+                val rawSpeed = desiredState.rawSpeedCounterClockwise!!
                 body.setTransform(body.position, (delta * rawSpeed).toFloat() + entity.rotationRadians)
             }
         }

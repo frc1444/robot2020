@@ -2,6 +2,7 @@ package com.first1444.frc.robot2020.actions;
 
 import com.first1444.frc.robot2020.Robot;
 import com.first1444.frc.robot2020.input.RobotInput;
+import com.first1444.frc.robot2020.subsystems.BallShooter;
 import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
@@ -25,15 +26,15 @@ public class OperatorAction extends SimpleAction {
     protected void onUpdate() {
         super.onUpdate();
         if(input.getTurretCenterOrient().isDown()){
-            robot.getTurret().setDesiredRotation(Rotation2.ZERO);
+            robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(Rotation2.ZERO));
         } else if(input.getTurretLeftOrient().isDown()){
-            robot.getTurret().setDesiredRotation(Rotation2.DEG_90);
+            robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(Rotation2.DEG_90));
         } else if(input.getTurretRightOrient().isDown()){
-            robot.getTurret().setDesiredRotation(Rotation2.DEG_270);
+            robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(Rotation2.DEG_270));
         } else {
             InputPart rawSpeedPart = input.getTurretRawControl();
             if(!rawSpeedPart.isDeadzone()){
-                robot.getTurret().setRawSpeed(rawSpeedPart.getPosition());
+                robot.getTurret().setDesiredState(Turret.DesiredState.createRawSpeedClockwise(rawSpeedPart.getPosition()));
 //                System.out.println("Setting speed to " + rawSpeedPart.getPosition());
             } else if(input.getEnableTurretAutoTarget().isDown()) {
                 Vector2 position = robot.getAbsoluteDistanceAccumulator().getPosition();
@@ -42,7 +43,7 @@ public class OperatorAction extends SimpleAction {
 
                 Rotation2 desired = angle.minus(rotation);
                 if (desired.getRadians() <= Turret.MAX_ROTATION.getRadians() && desired.getRadians() >= Turret.MIN_ROTATION.getRadians()) {
-                    robot.getTurret().setDesiredRotation(desired);
+                    robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(desired));
                 }
             }
         }
@@ -52,7 +53,7 @@ public class OperatorAction extends SimpleAction {
         } else {
             shootSpeed = input.getManualShootSpeed().getPosition() * .55 + .45;
         }
-        robot.getBallShooter().setSpeed(shootSpeed);
+        robot.getBallShooter().setRpm(shootSpeed * BallShooter.MAX_RPM);
 
         final double intakeSpeed;
         if (input.getIntakeSpeed().isDeadzone()) {

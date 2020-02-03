@@ -8,10 +8,10 @@ import com.first1444.frc.util.valuemap.ValueMap;
 import java.util.Objects;
 import java.util.function.*;
 
-public final class CTREUtil {
-    private CTREUtil() { throw new UnsupportedOperationException(); }
-    public static void applyPID(BaseMotorController motor, ValueMap<PidKey> pid, int timeoutMs){
-        applyPID(motor, pid, timeoutMs, CTREUtil::printGenericErrorMessage);
+public final class CtreUtil {
+    private CtreUtil() { throw new UnsupportedOperationException(); }
+    public static void applyPid(BaseMotorController motor, ValueMap<PidKey> pid, int timeoutMs){
+        applyPid(motor, pid, timeoutMs, CtreUtil::printGenericErrorMessage);
     }
     public static void printGenericErrorMessage(ErrorCode errorCode, Integer index){
         Objects.requireNonNull(errorCode);
@@ -21,7 +21,7 @@ public final class CTREUtil {
         }
     }
 
-    public static void applyPID(BaseMotorController motor, ValueMap<PidKey> pid, int timeoutMs, BiConsumer<ErrorCode, Integer> errorCodeReport){
+    public static void applyPid(BaseMotorController motor, ValueMap<PidKey> pid, int timeoutMs, BiConsumer<ErrorCode, Integer> errorCodeReport){
         motor.config_kP(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.P), timeoutMs);
         motor.config_kI(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.I), timeoutMs);
         motor.config_kD(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.D), timeoutMs);
@@ -36,5 +36,11 @@ public final class CTREUtil {
             errorCodeReport.accept(error, i);
             i++;
         }
+    }
+    public static double rpmToNative(double rpm, double countsPerRevolution){
+        return rpm * countsPerRevolution / (double) RobotConstants.CTRE_UNIT_CONVERSION;
+    }
+    public static double nativeToRpm(double nativeUnits, double countsPerRevolution){
+        return nativeUnits * RobotConstants.CTRE_UNIT_CONVERSION / countsPerRevolution;
     }
 }

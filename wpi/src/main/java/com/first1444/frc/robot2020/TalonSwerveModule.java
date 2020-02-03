@@ -72,10 +72,10 @@ public class TalonSwerveModule implements SwerveModule {
         steer.setSensorPhase(true);
         steer.configClosedLoopPeriod(RobotConstants.SLOT_INDEX, CLOSED_LOOP_TIME, RobotConstants.INIT_TIMEOUT);
 
-        drivePid.addListener((key) -> CTREUtil.applyPID(drive, drivePid, RobotConstants.LOOP_TIMEOUT));
-        steerPid.addListener((key) -> CTREUtil.applyPID(steer, steerPid, RobotConstants.LOOP_TIMEOUT));
-        CTREUtil.applyPID(drive, drivePid, RobotConstants.INIT_TIMEOUT);
-        CTREUtil.applyPID(steer, steerPid, RobotConstants.INIT_TIMEOUT);
+        drivePid.addListener((key) -> CtreUtil.applyPid(drive, drivePid, RobotConstants.LOOP_TIMEOUT));
+        steerPid.addListener((key) -> CtreUtil.applyPid(steer, steerPid, RobotConstants.LOOP_TIMEOUT));
+        CtreUtil.applyPid(drive, drivePid, RobotConstants.INIT_TIMEOUT);
+        CtreUtil.applyPid(steer, steerPid, RobotConstants.INIT_TIMEOUT);
 
         moduleConfig.addListener(option -> {
             updateEncoderOffset(moduleConfig);

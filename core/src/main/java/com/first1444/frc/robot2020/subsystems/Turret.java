@@ -7,12 +7,8 @@ import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 
 public interface Turret extends Runnable {
-    void setDesiredRotation(Rotation2 rotation);
 
-    /**
-     * @param speed The speed of rotation. Positive value rotates clockwise, negative value rotates counterclockwise
-     */
-    void setRawSpeed(double speed);
+    void setDesiredState(DesiredState desiredState);
 
     Rotation2 MAX_ROTATION = Rotation2.DEG_90;
     Rotation2 MIN_ROTATION = Rotation2.DEG_270;
@@ -21,13 +17,13 @@ public interface Turret extends Runnable {
         public static final DesiredState NEUTRAL = new DesiredState(null, 0.0);
 
         private final Rotation2 desiredRotation;
-        private final Double rawSpeed;
+        private final Double rawSpeedClockwise;
 
-        private DesiredState(Rotation2 desiredRotation, Double rawSpeed) {
+        private DesiredState(Rotation2 desiredRotation, Double rawSpeedClockwise) {
             if(desiredRotation != null){
-                if(desiredRotation.getRadians() > MAX_ROTATION.getRadians()){
+                if(desiredRotation.getRadians() >= MAX_ROTATION.getRadians()){
                     this.desiredRotation = MAX_ROTATION;
-                } else if(desiredRotation.getRadians() < MIN_ROTATION.getRadians()){
+                } else if(desiredRotation.getRadians() <= MIN_ROTATION.getRadians()){
                     this.desiredRotation = MIN_ROTATION;
                 } else {
                     this.desiredRotation = desiredRotation;
@@ -35,27 +31,33 @@ public interface Turret extends Runnable {
             } else {
                 this.desiredRotation = null;
             }
-            this.rawSpeed = rawSpeed == null ? null : max(-1, min(1, rawSpeed));
+            this.rawSpeedClockwise = rawSpeedClockwise == null ? null : max(-1, min(1, rawSpeedClockwise));
         }
         public static DesiredState createDesiredRotation(Rotation2 rotation){
             return new DesiredState(requireNonNull(rotation), null);
         }
-        public static DesiredState createRawSpeed(double speed){
+        public static DesiredState createRawSpeedClockwise(double speed){
             return new DesiredState(null, speed);
+        }
+        public static DesiredState createRawSpeedCounterClockwise(double speed){
+            return new DesiredState(null, -speed);
         }
 
         public Rotation2 getDesiredRotation() {
             return desiredRotation;
         }
 
-        public Double getRawSpeed() {
-            return rawSpeed;
+        public Double getRawSpeedClockwise() {
+            return rawSpeedClockwise;
+        }
+        public Double getRawSpeedCounterClockwise(){
+            return -rawSpeedClockwise;
         }
 
         @Override
         public String toString() {
             if(desiredRotation == null){
-                return "DesiredState(rawSpeed=" + requireNonNull(rawSpeed) + ")";
+                return "DesiredState(rawSpeed=" + requireNonNull(rawSpeedClockwise) + ")";
             }
             return "DesiredState(desiredRotation=" + desiredRotation + ")";
         }

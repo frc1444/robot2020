@@ -8,41 +8,35 @@ import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
-import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
 import com.first1444.frc.util.pid.PidKey;
-import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 
+import static com.first1444.frc.robot2020.CtreUtil.rpmToNative;
+
 public class MotorBallShooter implements BallShooter {
-    // real max is 6380
-    private static final int MAX_RPM = 6300;
     private static final boolean VELOCITY_CONTROL = true;
     private final TalonFX talon;
     private final DashboardMap dashboardMap;
 
-    private double speed;
+    private double rpm;
 
     public MotorBallShooter(DashboardMap dashboardMap) {
-        this.talon = new TalonFX(23);
+        this.talon = new TalonFX(RobotConstants.CAN.SHOOTER);
         this.dashboardMap = dashboardMap;
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         talon.setInverted(InvertType.InvertMotorOutput);
         talon.setSensorPhase(true);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
 
-//        talon.config_kP(RobotConstants.SLOT_INDEX, .003, RobotConstants.INIT_TIMEOUT);
-//        talon.config_kI(RobotConstants.SLOT_INDEX, .00001, RobotConstants.INIT_TIMEOUT);
-//        talon.config_kF(RobotConstants.SLOT_INDEX, .045, RobotConstants.INIT_TIMEOUT);
-
         var sendable = new MutableValueMapSendable<>(PidKey.class);
         var pidConfig = sendable.getMutableValueMap();
         pidConfig.setDouble(PidKey.CLOSED_RAMP_RATE, .25);
-        pidConfig.setDouble(PidKey.P, .1); // .1
-        pidConfig.setDouble(PidKey.I, .00014); // .00018
+        pidConfig.setDouble(PidKey.P, .1);
+        pidConfig.setDouble(PidKey.I, .00014);
 
-        CTREUtil.applyPID(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
-        pidConfig.addListener(key -> CTREUtil.applyPID(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
+        CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
+        pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
 
         dashboardMap.getDebugTab().add("Shooter PID", new SendableComponent<>(sendable));
 
@@ -51,20 +45,21 @@ public class MotorBallShooter implements BallShooter {
     }
 
     @Override
-    public void setSpeed(double speed) {
-        this.speed = speed;
+    public void setRpm(double rpm) {
+        this.rpm = rpm;
     }
 
     @Override
     public void run() {
-        final double speed = this.speed;
-        this.speed = 0;
-        if(speed != 0 && VELOCITY_CONTROL){
-            double velocity = speed * MAX_RPM * RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.CTRE_UNIT_CONVERSION;
+        final double rpm = this.rpm;
+        this.rpm = 0;
+        if(rpm != 0 && VELOCITY_CONTROL){
+//            double velocity = rpm * RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.CTRE_UNIT_CONVERSION;
+            double velocity = rpmToNative(rpm, RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION);
             talon.set(ControlMode.Velocity, velocity);
             dashboardMap.getDebugTab().getRawDashboard().get("Desired Velocity").getStrictSetter().setDouble(velocity);
         } else {
-            talon.set(ControlMode.PercentOutput, speed);
+            talon.set(ControlMode.PercentOutput, rpm / BallShooter.MAX_RPM);
         }
     }
 }

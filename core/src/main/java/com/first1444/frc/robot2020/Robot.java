@@ -49,6 +49,7 @@ import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
+import me.retrodaredevil.controller.implementations.ControllerPartCreator;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
 import me.retrodaredevil.controller.types.StandardControllerInput;
@@ -110,7 +111,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             FrcLogger logger,
             Clock clock,
             DashboardMap dashboardMap,
-            StandardControllerInput controller, LogitechAttack3JoystickControllerInput joystick, ControllerRumble rumble,
+            StandardControllerInput controller, LogitechAttack3JoystickControllerInput joystick, ControllerPartCreator buttonBoard, ControllerRumble rumble,
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
@@ -127,7 +128,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.climber = climber;
         robotInput = new RobotInput(
                 controller,
-                joystick, rumble
+                joystick, buttonBoard, rumble
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions

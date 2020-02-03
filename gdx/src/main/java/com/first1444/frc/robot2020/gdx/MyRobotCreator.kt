@@ -208,6 +208,7 @@ class MyRobotCreator(
             BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         }
         val joystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(IndexedControllerProvider(2)))
+        val buttonBoard = GdxControllerPartCreator(IndexedControllerProvider(3))
 
         val robotCreator = RunnableCreator.wrap {
 
@@ -223,7 +224,7 @@ class MyRobotCreator(
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), preciseClock,
                     shuffleboardMap,
-                    controller, joystick, DisconnectedRumble.getInstance(),
+                    controller, joystick, buttonBoard, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     intake, turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),

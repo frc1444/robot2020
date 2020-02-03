@@ -3,7 +3,9 @@ package com.first1444.frc.robot2020.subsystems;
 public interface BallShooter extends Runnable {
     /**
      * This must be called continuously
-     * @param speed A value from -1 to 1, normally in range 0 to 1. A positive value shoots the ball out.
+     * @param rpm How fast to spin the shooter motor. Positive values shoot out. Negative values are allowed, but why?
      */
-    void setSpeed(double speed);
+    void setRpm(double rpm);
+
+    double MAX_RPM = 6380;
 }
