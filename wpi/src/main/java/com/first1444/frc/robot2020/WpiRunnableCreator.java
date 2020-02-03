@@ -107,7 +107,7 @@ public class WpiRunnableCreator implements RunnableCreator {
         visionPacketListener.start();
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
-                InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
+                InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 new BNOOrientationHandler(gyro),
                 data,
                 new DummyIntake(reportMap), new MotorTurret(), new MotorBallShooter(dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
