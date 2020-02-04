@@ -26,6 +26,7 @@ import com.first1444.frc.robot2020.perspective.PerspectiveProviderMultiplexer;
 import com.first1444.frc.robot2020.sound.PacketSenderSoundCreator;
 import com.first1444.frc.robot2020.sound.SoundMap;
 import com.first1444.frc.robot2020.subsystems.*;
+import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.frc.robot2020.vision.VisionProvider;
 import com.first1444.sim.api.Clock;
@@ -83,6 +84,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final BallShooter ballShooter;
     private final WheelSpinner wheelSpinner;
     private final Climber climber;
+    private final BallTracker ballTracker;
 
     private final PartUpdater partUpdater = new PartUpdater();
     private final RobotInput robotInput;
@@ -115,6 +117,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             OrientationHandler rawOrientationHandler,
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
+            BallTracker ballTracker,
             VisionProvider visionProvider
     ){
         this.driverStation = driverStation;
@@ -126,6 +129,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.ballShooter = ballShooter;
         this.wheelSpinner = wheelSpinner;
         this.climber = climber;
+        this.ballTracker = ballTracker;
         robotInput = new RobotInput(
                 controller,
                 joystick, buttonBoard, rumble

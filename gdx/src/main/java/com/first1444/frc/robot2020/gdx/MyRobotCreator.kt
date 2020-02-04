@@ -19,9 +19,9 @@ import com.first1444.frc.robot2020.packets.transfer.ZMQPacketQueue
 import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
 import com.first1444.frc.robot2020.subsystems.Intake
 import com.first1444.frc.robot2020.subsystems.Turret
+import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
-import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
 import com.first1444.frc.robot2020.vision.SimpleInstantVisionProvider
 import com.first1444.frc.robot2020.vision.VisionPacketListener
@@ -160,7 +160,19 @@ private fun createSwerveDriveData(enabledState: EnabledState, updateableData: Up
     )
 }
 private fun createTurret(enabledState: EnabledState, updateableData: UpdateableCreator.Data, entity: BodyEntity): Turret {
-    return GdxTurret(updateableData.worldManager.world, entity, updateableData.clock, enabledState, AccelerateSetPointHandler(MathUtils.PI / .5f)) // spin 180 in half a second
+    val speed = MathUtils.PI / .5f
+    return GdxTurret(updateableData.worldManager.world, entity, updateableData.clock, enabledState, AccelerateSetPointHandler(speed), speed) // spin 180 in half a second
+}
+private fun shootBall(enabledState: EnabledState, entity: BodyEntity, turret: Turret, rpm: Double): Boolean {
+    if(!enabledState.isEnabled){
+        return false
+    }
+//    if(rpm < 1000.0){
+//        return false
+//    }
+    val rotationRadians = entity.body.angle + turret.currentRotation.radians.toFloat()
+    println("*Shooter ball at heading ${Rotation2.fromRadians(rotationRadians.toDouble())}*")
+    return true
 }
 
 class MyRobotCreator(
@@ -174,15 +186,20 @@ class MyRobotCreator(
         val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
 
         val preciseClock = SystemNanosClock
-        val entity = createEntity(data, updateableData);
+        val entity = createEntity(data, updateableData)
         val swerveDriveData = createSwerveDriveData(data.driverStation, updateableData, entity)
         val turret = createTurret(data.driverStation, updateableData, entity)
+        val ballShooter = DummyBallShooter(reportMap)
         val intakeListener: IntakeListener
         val intake: Intake
+        val ballTracker: BallTracker
         run {
-            val dummyIntake = DummyIntake(reportMap)
-            intake = dummyIntake
-            intakeListener = IntakeListener(updateableData.worldManager, dummyIntake::getIntakeSpeed)
+            val gdxIntake = GdxIntake(reportMap, data.driverStation, preciseClock) {
+                shootBall(data.driverStation, entity, turret, ballShooter.rpm)
+            }
+            intake = gdxIntake
+            ballTracker = gdxIntake
+            intakeListener = IntakeListener(updateableData.worldManager, gdxIntake::getPreviousIntakeSpeed, gdxIntake::addBall)
         }
         updateableData.worldManager.world.setContactListener(intakeListener)
 
@@ -227,8 +244,8 @@ class MyRobotCreator(
                     controller, joystick, buttonBoard, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
-                    intake, turret, DummyBallShooter(reportMap), DummyWheelSpinner(reportMap),
-                    DummyClimber(reportMap),
+                    intake, turret, ballShooter, DummyWheelSpinner(reportMap), DummyClimber(reportMap),
+                    ballTracker,
                     SimpleInstantVisionProvider(VisionProvider2020(VisionFilterMultiplexer(listOf(VisionTypeFilter(VisionType2020.POWER_PORT), EntityRangeVisionFilter(entity, 3.0))), entity, preciseClock), preciseClock)
 //                    visionPacketListener
             )), data.driverStation)

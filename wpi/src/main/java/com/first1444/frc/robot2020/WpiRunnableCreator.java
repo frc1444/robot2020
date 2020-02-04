@@ -5,6 +5,8 @@ import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
+import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
+import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
 import com.first1444.frc.robot2020.subsystems.implementations.*;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
@@ -105,12 +107,14 @@ public class WpiRunnableCreator implements RunnableCreator {
                 "tcp://10.14.44.5:5801"
         );
         visionPacketListener.start();
+        BallTracker ballTracker = new SimpleBallTracker();
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 new BNOOrientationHandler(gyro),
                 data,
-                new DummyIntake(reportMap), new MotorTurret(), new MotorBallShooter(dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                new DummyIntake(reportMap), new MotorTurret(), new MotorBallShooter(ballTracker, dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                ballTracker,
                 visionPacketListener
         );
         return new RobotRunnableMultiplexer(Arrays.asList(

@@ -9,8 +9,13 @@ public class MotorIntake implements Intake {
     }
 
     @Override
-    public int getBallCount() {
-        return 0;
+    public void setIndexerSpeed(double speed) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setFeederSpeed(double speed) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

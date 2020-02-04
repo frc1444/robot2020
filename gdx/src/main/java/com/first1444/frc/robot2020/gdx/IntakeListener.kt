@@ -9,7 +9,8 @@ import kotlin.math.max
 
 class IntakeListener(
         private val worldManager: WorldManager,
-        private val intakeSpeedGetter: () -> Double
+        private val intakeSpeedGetter: () -> Double,
+        private val onBallReceive: () -> Unit
 ) : Updateable, ContactListener {
     private val map = HashMap<PowerCellUserData, Float>()
 
@@ -47,6 +48,7 @@ class IntakeListener(
         for(powerCellData in toRemove){
             map.remove(powerCellData)
             worldManager.remove(powerCellData.powerCell)
+            onBallReceive()
         }
     }
 

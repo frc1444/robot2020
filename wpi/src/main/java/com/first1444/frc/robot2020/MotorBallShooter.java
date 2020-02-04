@@ -9,6 +9,7 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
+import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 
@@ -16,12 +17,14 @@ import static com.first1444.frc.robot2020.CtreUtil.rpmToNative;
 
 public class MotorBallShooter implements BallShooter {
     private static final boolean VELOCITY_CONTROL = true;
+    private final BallTracker ballTracker;
     private final TalonFX talon;
     private final DashboardMap dashboardMap;
 
     private double rpm;
 
-    public MotorBallShooter(DashboardMap dashboardMap) {
+    public MotorBallShooter(BallTracker ballTracker, DashboardMap dashboardMap) {
+        this.ballTracker = ballTracker;
         this.talon = new TalonFX(RobotConstants.CAN.SHOOTER);
         this.dashboardMap = dashboardMap;
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
@@ -45,7 +48,7 @@ public class MotorBallShooter implements BallShooter {
     }
 
     @Override
-    public void setRpm(double rpm) {
+    public void setDesiredRpm(double rpm) {
         this.rpm = rpm;
     }
 

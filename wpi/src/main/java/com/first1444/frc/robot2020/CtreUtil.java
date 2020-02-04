@@ -22,11 +22,11 @@ public final class CtreUtil {
     }
 
     public static void applyPid(BaseMotorController motor, ValueMap<PidKey> pid, int timeoutMs, BiConsumer<ErrorCode, Integer> errorCodeReport){
-        motor.config_kP(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.P), timeoutMs);
-        motor.config_kI(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.I), timeoutMs);
-        motor.config_kD(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.D), timeoutMs);
-        motor.config_kF(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.F), timeoutMs);
-        motor.configClosedloopRamp(pid.getDouble(PidKey.CLOSED_RAMP_RATE), timeoutMs);
+        errorCodeReport.accept(motor.config_kP(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.P), timeoutMs), 0);
+        errorCodeReport.accept(motor.config_kI(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.I), timeoutMs), 1);
+        errorCodeReport.accept(motor.config_kD(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.D), timeoutMs), 2);
+        errorCodeReport.accept(motor.config_kF(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.F), timeoutMs), 3);
+        errorCodeReport.accept(motor.configClosedloopRamp(pid.getDouble(PidKey.CLOSED_RAMP_RATE), timeoutMs), 4);
     }
     @SafeVarargs
     public static void reportError(BiConsumer<ErrorCode, Integer> errorCodeReport, Supplier<ErrorCode>... errorCodeSuppliers){

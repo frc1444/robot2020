@@ -6,6 +6,7 @@ import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.implementations.BaseTurret
 import com.first1444.sim.api.Clock
 import com.first1444.sim.api.EnabledState
+import com.first1444.sim.api.Rotation2
 import com.first1444.sim.gdx.entity.BodyEntity
 import com.first1444.sim.gdx.velocity.SetPointHandler
 
@@ -14,7 +15,8 @@ class GdxTurret(
         private val entity: BodyEntity,
         private val clock: Clock,
         private val enabledState: EnabledState,
-        private val angleRadiansSetPointHandler: SetPointHandler
+        private val angleRadiansSetPointHandler: SetPointHandler,
+        private val maxRadiansPerSecond: Float
 ) : BaseTurret() {
     private var lastTimestamp: Double? = null
 
@@ -55,12 +57,22 @@ class GdxTurret(
                     angleRadiansSetPointHandler.setDesired(desiredRotation.radians.toFloat())
                     angleRadiansSetPointHandler.update(delta.toFloat())
                 }
-                body.setTransform(body.position, angleRadiansSetPointHandler.calculated + entity.rotationRadians)
+                offsetRadians = angleRadiansSetPointHandler.calculated
             } else {
                 val rawSpeed = desiredState.rawSpeedCounterClockwise!!
-                body.setTransform(body.position, (delta * rawSpeed).toFloat() + entity.rotationRadians)
+                offsetRadians += (delta * rawSpeed).toFloat() * maxRadiansPerSecond
             }
         }
+    }
+
+    private var offsetRadians: Float = 0.0f
+        set(value) {
+            field = value
+            body.setTransform(body.position, value + entity.rotationRadians)
+        }
+
+    override fun getCurrentRotation(): Rotation2 {
+        return Rotation2.fromRadians(offsetRadians.toDouble())
     }
 
 }

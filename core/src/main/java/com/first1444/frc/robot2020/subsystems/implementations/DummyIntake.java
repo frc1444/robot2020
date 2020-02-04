@@ -12,6 +12,11 @@ public class DummyIntake implements Intake {
     private final ReportMap reportMap;
 
     private double intakeSpeed;
+    private double indexerSpeed;
+    private double feederSpeed;
+
+
+    private double previousIntakeSpeed;
 
     public DummyIntake(ReportMap reportMap) {
         this.reportMap = requireNonNull(reportMap);
@@ -23,14 +28,26 @@ public class DummyIntake implements Intake {
     }
 
     @Override
-    public int getBallCount() {
-        return 0;
+    public void setIndexerSpeed(double speed) {
+        this.indexerSpeed = speed;
     }
+
+    @Override
+    public void setFeederSpeed(double speed) {
+        this.feederSpeed = speed;
+    }
+
     @Override
     public void run() {
         reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
+        reportMap.report("Indexer Speed", FORMAT.format(indexerSpeed));
+        reportMap.report("Feeder Speed", FORMAT.format(feederSpeed));
+        previousIntakeSpeed = intakeSpeed;
+        intakeSpeed = 0;
+        indexerSpeed = 0;
+        feederSpeed = 0;
     }
-    public double getIntakeSpeed(){
-        return intakeSpeed;
-    }
+    public double getPreviousIntakeSpeed(){ return previousIntakeSpeed; }
+    protected double getIndexerSpeed(){ return indexerSpeed; }
+    protected double getFeederSpeed(){ return feederSpeed; }
 }

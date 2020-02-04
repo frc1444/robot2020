@@ -10,6 +10,8 @@ public interface Turret extends Runnable {
 
     void setDesiredState(DesiredState desiredState);
 
+    Rotation2 getCurrentRotation();
+
     Rotation2 MAX_ROTATION = Rotation2.DEG_90;
     Rotation2 MIN_ROTATION = Rotation2.DEG_270;
 

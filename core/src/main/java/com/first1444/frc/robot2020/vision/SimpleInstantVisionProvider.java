@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * A vision provider that *always* has up to date data.
+ */
 public class SimpleInstantVisionProvider implements VisionProvider {
     private final SurroundingProvider surroundingProvider;
     private final Clock clock;

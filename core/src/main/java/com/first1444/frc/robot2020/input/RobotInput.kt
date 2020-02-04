@@ -14,6 +14,12 @@ import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput
 import me.retrodaredevil.controller.types.RumbleCapableController
 import me.retrodaredevil.controller.types.StandardControllerInput
 
+/**
+ * Contains properties that represent controls on our driver station.
+ *
+ * This is one of our few robot code classes written in Kotlin. This specific class was written in Kotlin
+ * because of the significant boilerplate decrease by using Kotlin over Java.
+ */
 class RobotInput(
         private val controller: StandardControllerInput,
         joystick: LogitechAttack3JoystickControllerInput,
@@ -49,10 +55,16 @@ class RobotInput(
     /** When this button is pressed, [movementJoy]'s angle should be used to reset the gyro  */
     val movementJoyResetGyroButton: InputPart = controller.faceLeft
     // endregion
-    // region Calibration
+    // region Swerve Recalibration
     val swerveQuickReverseCancel: InputPart = controller.select
     val swerveRecalibrate: InputPart = controller.start
     // endregion
+
+    val intakeSpeed: InputPart = controller.rightStick // temp
+    val indexerSpeed: InputPart = controller.rightStick // temp
+    val feederSpeed: InputPart = controller.rightStick // temp
+    val manualShootSpeed: InputPart
+
     // region Turret Controls
     val turretCenterOrient: InputPart = dummyInput
     val turretLeftOrient: InputPart = dummyInput
@@ -61,9 +73,6 @@ class RobotInput(
     /** When pressed, this enables the turret to auto target using vision or absolute position  */
     val enableTurretAutoTarget: InputPart = dummyInput
     // endregion
-
-    val intakeSpeed: InputPart = controller.rightStick // temporary
-    val manualShootSpeed: InputPart
 
     // region Climb Controls
     val climbStored: InputPart

@@ -25,4 +25,9 @@ public class MotorTurret extends BaseTurret {
             talon.set(ControlMode.PercentOutput, speed);
         }
     }
+
+    @Override
+    public Rotation2 getCurrentRotation() {
+        return Rotation2.ZERO; // TODO calculate current rotation
+    }
 }

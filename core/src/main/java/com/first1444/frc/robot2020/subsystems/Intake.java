@@ -11,8 +11,18 @@ public interface Intake extends Runnable {
     void setIntakeSpeed(double speed);
 
     /**
-     *
-     * @return The number of balls currently stored
+     * This must be called continuously
+     * <p>
+     * This delivers the ball to the feeder
+     * @param speed The indexer speed. Positive values moves ball towards shooter
      */
-    int getBallCount();
+    void setIndexerSpeed(double speed);
+    /**
+     * This must be called continuously
+     * <p>
+     * This feeds ball into the shooter
+     * @param speed The feeder speed. Positive values deliver ball to shooter
+     */
+    void setFeederSpeed(double speed);
+
 }

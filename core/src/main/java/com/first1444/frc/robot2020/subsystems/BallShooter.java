@@ -5,7 +5,7 @@ public interface BallShooter extends Runnable {
      * This must be called continuously
      * @param rpm How fast to spin the shooter motor. Positive values shoot out. Negative values are allowed, but why?
      */
-    void setRpm(double rpm);
+    void setDesiredRpm(double rpm);
 
     double MAX_RPM = 6380;
 }

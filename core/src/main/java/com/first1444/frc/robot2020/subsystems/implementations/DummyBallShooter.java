@@ -21,7 +21,10 @@ public class DummyBallShooter implements BallShooter {
     }
 
     @Override
-    public void setRpm(double rpm) {
+    public void setDesiredRpm(double rpm) {
         this.rpm = rpm;
+    }
+    public double getRpm(){
+        return rpm;
     }
 }

@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020.actions;
 import com.first1444.frc.robot2020.Robot;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
+import com.first1444.frc.robot2020.subsystems.Intake;
 import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
@@ -53,14 +54,16 @@ public class OperatorAction extends SimpleAction {
         } else {
             shootSpeed = input.getManualShootSpeed().getPosition() * .55 + .45;
         }
-        robot.getBallShooter().setRpm(shootSpeed * BallShooter.MAX_RPM);
+        robot.getBallShooter().setDesiredRpm(shootSpeed * BallShooter.MAX_RPM);
 
-        final double intakeSpeed;
-        if (input.getIntakeSpeed().isDeadzone()) {
-            intakeSpeed = 0;
-        } else {
-            intakeSpeed = input.getIntakeSpeed().getPosition();
+        { // intake stuff
+            Intake intake = robot.getIntake();
+            double intakeSpeed = input.getIntakeSpeed().isDeadzone() ? 0 : input.getIntakeSpeed().getPosition();
+            double indexerSpeed = input.getIndexerSpeed().isDeadzone() ? 0 : input.getIndexerSpeed().getPosition();
+            double feederSpeed = input.getFeederSpeed().isDeadzone() ? 0 : input.getFeederSpeed().getPosition();
+            intake.setIntakeSpeed(intakeSpeed);
+            intake.setIndexerSpeed(indexerSpeed);
+            intake.setFeederSpeed(feederSpeed);
         }
-        robot.getIntake().setIntakeSpeed(intakeSpeed);
     }
 }
