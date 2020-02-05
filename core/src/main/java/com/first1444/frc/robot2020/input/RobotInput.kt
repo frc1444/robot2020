@@ -66,8 +66,8 @@ class RobotInput(
     val manualShootSpeed: InputPart
 
     // region Turret Controls
-    val turretCenterOrient: InputPart = dummyInput
-    val turretLeftOrient: InputPart = dummyInput
+    val turretCenterOrient: InputPart = controller.faceDown
+    val turretLeftOrient: InputPart = controller.faceRight
     val turretRightOrient: InputPart = dummyInput
     val turretRawControl: InputPart
     /** When pressed, this enables the turret to auto target using vision or absolute position  */

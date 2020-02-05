@@ -113,7 +113,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                 InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 new BNOOrientationHandler(gyro),
                 data,
-                new DummyIntake(reportMap), new MotorTurret(), new MotorBallShooter(ballTracker, dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                new DummyIntake(reportMap), new MotorTurret(dashboardMap), new MotorBallShooter(ballTracker, dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 ballTracker,
                 visionPacketListener
         );
