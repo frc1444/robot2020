@@ -13,6 +13,7 @@ import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 
+import static com.first1444.frc.robot2020.CtreUtil.nativeToRpm;
 import static com.first1444.frc.robot2020.CtreUtil.rpmToNative;
 
 public class MotorBallShooter implements BallShooter {
@@ -43,8 +44,8 @@ public class MotorBallShooter implements BallShooter {
 
         dashboardMap.getDebugTab().add("Shooter PID", new SendableComponent<>(sendable));
 
-        dashboardMap.getDebugTab().add("Velocity", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(talon.getSelectedSensorVelocity()))));
-        dashboardMap.getDebugTab().add("Encoder", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(talon.getSelectedSensorPosition()))));
+        dashboardMap.getDebugTab().add("Shooter Actual (Native)", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(talon.getSelectedSensorVelocity()))));
+        dashboardMap.getDebugTab().add("Shooter Actual (RPM)", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(nativeToRpm(talon.getSelectedSensorVelocity(), RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION)))));
     }
 
     @Override
@@ -58,11 +59,14 @@ public class MotorBallShooter implements BallShooter {
         this.rpm = 0;
         if(rpm != 0 && VELOCITY_CONTROL){
 //            double velocity = rpm * RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.CTRE_UNIT_CONVERSION;
-            double velocity = rpmToNative(rpm, RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION);
+            double velocity = rpmToNative(rpm, RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
             talon.set(ControlMode.Velocity, velocity);
-            dashboardMap.getDebugTab().getRawDashboard().get("Desired Velocity").getStrictSetter().setDouble(velocity);
+            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
+            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(velocity);
         } else {
             talon.set(ControlMode.PercentOutput, rpm / BallShooter.MAX_RPM);
+            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
+            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(0.0);
         }
     }
 }

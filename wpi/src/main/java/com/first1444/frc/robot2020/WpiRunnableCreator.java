@@ -12,6 +12,7 @@ import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
+import com.first1444.frc.util.SystemType;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.reportmap.DashboardReportMap;
 import com.first1444.frc.util.reportmap.ReportMap;
@@ -29,8 +30,11 @@ import edu.wpi.first.hal.FRCNetComm;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import me.retrodaredevil.controller.implementations.InputUtil;
+import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator;
 import me.retrodaredevil.controller.output.DualShockRumble;
+import me.retrodaredevil.controller.types.StandardControllerInput;
 import me.retrodaredevil.controller.wpi.WpiInputCreator;
 import org.jetbrains.annotations.NotNull;
 
@@ -108,9 +112,16 @@ public class WpiRunnableCreator implements RunnableCreator {
         );
         visionPacketListener.start();
         BallTracker ballTracker = new SimpleBallTracker();
+
+        final StandardControllerInput controller;
+        if(RobotBase.isSimulation() && SystemType.isUnixBased()){
+            controller = InputUtil.createController(new WpiInputCreator(0), new LinuxPS4StandardControllerInputCreator());
+        } else {
+            controller = InputUtil.createPS4Controller(new WpiInputCreator(0));
+        }
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
-                InputUtil.createPS4Controller(new WpiInputCreator(0)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
+                controller, InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 new BNOOrientationHandler(gyro),
                 data,
                 new DummyIntake(reportMap), new MotorTurret(dashboardMap), new MotorBallShooter(ballTracker, dashboardMap), new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),

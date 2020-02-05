@@ -22,7 +22,8 @@ public final class RobotConstants {
     /** Talon SRX counts every edge of the quadrature encoder, so 4 * 20 */
     public static final int CIMCODER_COUNTS_PER_REVOLUTION = 80;
 
-    public static final int TALON_FX_ENCODER_COUNTS_PER_REVOLUTION = 2048;
+    /** The number of encoder counts in a single revolution on a Falcon 500 using Talon FX*/
+    public static final int FALCON_ENCODER_COUNTS_PER_REVOLUTION = 2048;
 
     public static final class CAN {
         private CAN(){ throw new UnsupportedOperationException(); }

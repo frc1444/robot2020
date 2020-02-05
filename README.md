@@ -24,14 +24,20 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 # Deploying:
 ./gradlew wpi:deploy
 
-# Launching Shuffleboard:
+# Launching Shuffleboard: (The dashboard we use)
 ./gradlew wpi:shuffleboard
+
+# Launching OutlineViewer: (Good for debugging NetworkTable values)
+./gradlew wpi:outlineviewer
 
 # Running RoboSim Simlation:
 ./gradlew desktop:run
 
 # Running WPI Simulation
 ./gradlew wpi:simulateJava
+
+# Running RIOLog
+./gradlew wpi:riolog
 
 ```
 

@@ -26,6 +26,7 @@ import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
 import com.first1444.frc.robot2020.vision.SimpleInstantVisionProvider
 import com.first1444.frc.robot2020.vision.VisionPacketListener
 import com.first1444.frc.robot2020.vision.VisionPacketParser
+import com.first1444.frc.util.SystemType
 import com.first1444.frc.util.reportmap.DashboardReportMap
 import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
@@ -167,11 +168,23 @@ private fun shootBall(enabledState: EnabledState, entity: BodyEntity, turret: Tu
     if(!enabledState.isEnabled){
         return false
     }
-//    if(rpm < 1000.0){
-//        return false
-//    }
+    if(rpm < 1000.0){
+        return false
+    }
     val rotationRadians = entity.body.angle + turret.currentRotation.radians.toFloat()
     println("*Shooter ball at heading ${Rotation2.fromRadians(rotationRadians.toDouble())}*")
+    val world = entity.body.world
+    world.createBody(BodyDef().apply {
+        type = BodyDef.BodyType.KinematicBody
+        val velocity = 6.0f
+        linearVelocity.set(MathUtils.cos(rotationRadians) * velocity, MathUtils.sin(rotationRadians) * velocity)
+        position.set(entity.position)
+    }).createFixture(FixtureDef().apply {
+        shape = CircleShape().apply {
+            radius = inchesToMeters(7.0f / 2)
+        }
+        isSensor = true
+    })
     return true
 }
 
@@ -211,8 +224,7 @@ class MyRobotCreator(
                 true
         )
         val controller = if(playstationProvider.isConnected || !defaultProvider.isConnected){
-            val osName = System.getProperty("os.name").toLowerCase()
-            if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) {
+            if(SystemType.isUnixBased()) {
                 println("*nix ps4")
                 InputUtil.createController(creator, LinuxPS4StandardControllerInputCreator())
             } else {
