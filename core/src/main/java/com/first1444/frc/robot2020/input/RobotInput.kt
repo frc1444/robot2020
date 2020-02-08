@@ -6,7 +6,7 @@ import me.retrodaredevil.controller.input.AxisType
 import me.retrodaredevil.controller.input.InputPart
 import me.retrodaredevil.controller.input.JoystickPart
 import me.retrodaredevil.controller.input.implementations.DummyInputPart
-import me.retrodaredevil.controller.input.implementations.LowestPositionInputPart
+import me.retrodaredevil.controller.input.implementations.MultiplierInputPart
 import me.retrodaredevil.controller.input.implementations.ScaledInputPart
 import me.retrodaredevil.controller.output.ControllerRumble
 import me.retrodaredevil.controller.output.DisconnectedRumble
@@ -87,9 +87,9 @@ class RobotInput(
     // endregion
 
     init {
-        turretRawControl = LowestPositionInputPart(false, listOf(joystick.thumbLower, joystick.mainJoystick.xAxis), false)
+        turretRawControl = MultiplierInputPart(false, listOf(joystick.thumbLower, joystick.mainJoystick.xAxis), false)
         val scaledSlider: InputPart = ScaledInputPart(AxisType.ANALOG, joystick.slider, false)
-        manualShootSpeed = LowestPositionInputPart(false, listOf(
+        manualShootSpeed = MultiplierInputPart(false, listOf(
                 joystick.centerLeft,
                 scaledSlider
         ), false)

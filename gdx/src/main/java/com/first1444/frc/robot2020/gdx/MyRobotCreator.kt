@@ -236,7 +236,7 @@ class MyRobotCreator(
             // NOTE: I have "physicalLocationSwapped" set to true because I test with a Nintendo controller most of the time
             BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         }
-        val joystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(IndexedControllerProvider(2)))
+        val joystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(BestNameControllerProvider(listOf("attack"))))
         val buttonBoard = GdxControllerPartCreator(IndexedControllerProvider(3))
 
         val robotCreator = RunnableCreator.wrap {
