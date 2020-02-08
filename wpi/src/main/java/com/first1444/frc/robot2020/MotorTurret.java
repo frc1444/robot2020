@@ -23,15 +23,17 @@ public class MotorTurret extends BaseTurret {
         talon = new TalonSRX(RobotConstants.CAN.TURRET);
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         talon.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
+        talon.configOpenloopRamp(.25);
 
-        talon.configVoltageCompSaturation(5.0, RobotConstants.INIT_TIMEOUT);
+        talon.configVoltageCompSaturation(4.0, RobotConstants.INIT_TIMEOUT);
         talon.enableVoltageCompensation(true); // make sure to configure the saturation voltage before this
         talon.setSelectedSensorPosition((int) Math.IEEEremainder(talon.getSensorCollection().getPulseWidthPosition() - OFFSET_ENCODER_COUNTS, 4096));
 
         var sendable = new MutableValueMapSendable<>(PidKey.class);
         var pidConfig = sendable.getMutableValueMap();
-        pidConfig.setDouble(PidKey.P, .4);
-        pidConfig.setDouble(PidKey.I, .0004);
+        pidConfig.setDouble(PidKey.P, 7.0);
+        pidConfig.setDouble(PidKey.I, .001);
+        pidConfig.setDouble(PidKey.D, .004);
 
         CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
         pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
@@ -52,7 +54,7 @@ public class MotorTurret extends BaseTurret {
             );
             dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setString("Counts=" + desiredEncoderCounts);
         } else {
-            double speed = desiredState.getRawSpeedCounterClockwise() * .6;
+            double speed = desiredState.getRawSpeedCounterClockwise() * .8;
             talon.set(ControlMode.PercentOutput, speed);
             dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setDouble(speed);
         }

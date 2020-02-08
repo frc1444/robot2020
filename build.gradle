@@ -21,6 +21,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
+    def makeIntelliJUpdateVendorDeps = "Increment this when you need IntelliJ to update your vendordeps (001)"
 }
 
 subprojects {

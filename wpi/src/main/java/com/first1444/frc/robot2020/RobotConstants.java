@@ -5,7 +5,7 @@ public final class RobotConstants {
 
     public static final int PID_INDEX = 0;
     public static final int SLOT_INDEX = 0;
-    public static final int INIT_TIMEOUT = 0;
+    public static final int INIT_TIMEOUT = 30;
     /** Should be used for the timeout when calling a CTRE function that is rarely called, and is not during initialization time*/
     public static final int LOOP_TIMEOUT = 3;
     /** Should be used for the timeout when calling a CTRE function that is constantly called*/
