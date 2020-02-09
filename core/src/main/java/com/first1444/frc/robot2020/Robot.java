@@ -139,9 +139,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
         {
-            PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
-            packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
-            packetQueueCreator = new PacketQueueMaster(packetQueue, true);
+//            PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
+//            packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
+//            packetQueueCreator = new PacketQueueMaster(packetQueue, true);
+            packetSender = PacketSender.NOTHING;
+            packetQueueCreator = PacketQueueCreator.NOTHING;
         }
         soundMap = new SoundMap(new PacketSenderSoundCreator(packetSender, false));
 
@@ -189,7 +191,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         autonomousChooserState = new AutonomousChooserState(clock, new AutonomousModeCreator(new RobotAutonomousActionCreator(this)), dashboardMap);
 
-        System.out.println("Finished constructor");
+        System.out.println("Finished constructor 1");
     }
 
     @Override
@@ -204,7 +206,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("close() method called! Robot program must be ending!");
     }
     // endregion
 

@@ -36,9 +36,9 @@ public class MotorTurret extends BaseTurret {
         pidConfig.setDouble(PidKey.D, .004);
 
         CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
-        pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
+//        pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
 
-        dashboardMap.getDebugTab().add("Turret PID", new SendableComponent<>(sendable));
+//        dashboardMap.getDebugTab().add("Turret PID", new SendableComponent<>(sendable));
 
     }
     @Override
@@ -52,14 +52,14 @@ public class MotorTurret extends BaseTurret {
                     ControlMode.Position,
                     desiredEncoderCounts
             );
-            dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setString("Counts=" + desiredEncoderCounts);
+//            dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setString("Counts=" + desiredEncoderCounts);
         } else {
             double speed = desiredState.getRawSpeedCounterClockwise() * .8;
             talon.set(ControlMode.PercentOutput, speed);
-            dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setDouble(speed);
+//            dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setDouble(speed);
         }
-        dashboardMap.getDebugTab().getRawDashboard().get("Turret Selected Counts").getForceSetter().setDouble(talon.getSelectedSensorPosition());
-        dashboardMap.getDebugTab().getRawDashboard().get("Turret Encoder Counts").getForceSetter().setDouble(talon.getSensorCollection().getPulseWidthPosition());
+//        dashboardMap.getDebugTab().getRawDashboard().get("Turret Selected Counts").getForceSetter().setDouble(talon.getSelectedSensorPosition());
+//        dashboardMap.getDebugTab().getRawDashboard().get("Turret Encoder Counts").getForceSetter().setDouble(talon.getSensorCollection().getPulseWidthPosition());
     }
     private double encoderToDegrees(double encoderCounts){
         return encoderCounts / ENCODER_COUNTS_PER_DEGREE;
