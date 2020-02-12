@@ -196,6 +196,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void close() {
+        System.out.println("Closing");
         try {
             packetSender.close();
         } catch (Exception e) {

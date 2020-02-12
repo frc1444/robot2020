@@ -208,7 +208,7 @@ class MyRobotCreator(
         val ballTracker: BallTracker
         run {
             val gdxIntake = GdxIntake(reportMap, data.driverStation, preciseClock) {
-                shootBall(data.driverStation, entity, turret, ballShooter.rpm)
+                shootBall(data.driverStation, entity, turret, ballShooter.currentRpm)
             }
             intake = gdxIntake
             ballTracker = gdxIntake

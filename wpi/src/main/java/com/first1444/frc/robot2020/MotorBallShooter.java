@@ -18,11 +18,15 @@ import static com.first1444.frc.robot2020.CtreUtil.rpmToNative;
 
 public class MotorBallShooter implements BallShooter {
     private static final boolean VELOCITY_CONTROL = true;
+    private static final double BALL_DETECT_CURRENT_THRESHOLD = 40.0; // TODO change
+    private static final double BALL_DETECT_CURRENT_RECOVERY = 20.0; // TODO change
     private final BallTracker ballTracker;
     private final TalonFX talon;
     private final DashboardMap dashboardMap;
 
     private double rpm;
+    private double currentRpm;
+    private boolean ballDetectThresholdMet = false;
 
     public MotorBallShooter(BallTracker ballTracker, DashboardMap dashboardMap) {
         this.ballTracker = ballTracker;
@@ -45,7 +49,6 @@ public class MotorBallShooter implements BallShooter {
         dashboardMap.getDebugTab().add("Shooter PID", new SendableComponent<>(sendable));
 
         dashboardMap.getDebugTab().add("Shooter Actual (Native)", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(talon.getSelectedSensorVelocity()))));
-        dashboardMap.getDebugTab().add("Shooter Actual (RPM)", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(nativeToRpm(talon.getSelectedSensorVelocity(), RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION)))));
     }
 
     @Override
@@ -68,5 +71,23 @@ public class MotorBallShooter implements BallShooter {
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(0.0);
         }
+        double currentRpm = nativeToRpm(talon.getSelectedSensorVelocity(), RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
+        this.currentRpm = currentRpm;
+        dashboardMap.getDebugTab().getRawDashboard().get("Shooter Actual (RPM)").getStrictSetter().setDouble(currentRpm);
+
+        double current = talon.getSupplyCurrent();
+        if(current > BALL_DETECT_CURRENT_THRESHOLD){
+            ballDetectThresholdMet = true;
+        } else if(current < BALL_DETECT_CURRENT_RECOVERY){
+            if(ballDetectThresholdMet){ // ball just left
+                ballTracker.removeBallTop();
+            }
+            ballDetectThresholdMet = false;
+        }
+    }
+
+    @Override
+    public double getCurrentRpm() {
+        return currentRpm;
     }
 }

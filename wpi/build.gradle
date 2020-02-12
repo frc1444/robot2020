@@ -54,3 +54,5 @@ jar {
     //noinspection UnnecessaryQualifiedReference
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
 }
+
+//jar.dependsOn ':core:jar'

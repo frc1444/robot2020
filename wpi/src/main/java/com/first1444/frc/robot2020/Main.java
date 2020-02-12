@@ -15,18 +15,24 @@ public final class Main {
     }
 
     public static RobotBase createRobot(){
-//        final double period = TimedRobot.kDefaultPeriod;
-//        return new RoboSimRobot(new WatchdogRunnableCreator(new WpiRunnableCreator(), period){
-//            {
-//                getWatchdog().suppressTimeoutMessage(true);
-//            }
-//            @Override
-//            protected void onWatchdogDisable() {
-//            }
-//            @Override
-//            protected void printLoopOverrunMessage() {
-//            }
-//        }, period);
-        return new WpiTimedRobot(new WpiRunnableCreator());
+        final double period = TimedRobot.kDefaultPeriod;
+        return new RoboSimRobot(new WatchdogRunnableCreator(new WpiRunnableCreator(), period){
+            {
+                getWatchdog().suppressTimeoutMessage(true);
+            }
+            @Override
+            protected void onWatchdogDisable() {
+            }
+            @Override
+            protected void printLoopOverrunMessage() {
+            }
+        }, period){
+            @Override
+            public void endCompetition() {
+                System.out.println("Ending competition");
+                super.endCompetition();
+            }
+        };
+//        return new WpiTimedRobot(new WpiRunnableCreator());
     }
 }

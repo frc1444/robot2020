@@ -7,12 +7,16 @@ import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
-import com.first1444.frc.robot2020.subsystems.implementations.*;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
 import com.first1444.frc.robot2020.vision.VisionProvider;
+import com.first1444.frc.util.DummyOrientation;
 import com.first1444.frc.util.SystemType;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.reportmap.DashboardReportMap;
@@ -24,6 +28,8 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
+import com.first1444.sim.api.sensors.DefaultOrientationHandler;
+import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.DriverStationLogger;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
@@ -32,6 +38,7 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.util.WPILibVersion;
 import me.retrodaredevil.controller.implementations.InputUtil;
 import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator;
 import me.retrodaredevil.controller.output.DualShockRumble;
@@ -44,6 +51,7 @@ import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = true;
+    private static final boolean DUMMY_GYRO = DUMMY_SWERVE;
     private static final SwerveSetup SWERVE = Constants.Swerve2019.INSTANCE;
 
     @Override
@@ -53,8 +61,8 @@ public class WpiRunnableCreator implements RunnableCreator {
     @NotNull
     @Override
     public RobotRunnable createRunnable() {
-//        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
-//        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed, 0, "RoboSim");
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin, 0, WPILibVersion.Version); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed);
 
         BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
         ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
@@ -100,18 +108,16 @@ public class WpiRunnableCreator implements RunnableCreator {
                     SWERVE.getWheelBase(), SWERVE.getTrackWidth()
             );
         }
-        final BNO055 gyro = new BNO055();
-
         final Clock clock = new WpiClock();
-//        VisionPacketListener visionPacketListener = new VisionPacketListener(
-//                clock,
-//                new VisionPacketParser(
-//                        new ObjectMapper(),
-//                        Map.of(1, Rotation2.ZERO)
-//                ),
-//                "tcp://10.14.44.5:5801"
-//        );
-//        visionPacketListener.start();
+        VisionPacketListener visionPacketListener = new VisionPacketListener(
+                clock,
+                new VisionPacketParser(
+                        new ObjectMapper(),
+                        Map.of(1, Rotation2.ZERO)
+                ),
+                "tcp://10.14.44.5:5801"
+        );
+        visionPacketListener.start();
         BallTracker ballTracker = new SimpleBallTracker();
 
         final StandardControllerInput controller;
@@ -120,18 +126,24 @@ public class WpiRunnableCreator implements RunnableCreator {
         } else {
             controller = InputUtil.createPS4Controller(new WpiInputCreator(0));
         }
+        final OrientationHandler orientationHandler;
+        if(DUMMY_GYRO){
+            orientationHandler = new DefaultOrientationHandler(new DummyOrientation(Rotation2.ZERO));
+        } else {
+            orientationHandler = new BNOOrientationHandler(new BNO055());
+        }
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 controller, InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
-                new BNOOrientationHandler(gyro),
+                orientationHandler,
                 data,
                 new DummyIntake(reportMap), new MotorTurret(dashboardMap),
 //                new MotorBallShooter(ballTracker, dashboardMap),
                 new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 ballTracker,
-//                visionPacketListener
-                VisionProvider.NOTHING
+                visionPacketListener
+//                VisionProvider.NOTHING
         );
         return new RobotRunnableMultiplexer(Arrays.asList(
                 new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
@@ -144,7 +156,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     @Override
                     public void close() {
                         bundle.onRemove();
-//                        visionPacketListener.close();
+                        visionPacketListener.close();
                     }
                 }
         ));
