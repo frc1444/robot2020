@@ -15,7 +15,6 @@ import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
-import com.first1444.frc.robot2020.vision.VisionProvider;
 import com.first1444.frc.util.DummyOrientation;
 import com.first1444.frc.util.SystemType;
 import com.first1444.frc.util.pid.PidKey;

@@ -20,6 +20,7 @@ import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
 import com.first1444.frc.robot2020.subsystems.Intake
 import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker
+import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
@@ -49,6 +50,7 @@ import com.first1444.sim.gdx.implementations.surroundings.EntityRangeVisionFilte
 import com.first1444.sim.gdx.implementations.surroundings.VisionFilterMultiplexer
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
+import com.first1444.sim.gdx.render.WorldDebugRenderable
 import com.first1444.sim.gdx.sound.GdxSoundCreator
 import com.first1444.sim.gdx.velocity.AccelerateSetPointHandler
 import edu.wpi.first.networktables.NetworkTableInstance
@@ -205,14 +207,17 @@ class MyRobotCreator(
         val ballShooter = DummyBallShooter(reportMap)
         val intakeListener: IntakeListener
         val intake: Intake
-        val ballTracker: BallTracker
+        val ballTracker: BallTracker = SimpleBallTracker()
+        val updateLast = mutableListOf<Updateable>()
         run {
-            val gdxIntake = GdxIntake(reportMap, data.driverStation, preciseClock) {
+            val gdxIntake = GdxIntake(reportMap, data.driverStation, preciseClock, ballTracker) {
                 shootBall(data.driverStation, entity, turret, ballShooter.currentRpm)
             }
+            val ballRenderUpdateable = GdxBallRenderUpdateable(gdxIntake, updateableData)
+            updateLast.add(ballRenderUpdateable)
+
             intake = gdxIntake
-            ballTracker = gdxIntake
-            intakeListener = IntakeListener(updateableData.worldManager, gdxIntake::getPreviousIntakeSpeed, gdxIntake::addBall)
+            intakeListener = IntakeListener(updateableData.worldManager, gdxIntake::getPreviousIntakeSpeed, gdxIntake::onIntakeBall)
         }
         updateableData.worldManager.world.setContactListener(intakeListener)
 
@@ -279,7 +284,8 @@ class MyRobotCreator(
         return UpdateableMultiplexer(listOf(
                 entity,
                 RobotUpdateable(robotCreator),
-                intakeListener
+                intakeListener,
+                *updateLast.toTypedArray()
         ))
     }
 

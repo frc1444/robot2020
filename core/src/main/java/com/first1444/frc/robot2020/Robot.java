@@ -139,11 +139,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
         {
-//            PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
-//            packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
-//            packetQueueCreator = new PacketQueueMaster(packetQueue, true);
-            packetSender = PacketSender.NOTHING;
-            packetQueueCreator = PacketQueueCreator.NOTHING;
+            PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
+            packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
+            packetQueueCreator = new PacketQueueMaster(packetQueue, true);
+//            packetSender = PacketSender.NOTHING;
+//            packetQueueCreator = PacketQueueCreator.NOTHING;
         }
         soundMap = new SoundMap(new PacketSenderSoundCreator(packetSender, false));
 
