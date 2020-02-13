@@ -7,6 +7,7 @@ import com.first1444.frc.robot2020.autonomous.options.BasicMovementType;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.Actions;
 
 import static java.util.Objects.requireNonNull;
 
@@ -27,10 +28,16 @@ public class AutonomousModeCreator {
                 return creator.getLogCreator().createLogMessageAction("Doing nothing for autonomous!");
             case MOVE:
                 return createBasicMove(autonomousSettings.getBasicMovementType());
-            case TURN_SHOOT:
-                break;
+            case TURN_SHOOT_MOVE:
+                return new Actions.ActionQueueBuilder(
+                        createSimpleTurnShoot(startingTransform),
+                        createBasicMove(autonomousSettings.getBasicMovementType())
+                ).build();
             case MOVE_TURN_SHOOT:
-                break;
+                return new Actions.ActionQueueBuilder(
+                        createBasicMove(autonomousSettings.getBasicMovementType()),
+                        createSimpleTurnShoot(startingTransform)
+                ).build();
             case SHOOT_IMMEDIATE:
                 break;
         }
@@ -46,6 +53,9 @@ public class AutonomousModeCreator {
             return creator.getDriveCreator().createMoveRelative(new Vector2(0.0, BASIC_MOVE_DISTANCE), .5);
         }
         throw new UnsupportedOperationException("Unknown basicMovementType=" + basicMovementType);
+    }
+    private Action createSimpleTurnShoot(Transform2 startingTransform){
+        return creator.getOperatorCreator().createTurretAlignAndShootAll();
     }
 
 }

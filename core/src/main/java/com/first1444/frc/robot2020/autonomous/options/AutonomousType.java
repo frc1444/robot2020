@@ -17,8 +17,8 @@ public enum AutonomousType {
             "Move", "Moves in the specified direction",
             asList(BasicMovementType.BACKWARD, BasicMovementType.FORWARD)
     ),
-    TURN_SHOOT(
-            "Turn Shoot", "Aligns, shoots, then moves",
+    TURN_SHOOT_MOVE(
+            "Turn Shoot Move", "Aligns, shoots, then moves",
             EnumSet.allOf(BasicMovementType.class)
     ),
     MOVE_TURN_SHOOT(

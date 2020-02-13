@@ -40,7 +40,9 @@ public class TimedAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        setDone(getTimeLeft() <= 0);
+        if(getTimeLeft() <= 0) {
+            setDone(true);
+        }
     }
 
     @Override

@@ -10,11 +10,10 @@ import static java.util.Objects.requireNonNull;
 public class DummyIntake implements Intake {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
-
+    // TODO make a BaseIntake class and move a lot of code in here to that class
     private double intakeSpeed;
     private double indexerSpeed;
     private double feederSpeed;
-
 
     private double previousIntakeSpeed;
 

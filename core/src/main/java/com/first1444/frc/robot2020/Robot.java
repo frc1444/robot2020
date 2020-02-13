@@ -17,7 +17,7 @@ import com.first1444.frc.robot2020.actions.TimedAction;
 import com.first1444.frc.robot2020.actions.positioning.*;
 import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
-import com.first1444.frc.robot2020.autonomous.creator.RobotAutonomousActionCreator;
+import com.first1444.frc.robot2020.autonomous.creator.AutonomousActionCreator;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.packets.transfer.*;
 import com.first1444.frc.robot2020.perspective.FirstPersonPerspectiveOverride;
@@ -189,7 +189,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         ).canBeDone(false).canRecycle(true).build();
         dynamicAction = new Actions.ActionMultiplexerBuilder().canBeDone(true).canRecycle(true).build();
 
-        autonomousChooserState = new AutonomousChooserState(clock, new AutonomousModeCreator(new RobotAutonomousActionCreator(this)), dashboardMap);
+        autonomousChooserState = new AutonomousChooserState(clock, new AutonomousModeCreator(new AutonomousActionCreator(this)), dashboardMap);
 
         System.out.println("Finished constructor 1");
     }
@@ -313,10 +313,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public FrcLogger getLogger(){ return logger; }
 
     public SwerveDrive getDrive(){ return drive; }
-    public Intake getIntake() {
-        return intake;
-    }
+    public Intake getIntake() { return intake; }
     public BallShooter getBallShooter(){ return ballShooter; }
+    public BallTracker getBallTracker(){ return ballTracker; }
     public Turret getTurret(){ return turret; }
     public Orientation getOrientation(){
         return orientationSystem.getOrientation();
@@ -329,4 +328,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     }
 
     public SoundMap getSoundMap(){ return soundMap; }
+
+    public double getBestEstimatedTargetRpm(){
+        return BallShooter.MAX_RPM; // TODO use absolute distance accumulator to get distance from target and determine best rpm
+    }
 }

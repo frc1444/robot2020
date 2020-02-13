@@ -28,7 +28,15 @@ class BestNameControllerProvider(
     }
 
     override fun isConnected(): Boolean {
-        return controller != null
+        for(controller in Controllers.getControllers()){
+            val controllerName = controller.name.toLowerCase()
+            for(name in bestNames){
+                if(name.toLowerCase() in controllerName){
+                    return true
+                }
+            }
+        }
+        return false
     }
 
 }

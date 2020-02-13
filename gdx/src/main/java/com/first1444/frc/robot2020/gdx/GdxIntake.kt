@@ -75,6 +75,7 @@ class GdxIntake(
                     position = INDEXER_SPACE + FEEDER_SPACE
                     if(shootBall()){
                         iterator.remove()
+                        ballTracker.removeBallTop() // This is where we have this right now. We may move this call in the future (for the simulation only)
                     }
                 }
                 if(lastPosition != null && position > lastPosition - SPACE_BETWEEN){

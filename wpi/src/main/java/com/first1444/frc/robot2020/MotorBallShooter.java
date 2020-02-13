@@ -21,8 +21,8 @@ public class MotorBallShooter implements BallShooter {
     private static final double BALL_DETECT_CURRENT_THRESHOLD = 40.0; // TODO change
     private static final double BALL_DETECT_CURRENT_RECOVERY = 20.0; // TODO change
     private final BallTracker ballTracker;
-    private final TalonFX talon;
     private final DashboardMap dashboardMap;
+    private final TalonFX talon;
 
     private double rpm;
     private double currentRpm;
@@ -30,8 +30,8 @@ public class MotorBallShooter implements BallShooter {
 
     public MotorBallShooter(BallTracker ballTracker, DashboardMap dashboardMap) {
         this.ballTracker = ballTracker;
-        this.talon = new TalonFX(RobotConstants.CAN.SHOOTER);
         this.dashboardMap = dashboardMap;
+        talon = new TalonFX(RobotConstants.CAN.SHOOTER);
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         talon.setInverted(InvertType.InvertMotorOutput);
         talon.setSensorPhase(true);
@@ -61,7 +61,6 @@ public class MotorBallShooter implements BallShooter {
         final double rpm = this.rpm;
         this.rpm = 0;
         if(rpm != 0 && VELOCITY_CONTROL){
-//            double velocity = rpm * RobotConstants.TALON_FX_ENCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.CTRE_UNIT_CONVERSION;
             double velocity = rpmToNative(rpm, RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
             talon.set(ControlMode.Velocity, velocity);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
