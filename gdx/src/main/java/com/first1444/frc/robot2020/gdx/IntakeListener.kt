@@ -38,7 +38,7 @@ class IntakeListener(
     override fun update(delta: Float) {
         val toRemove = mutableListOf<PowerCellUserData>()
         for(entry in map){
-            val newValue = entry.value + delta / .4f * intakeSpeedGetter().toFloat()
+            val newValue = entry.value + delta / .3f * intakeSpeedGetter().toFloat()
             if(newValue >= 1.0f){
                 toRemove.add(entry.key)
             } else {

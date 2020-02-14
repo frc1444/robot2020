@@ -104,7 +104,7 @@ public class AutonomousModeCreator {
                         ).build(),
                         intakeForever
                 ),
-                Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(1.0), intakeForever),
+                Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(0.4), intakeForever),
                 creator.getDriveCreator().createMoveToAbsolute(
                         shootPosition, new ConstantSpeedProvider(.5),
                         new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)

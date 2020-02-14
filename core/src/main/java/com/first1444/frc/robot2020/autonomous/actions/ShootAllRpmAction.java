@@ -29,7 +29,6 @@ public class ShootAllRpmAction extends SimpleAction {
         super.onUpdate();
         if(ballTracker.getBallCount() == 0){
             setDone(true);
-            return;
         }
         ballShooter.setDesiredRpm(rpm);
         double currentRpm = ballShooter.getCurrentRpm();

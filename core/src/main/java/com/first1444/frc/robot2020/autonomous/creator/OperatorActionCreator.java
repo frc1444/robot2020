@@ -40,7 +40,10 @@ public class OperatorActionCreator {
                     double rpm = robot.getBestEstimatedTargetRpm();
                     return Actions.createSupplementaryAction(
                             FirstActionDone.create(
-                                    new ShootAllRpmAction(robot.getIntake(), robot.getBallShooter(), robot.getBallTracker(), rpm),
+                                    new TimedDoneEndAction(
+                                            false, robot.getClock(), .4,
+                                            new ShootAllRpmAction(robot.getIntake(), robot.getBallShooter(), robot.getBallTracker(), rpm)
+                                    ),
                                     new Actions.ActionQueueBuilder(
                                             new TimedAction(false, robot.getClock(), 5.0),
                                             Actions.createRunOnce(() -> System.out.println("Stopping shoot all rpm action because 5 seconds has passed."))
