@@ -8,7 +8,7 @@ public final class AutonomousSettings {
 
     public AutonomousSettings(AutonomousType autonomousType, BasicMovementType basicMovementType) {
         this.autonomousType = requireNonNull(autonomousType);
-        this.basicMovementType = requireNonNull(basicMovementType);
+        this.basicMovementType = basicMovementType;
     }
 
     public AutonomousType getAutonomousType() { return autonomousType; }

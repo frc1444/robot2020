@@ -5,8 +5,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.*;
 
 public enum AutonomousType {
     DO_NOTHING(
@@ -28,7 +27,16 @@ public enum AutonomousType {
     SHOOT_IMMEDIATE(
             "Shoot Immediate", "Shoots, then moves",
             EnumSet.allOf(BasicMovementType.class)
-    );
+    ),
+    CENTER_RV(
+            "Center RV", "Goes for two of the three center balls in the RV zone",
+            emptyList()
+    ),
+    GUARD_TRENCH(
+            "Guard Trench", "Goes under the trench to guard it",
+            emptyList()
+    )
+    ;
 
     private final String displayName;
     private final String description;

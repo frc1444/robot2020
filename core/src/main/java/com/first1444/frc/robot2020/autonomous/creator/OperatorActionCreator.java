@@ -19,7 +19,7 @@ public class OperatorActionCreator {
 
     public Action createIntakeRunForever() {
         Intake intake = robot.getIntake();
-        return Actions.createRunForever(() -> {
+        return Actions.createRunForeverRecyclable(() -> {
             intake.setIntakeSpeed(1.0);
             intake.setIndexerSpeed(1.0);
         });

@@ -10,11 +10,13 @@ public class AutonomousActionCreator {
     private final LogActionCreator logActionCreator;
     private final SwerveDriveActionCreator driveCreator;
     private final OperatorActionCreator operatorCreator;
+    private final BasicActionCreator basicActionCreator;
 
     public AutonomousActionCreator(Robot robot) {
         logActionCreator = new FrcLogActionCreator(System.out, robot.getLogger());
         driveCreator = new DefaultSwerveDriveActionCreator(robot.getDrive(), robot.getOrientation(), robot.getRelativeDistanceAccumulator(), robot.getAbsoluteDistanceAccumulator());
         operatorCreator = new OperatorActionCreator(robot);
+        basicActionCreator = new BasicActionCreator(robot);
     }
     public LogActionCreator getLogCreator() {
         return logActionCreator;
@@ -25,5 +27,7 @@ public class AutonomousActionCreator {
     public OperatorActionCreator getOperatorCreator() {
         return operatorCreator;
     }
-
+    public BasicActionCreator getBasicActionCreator() {
+        return basicActionCreator;
+    }
 }

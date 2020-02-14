@@ -4,6 +4,9 @@ import com.first1444.frc.robot2020.autonomous.creator.AutonomousActionCreator;
 import com.first1444.frc.robot2020.autonomous.options.AutonomousSettings;
 import com.first1444.frc.robot2020.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2020.autonomous.options.BasicMovementType;
+import com.first1444.frc.util.autonomous.actions.movement.ConstantSpeedProvider;
+import com.first1444.frc.util.autonomous.actions.movement.DesiredRotationProvider;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import me.retrodaredevil.action.Action;
@@ -22,6 +25,12 @@ public class AutonomousModeCreator {
     }
 
     public Action createAction(AutonomousSettings autonomousSettings, Transform2 startingTransform) {
+        boolean onInitLine = startingTransform.getY() >= 3.6 && startingTransform.getY() <= 5.9;
+        Action notOnInitLineLogAction = creator.getLogCreator().createLogWarningAction("Are you starting on the init line? We don't want to run auto if you aren't... startingTransform: " + startingTransform);
+        if(!onInitLine){
+            System.out.println("We aren't starting on the init line!!! startingTransform: " + startingTransform);
+        }
+
         AutonomousType autonomousType = autonomousSettings.getAutonomousType();
         switch (autonomousType) {
             case DO_NOTHING:
@@ -40,9 +49,20 @@ public class AutonomousModeCreator {
                 ).build();
             case SHOOT_IMMEDIATE:
                 break;
+            case CENTER_RV:
+                if(!onInitLine){
+                    return notOnInitLineLogAction;
+                }
+                return createCenterRVAuto(startingTransform);
+            case GUARD_TRENCH:
+                if(!onInitLine){
+                    return notOnInitLineLogAction;
+                }
+                return createGuardTrench(startingTransform);
         }
         return creator.getLogCreator().createLogWarningAction("Unable to create action for autonomousType=" + autonomousType);
     }
+    // region Reused Stuff
     private Action createBasicMove(BasicMovementType basicMovementType){
         requireNonNull(basicMovementType);
         if(basicMovementType == BasicMovementType.STILL){
@@ -55,7 +75,51 @@ public class AutonomousModeCreator {
         throw new UnsupportedOperationException("Unknown basicMovementType=" + basicMovementType);
     }
     private Action createSimpleTurnShoot(Transform2 startingTransform){
+        // TODO also physically turn robot if we need to
         return creator.getOperatorCreator().createTurretAlignAndShootAll();
+    }
+    // endregion
+
+    private Action createGuardTrench(Transform2 startingTransform){
+        if(startingTransform.getX() < 2.4){
+            return creator.getLogCreator().createLogWarningAction("If you run trench guard, you'll run into something! startingTransform: " + startingTransform);
+        }
+        return new Actions.ActionQueueBuilder(
+                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.5, -2.2), 1.0, startingTransform.getRotation())
+        ).build();
+    }
+    private Action createCenterRVAuto(Transform2 startingTransform){
+        Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
+        Rotation2 pickupRotation = Rotation2.fromDegrees(-75);
+        Vector2 shootPosition = new Vector2(.875, 3.750);
+        Rotation2 shootRotation = Rotation2.DEG_90;
+        return new Actions.ActionQueueBuilder(
+                creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 3.3), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createTurnToOrientation(pickupRotation),
+                Actions.createSupplementaryAction(
+                        new Actions.ActionQueueBuilder(
+                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 2.4), .3, pickupRotation),
+                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.4, 2.23), .2, pickupRotation)
+                        ).build(),
+                        intakeForever
+                ),
+                Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(1.0), intakeForever),
+                creator.getDriveCreator().createMoveToAbsolute(shootPosition, new ConstantSpeedProvider(.5), currentAbsolutePosition -> {
+                    final double startDistance = 1.8;
+                    final double endDistance = .6;
+                    double distance = currentAbsolutePosition.distance(shootPosition);
+                    System.out.println(distance);
+                    if(distance > startDistance){
+                        return pickupRotation;
+                    }
+                    if(distance < endDistance){
+                        return shootRotation;
+                    }
+                    double percent = distance / (startDistance - endDistance);
+                    return pickupRotation.plusRadians((shootRotation.getRadians() - pickupRotation.getRadians()) * percent);
+                }),
+                creator.getOperatorCreator().createTurretAlignAndShootAll()
+        ).build();
     }
 
 }
