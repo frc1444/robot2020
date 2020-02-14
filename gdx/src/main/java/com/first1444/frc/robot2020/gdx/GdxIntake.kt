@@ -136,7 +136,7 @@ class GdxBallRenderUpdateable(
 
     override fun update(delta: Float) {
         updateableData.uiStage.addActor(table)
-        textLabel.setText("Ball Count: " + intake.balls.size)
+        textLabel.setText("Actual Ball Count: " + intake.balls.size)
         val builder = StringBuilder()
         val balls = intake.balls
         for(ball in balls){

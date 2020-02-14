@@ -6,6 +6,7 @@ import com.first1444.frc.robot2020.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2020.autonomous.options.BasicMovementType;
 import com.first1444.frc.util.autonomous.actions.movement.ConstantSpeedProvider;
 import com.first1444.frc.util.autonomous.actions.movement.DesiredRotationProvider;
+import com.first1444.frc.util.autonomous.actions.movement.LinearDistanceRotationProvider;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
@@ -104,20 +105,10 @@ public class AutonomousModeCreator {
                         intakeForever
                 ),
                 Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(1.0), intakeForever),
-                creator.getDriveCreator().createMoveToAbsolute(shootPosition, new ConstantSpeedProvider(.5), currentAbsolutePosition -> {
-                    final double startDistance = 1.8;
-                    final double endDistance = .6;
-                    double distance = currentAbsolutePosition.distance(shootPosition);
-                    System.out.println(distance);
-                    if(distance > startDistance){
-                        return pickupRotation;
-                    }
-                    if(distance < endDistance){
-                        return shootRotation;
-                    }
-                    double percent = distance / (startDistance - endDistance);
-                    return pickupRotation.plusRadians((shootRotation.getRadians() - pickupRotation.getRadians()) * percent);
-                }),
+                creator.getDriveCreator().createMoveToAbsolute(
+                        shootPosition, new ConstantSpeedProvider(.5),
+                        new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)
+                ),
                 creator.getOperatorCreator().createTurretAlignAndShootAll()
         ).build();
     }
