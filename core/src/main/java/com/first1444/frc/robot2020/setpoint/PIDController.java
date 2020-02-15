@@ -14,6 +14,8 @@ import com.first1444.dashboard.advanced.SendableHelper;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
+import com.first1444.frc.util.pid.PidKey;
+import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.sim.api.Clock;
 import org.jetbrains.annotations.NotNull;
 
@@ -95,6 +97,9 @@ public class PIDController implements Sendable<ActiveComponent> {
         this.p = p;
         this.i = i;
         this.d = d;
+    }
+    public void applyFrom(ValueMap<PidKey> pidConfig){
+        setPID(pidConfig.getDouble(PidKey.P), pidConfig.getDouble(PidKey.I), pidConfig.getDouble(PidKey.D));
     }
 
     /**
