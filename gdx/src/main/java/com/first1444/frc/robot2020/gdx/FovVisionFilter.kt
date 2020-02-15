@@ -8,6 +8,7 @@ import com.first1444.sim.gdx.entity.Entity
 import com.first1444.sim.gdx.implementations.surroundings.VisionFilter
 import kotlin.math.abs
 
+@Deprecated("Use the class in the com.first1444.sim.api.frc.implementations package")
 class FovVisionFilter(
         private val entity: Entity,
         private val viewOffset: Rotation2,

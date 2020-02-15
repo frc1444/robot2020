@@ -85,6 +85,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final WheelSpinner wheelSpinner;
     private final Climber climber;
     private final BallTracker ballTracker;
+    private final VisionProvider visionProvider;
 
     private final PartUpdater partUpdater = new PartUpdater();
     private final RobotInput robotInput;
@@ -130,6 +131,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.wheelSpinner = wheelSpinner;
         this.climber = climber;
         this.ballTracker = ballTracker;
+        this.visionProvider = visionProvider;
         robotInput = new RobotInput(
                 controller,
                 joystick, buttonBoard, rumble
@@ -325,6 +327,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     }
     public DistanceAccumulator getAbsoluteDistanceAccumulator(){
         return absoluteDistanceAccumulator;
+    }
+    public VisionProvider getVisionProvider(){
+        return visionProvider;
     }
 
     public SoundMap getSoundMap(){ return soundMap; }

@@ -7,7 +7,10 @@ import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
-import com.first1444.frc.robot2020.subsystems.implementations.*;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
+import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
@@ -135,7 +138,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                 data,
                 new DummyIntake(reportMap),
 //                new DummyTurret(reportMap),
-                new MotorTurret(dashboardMap),
+                new MotorTurret(clock, dashboardMap),
 //                new MotorBallShooter(ballTracker, dashboardMap),
                 new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
