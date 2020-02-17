@@ -210,14 +210,14 @@ class MyRobotCreator(
         val ballTracker: BallTracker = SimpleBallTracker()
         val updateLast = mutableListOf<Updateable>()
         run {
-            val gdxIntake = GdxIntake(reportMap, data.driverStation, preciseClock, ballTracker) {
+            val gdxIntake = GdxIntake(data.driverStation, preciseClock, ballTracker) {
                 shootBall(data.driverStation, entity, turret, ballShooter.currentRpm)
             }
             val ballRenderUpdateable = GdxBallRenderUpdateable(gdxIntake, updateableData)
             updateLast.add(ballRenderUpdateable)
 
             intake = gdxIntake
-            intakeListener = IntakeListener(updateableData.worldManager, gdxIntake::getPreviousIntakeSpeed, gdxIntake::onIntakeBall)
+            intakeListener = IntakeListener(updateableData.worldManager, gdxIntake::previousIntakeSpeed, gdxIntake::onIntakeBall)
         }
         updateableData.worldManager.world.setContactListener(intakeListener)
 

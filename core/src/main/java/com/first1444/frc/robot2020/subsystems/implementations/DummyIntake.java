@@ -10,7 +10,6 @@ public class DummyIntake extends BaseIntake {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
 
-    private double previousIntakeSpeed;
 
     public DummyIntake(ReportMap reportMap) {
         this.reportMap = requireNonNull(reportMap);
@@ -20,7 +19,5 @@ public class DummyIntake extends BaseIntake {
         reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
         reportMap.report("Indexer Speed", FORMAT.format(indexerSpeed));
         reportMap.report("Feeder Speed", FORMAT.format(feederSpeed));
-        previousIntakeSpeed = intakeSpeed;
     }
-    public double getPreviousIntakeSpeed(){ return previousIntakeSpeed; }
 }

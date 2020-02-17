@@ -31,7 +31,6 @@ class IntakeBall {
 }
 
 class GdxIntake(
-        reportMap: ReportMap,
         private val enabledState: EnabledState,
         private val clock: Clock,
         private val ballTracker: BallTracker,
@@ -39,6 +38,8 @@ class GdxIntake(
 ) : BaseIntake() {
     private var lastTimestamp: Double? = null
     private val mutableBalls = mutableListOf<IntakeBall>()
+
+    var previousIntakeSpeed: Double = 0.0
 
     fun onIntakeBall(){
         ballTracker.addBall()
@@ -61,6 +62,7 @@ class GdxIntake(
         get() = mutableBalls
 
     override fun run(intakeSpeed: Double, indexerSpeed: Double, feederSpeed: Double) {
+        previousIntakeSpeed = intakeSpeed
         val timestamp = clock.timeSeconds
         val lastTimestamp = lastTimestamp
         this.lastTimestamp = timestamp
