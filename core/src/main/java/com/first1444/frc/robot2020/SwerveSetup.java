@@ -4,13 +4,17 @@ import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 
 public interface SwerveSetup {
-    int getFLDriveCAN();
+    enum DriveType { CIM, FALCON }
+
+    DriveType getDriveType();
+
     int getFRDriveCAN();
+    int getFLDriveCAN();
     int getRLDriveCAN();
     int getRRDriveCAN();
 
-    int getFLSteerCAN();
     int getFRSteerCAN();
+    int getFLSteerCAN();
     int getRLSteerCAN();
     int getRRSteerCAN();
 

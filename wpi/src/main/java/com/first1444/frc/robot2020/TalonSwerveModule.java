@@ -1,10 +1,10 @@
 package com.first1444.frc.robot2020;
 
-import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.value.BasicValue;
@@ -40,6 +40,7 @@ public class TalonSwerveModule implements SwerveModule {
     private final int quadCountsPerRevolution;
 
     private final BaseMotorController drive;
+    private final SwerveSetup.DriveType driveType;
     private final TalonSRX steer;
     private final ValueMap<ModuleConfig> moduleConfig;
 
@@ -49,13 +50,20 @@ public class TalonSwerveModule implements SwerveModule {
     private double targetPositionDegrees = 0;
 
     public TalonSwerveModule(
-        String name, int driveId, int steerId, int quadCountsPerRevolution,
-        MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
-        MutableValueMap<ModuleConfig> moduleConfig, DashboardMap dashboardMap) {
+            String name, SwerveSetup.DriveType driveType, int driveId, int steerId, int quadCountsPerRevolution,
+            MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
+            MutableValueMap<ModuleConfig> moduleConfig, DashboardMap dashboardMap) {
         this.name = name;
+        this.driveType = driveType;
         this.quadCountsPerRevolution = quadCountsPerRevolution;
 
-        drive = new TalonSRX(driveId);
+        if(driveType == SwerveSetup.DriveType.CIM) {
+            drive = new TalonSRX(driveId);
+        } else if(driveType == SwerveSetup.DriveType.FALCON){
+            drive = new TalonFX(driveId);
+        } else {
+            throw new UnsupportedOperationException("Unknown drive type: " + driveType);
+        }
         steer = new TalonSRX(steerId);
         System.out.println("encoder " + name + " " + steer.getSensorCollection().getAnalogInRaw());
         this.moduleConfig = moduleConfig;
@@ -68,7 +76,7 @@ public class TalonSwerveModule implements SwerveModule {
         drive.configClosedLoopPeriod(RobotConstants.SLOT_INDEX, CLOSED_LOOP_TIME, RobotConstants.INIT_TIMEOUT);
 
         steer.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
-        steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, RobotConstants.INIT_TIMEOUT);
+//        steer.configSetParameter(ParamEnum.eFeedbackNotContinuous, 0, 0, 0, RobotConstants.INIT_TIMEOUT);
         steer.setSensorPhase(true);
         steer.configClosedLoopPeriod(RobotConstants.SLOT_INDEX, CLOSED_LOOP_TIME, RobotConstants.INIT_TIMEOUT);
 
@@ -128,9 +136,16 @@ public class TalonSwerveModule implements SwerveModule {
 
         { // speed code
             if(VELOCITY_CONTROL){
-                final double velocity = speed * speedMultiplier * RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION
-                        * RobotConstants.MAX_SWERVE_DRIVE_RPM / (double) RobotConstants.CTRE_UNIT_CONVERSION;
-                drive.set(ControlMode.Velocity, velocity); // taking .015 ms
+                final double countsPerRevolution;
+                if(driveType == SwerveSetup.DriveType.CIM){
+                    countsPerRevolution = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION;
+                } else if(driveType == SwerveSetup.DriveType.FALCON){
+                    countsPerRevolution = RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
+                } else throw new UnsupportedOperationException("Unknown drive type: " + driveType);
+
+                final double velocity = speed * speedMultiplier * countsPerRevolution
+                        * RobotConstants.MAX_CIM_RPM / (double) RobotConstants.CTRE_UNIT_CONVERSION; // TODO we might want to make falcons faster
+                drive.set(ControlMode.Velocity, velocity);
             } else {
                 drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
             }
@@ -144,11 +159,10 @@ public class TalonSwerveModule implements SwerveModule {
         this.speed = speed;
     }
 
-
     @Override
     public double getDistanceTraveledMeters() {
         final double currentDistance = drive.getSelectedSensorPosition(RobotConstants.PID_INDEX)
-                * WHEEL_CIRCUMFERENCE_INCHES / (double) RobotConstants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+                * WHEEL_CIRCUMFERENCE_INCHES / (double) RobotConstants.CIM_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
         return inchesToMeters(currentDistance);
     }
 

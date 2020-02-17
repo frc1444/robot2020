@@ -60,8 +60,9 @@ public class WpiRunnableCreator implements RunnableCreator {
     @NotNull
     @Override
     public RobotRunnable createRunnable() {
-        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin, 0, WPILibVersion.Version); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
-        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed);
+        System.out.println("======== Start of createRunnable ========");
+//        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin, 0, WPILibVersion.Version); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
+//        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed);
 
         BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
         ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
@@ -77,10 +78,22 @@ public class WpiRunnableCreator implements RunnableCreator {
 
         final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
         final MutableValueMap<PidKey> steerPid = steerPidSendable.getMutableValueMap();
-        drivePid
-                .setDouble(PidKey.P, 1.5)
-                .setDouble(PidKey.F, 1.0)
-                .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
+        final SwerveSetup.DriveType driveType = SWERVE.getDriveType();
+        if(driveType == SwerveSetup.DriveType.CIM) {
+            drivePid
+                    .setDouble(PidKey.P, 1.5)
+                    .setDouble(PidKey.F, 1.0)
+                    .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
+        } else if(driveType == SwerveSetup.DriveType.FALCON){
+            // TODO tune PID constants for Falcon
+            double ratio = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
+            drivePid
+                    .setDouble(PidKey.P, 1.5 * ratio)
+                    .setDouble(PidKey.F, 1.0 * ratio)
+                    .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
+        } else {
+            throw new UnsupportedOperationException("Unknown drive type: " + driveType);
+        }
         steerPid
                 .setDouble(PidKey.P, 12)
                 .setDouble(PidKey.I, .03);
@@ -93,16 +106,16 @@ public class WpiRunnableCreator implements RunnableCreator {
         } else {
             final int quadCounts = SWERVE.getQuadCountsPerRevolution();
             data = new FourWheelSwerveDriveData(
-                    new TalonSwerveModule("front right", SWERVE.getFRDriveCAN(), SWERVE.getFRSteerCAN(), quadCounts, drivePid, steerPid,
+                    new TalonSwerveModule("front right", driveType, SWERVE.getFRDriveCAN(), SWERVE.getFRSteerCAN(), quadCounts, drivePid, steerPid,
                             SWERVE.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
 
-                    new TalonSwerveModule("front left", SWERVE.getFLDriveCAN(), SWERVE.getFLSteerCAN(), quadCounts, drivePid, steerPid,
+                    new TalonSwerveModule("front left", driveType, SWERVE.getFLDriveCAN(), SWERVE.getFLSteerCAN(), quadCounts, drivePid, steerPid,
                             SWERVE.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
 
-                    new TalonSwerveModule("rear left", SWERVE.getRLDriveCAN(), SWERVE.getRLSteerCAN(), quadCounts, drivePid, steerPid,
+                    new TalonSwerveModule("rear left", driveType, SWERVE.getRLDriveCAN(), SWERVE.getRLSteerCAN(), quadCounts, drivePid, steerPid,
                             SWERVE.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
 
-                    new TalonSwerveModule("rear right", SWERVE.getRRDriveCAN(), SWERVE.getRRSteerCAN(), quadCounts, drivePid, steerPid,
+                    new TalonSwerveModule("rear right", driveType, SWERVE.getRRDriveCAN(), SWERVE.getRRSteerCAN(), quadCounts, drivePid, steerPid,
                             SWERVE.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
                     SWERVE.getWheelBase(), SWERVE.getTrackWidth()
             );

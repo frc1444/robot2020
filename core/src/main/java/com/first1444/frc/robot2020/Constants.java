@@ -26,6 +26,11 @@ public final class Constants {
     public enum Swerve2018 implements SwerveSetup{
         INSTANCE;
 
+        @Override
+        public DriveType getDriveType() {
+            return DriveType.CIM;
+        }
+
         @Override public int getFLDriveCAN() { return 4; }
         @Override public int getFRDriveCAN() { return 3; }
         @Override public int getRLDriveCAN() { return 2; }
@@ -82,6 +87,11 @@ public final class Constants {
     public enum Swerve2019 implements SwerveSetup {
         INSTANCE;
 
+        @Override
+        public DriveType getDriveType() {
+            return DriveType.CIM;
+        }
+
         // Yup, we're using some of the same constants as last year, that doesn't mean everything will be the same, though!
         @Override public int getFLDriveCAN() { return 4; }
         @Override public int getFRDriveCAN() { return 3; }
@@ -134,6 +144,58 @@ public final class Constants {
             return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 55)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 858)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
+        }
+    }
+    public enum Swerve2020 implements SwerveSetup {
+        INSTANCE;
+
+        @Override
+        public DriveType getDriveType() {
+            return DriveType.FALCON;
+        }
+
+        // TODO
+        @Override public int getFRDriveCAN() { return 11; }
+        @Override public int getFLDriveCAN() { return 12; }
+        @Override public int getRLDriveCAN() { return 13; }
+        @Override public int getRRDriveCAN() { return 14; }
+
+        @Override public int getFRSteerCAN() { return 15; }
+        @Override public int getFLSteerCAN() { return 16; }
+        @Override public int getRLSteerCAN() { return 17; }
+        @Override public int getRRSteerCAN() { return 18; }
+
+        @Override
+        public double getWheelBase() {
+            return inchesToMeters(24.0);
+        }
+
+        @Override
+        public double getTrackWidth() {
+            return inchesToMeters(22.75);
+        }
+
+        @Override
+        public int getQuadCountsPerRevolution() {
+            return 628;
+        }
+
+        // TODO offsets
+        @Override
+        public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+        }
+        @Override
+        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+        }
+        @Override
+        public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+        }
+        @Override
+        public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
         }
     }
 
