@@ -155,15 +155,15 @@ public final class Constants {
         }
 
         // TODO
-        @Override public int getFRDriveCAN() { return 11; }
-        @Override public int getFLDriveCAN() { return 12; }
-        @Override public int getRLDriveCAN() { return 13; }
-        @Override public int getRRDriveCAN() { return 14; }
+        @Override public int getFRDriveCAN() { return 21; }
+        @Override public int getFLDriveCAN() { return 22; }
+        @Override public int getRLDriveCAN() { return 23; }
+        @Override public int getRRDriveCAN() { return 24; }
 
-        @Override public int getFRSteerCAN() { return 15; }
-        @Override public int getFLSteerCAN() { return 16; }
-        @Override public int getRLSteerCAN() { return 17; }
-        @Override public int getRRSteerCAN() { return 18; }
+        @Override public int getFRSteerCAN() { return 25; }
+        @Override public int getFLSteerCAN() { return 26; }
+        @Override public int getRLSteerCAN() { return 27; }
+        @Override public int getRRSteerCAN() { return 28; }
 
         @Override
         public double getWheelBase() {

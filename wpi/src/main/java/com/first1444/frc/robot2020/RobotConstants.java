@@ -28,6 +28,9 @@ public final class RobotConstants {
     public static final int CIM_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
     public static final double FALCON_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534.0 * FALCON_ENCODER_COUNTS_PER_REVOLUTION / CIMCODER_COUNTS_PER_REVOLUTION;
 
+    /**
+     * Contains constants for CAN Devices. Note swerve CAN IDs can be found in {@link Constants}
+     */
     public static final class CAN {
         private CAN(){ throw new UnsupportedOperationException(); }
 

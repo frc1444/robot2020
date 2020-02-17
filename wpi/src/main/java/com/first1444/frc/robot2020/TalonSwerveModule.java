@@ -161,8 +161,15 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public double getDistanceTraveledMeters() {
+        final double encoderCountsPerRevolution;
+        if(driveType == SwerveSetup.DriveType.CIM){
+            encoderCountsPerRevolution = RobotConstants.CIM_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+        } else if(driveType == SwerveSetup.DriveType.FALCON){
+            encoderCountsPerRevolution = RobotConstants.FALCON_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+        } else throw new UnsupportedOperationException("Unknown drive type: " + driveType);
+
         final double currentDistance = drive.getSelectedSensorPosition(RobotConstants.PID_INDEX)
-                * WHEEL_CIRCUMFERENCE_INCHES / (double) RobotConstants.CIM_SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+                * WHEEL_CIRCUMFERENCE_INCHES / encoderCountsPerRevolution;
         return inchesToMeters(currentDistance);
     }
 

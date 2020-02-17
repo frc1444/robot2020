@@ -2,6 +2,7 @@ package com.first1444.frc.robot2020.gdx
 
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker
+import com.first1444.frc.robot2020.subsystems.implementations.BaseIntake
 import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
 import com.first1444.frc.util.reportmap.ReportMap
 import com.first1444.sim.api.Clock
@@ -35,7 +36,7 @@ class GdxIntake(
         private val clock: Clock,
         private val ballTracker: BallTracker,
         private val shootBall: () -> Boolean
-) : DummyIntake(reportMap) {
+) : BaseIntake() {
     private var lastTimestamp: Double? = null
     private val mutableBalls = mutableListOf<IntakeBall>()
 
@@ -59,7 +60,7 @@ class GdxIntake(
     val balls: List<IntakeBall>
         get() = mutableBalls
 
-    override fun run() {
+    override fun run(intakeSpeed: Double, indexerSpeed: Double, feederSpeed: Double) {
         val timestamp = clock.timeSeconds
         val lastTimestamp = lastTimestamp
         this.lastTimestamp = timestamp
@@ -85,7 +86,6 @@ class GdxIntake(
                 lastPosition = position
             }
         }
-        super.run() // sets indexerSpeed and feederSpeed to 0, so we have to call super.run() after we use them
     }
 }
 class GdxBallRenderUpdateable(

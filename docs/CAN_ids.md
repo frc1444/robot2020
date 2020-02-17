@@ -1,10 +1,14 @@
 # CAN IDs
-Just some ideas for a convention for our CAN IDs:
-* Don't use 0
-* 1 through 9 are used for Talon SRX Swerve Modules
-* 10 through 19 are used for Talon FX Swerve Modules
-* 20 through 29 are used for mechanisms using Talon SRXs
-* 30 through 39 are used for mechanisms using Victor SPXs
-* 40 through 49 are used for mechanisms using Talon FXs
-* 50 through 59 are used for mechanisms using Spark MAXs
-* 100 is our PDP
+* https://docs.wpilib.org/en/latest/docs/software/can-devices/can-addressing.html
+
+CAN IDs use 6 bits, so they can range from 0 to 63. However, 63 is reserved.
+
+Just some ideas for a convention for our CAN IDs: (We may not use this)
+* Don't use 0 (devices default to 0)
+* 1 through 19 are for testing
+* 20 through 29 are used for Talon SRX and Talon FX Swerve Modules (21 through 28 recommended)
+* 30 through 39 are used for mechanisms using Talon SRXs, Talon FXs, and Victor SPXs
+* 40 through 49 are used for mechanisms using Spark MAXs
+* 50 through 59 are for any other devices
+* 60 is our PDP
+* Don't use 63
