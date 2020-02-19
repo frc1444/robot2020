@@ -50,7 +50,6 @@ import com.first1444.sim.gdx.implementations.surroundings.EntityRangeVisionFilte
 import com.first1444.sim.gdx.implementations.surroundings.VisionFilterMultiplexer
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
-import com.first1444.sim.gdx.render.WorldDebugRenderable
 import com.first1444.sim.gdx.sound.GdxSoundCreator
 import com.first1444.sim.gdx.velocity.AccelerateSetPointHandler
 import edu.wpi.first.networktables.NetworkTableInstance
@@ -241,8 +240,9 @@ class MyRobotCreator(
             // NOTE: I have "physicalLocationSwapped" set to true because I test with a Nintendo controller most of the time
             BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         }
-        val joystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(BestNameControllerProvider(listOf("attack"))))
-        val buttonBoard = GdxControllerPartCreator(IndexedControllerProvider(3))
+        val extremeJoystick = InputUtil.createExtremeJoystick(GdxControllerPartCreator(BestNameControllerProvider(listOf("extreme"))))
+        val attackJoystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(BestNameControllerProvider(listOf("attack"))))
+//        val buttonBoard = GdxControllerPartCreator(IndexedControllerProvider(3))
 
         val robotCreator = RunnableCreator.wrap {
 
@@ -258,7 +258,7 @@ class MyRobotCreator(
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), preciseClock,
                     shuffleboardMap,
-                    controller, joystick, buttonBoard, DisconnectedRumble.getInstance(),
+                    controller, extremeJoystick, attackJoystick, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     intake, turret, ballShooter, DummyWheelSpinner(reportMap), DummyClimber(reportMap),

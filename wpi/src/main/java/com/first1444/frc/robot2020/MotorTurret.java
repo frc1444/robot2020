@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
@@ -13,7 +14,6 @@ import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import static java.lang.Math.abs;
 
@@ -54,14 +54,19 @@ public class MotorTurret extends BaseTurret {
         dashboardMap.getDebugTab().add("Turret PID", new SendableComponent<>(sendable));
         dashboardMap.getDebugTab().add("Turret Raw Degrees", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(getRotationDegreesRaw()))));
         dashboardMap.getDebugTab().add("Turret Degrees", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(getRotationDegrees()))));
+        dashboardMap.getUserTab().add(
+                "Turret Encoder",
+                new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(encoder.isConnected()))),
+                (metadata) -> new ComponentMetadataHelper(metadata).setPosition(2, 4).setSize(1, 1)
+        );
     }
     @Override
     protected void run(DesiredState desiredState) {
         Rotation2 rotation = desiredState.getDesiredRotation();
         boolean encoderConnected = encoder.isConnected();
-        if(!encoderConnected){
-            System.out.println("Turret Encoder is not connected!");
-        }
+//        if(!encoderConnected){
+//            System.out.println("Turret Encoder is not connected!");
+//        }
         if(rotation != null){
             if(!encoderConnected){
                 talon.set(ControlMode.PercentOutput, 0.0);

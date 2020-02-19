@@ -146,14 +146,14 @@ public class WpiRunnableCreator implements RunnableCreator {
         }
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
-                controller, InputUtil.createAttackJoystick(new WpiInputCreator(2)), new WpiInputCreator(3), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
+                controller, InputUtil.createExtremeJoystick(new WpiInputCreator(1)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 orientationHandler,
                 data,
                 new DummyIntake(reportMap),
 //                new DummyTurret(reportMap),
                 new MotorTurret(clock, dashboardMap),
-//                new MotorBallShooter(ballTracker, dashboardMap),
-                new DummyBallShooter(reportMap),
+                new MotorBallShooter(ballTracker, dashboardMap),
+//                new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 ballTracker,
                 visionPacketListener

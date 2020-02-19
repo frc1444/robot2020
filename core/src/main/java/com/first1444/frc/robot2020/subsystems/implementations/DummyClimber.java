@@ -1,13 +1,10 @@
 package com.first1444.frc.robot2020.subsystems.implementations;
 
-import com.first1444.frc.robot2020.subsystems.Climber;
 import com.first1444.frc.util.reportmap.ReportMap;
 
 import java.text.DecimalFormat;
 
-import static java.lang.Math.abs;
-
-public class DummyClimber implements Climber {
+public class DummyClimber extends BaseClimber {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
 
@@ -20,38 +17,20 @@ public class DummyClimber implements Climber {
     }
 
     @Override
-    public void setRawSpeed(double speed) {
-        if(abs(speed) > 1){
-            throw new IllegalArgumentException("speed is out of range! speed=" + speed);
-        }
-        this.speed = speed;
-        startingPosition = false;
-        storedPosition = false;
+    protected void useSpeed(double speed) {
+        report("Speed " + FORMAT.format(speed));
     }
 
     @Override
-    public void startingPosition() {
-        startingPosition = true;
-        storedPosition = false;
+    protected void goToStartingPosition() {
+        report("Starting position");
     }
 
     @Override
-    public void storedPosition() {
-        startingPosition = false;
-        storedPosition = true;
+    protected void goToStoredPosition() {
+        report("Stored position");
     }
-
-    @Override
-    public void run() {
-        final Double speed = this.speed;
-        final String movementString;
-        if(startingPosition){
-            movementString = "Starting position";
-        } else if(storedPosition){
-            movementString = "Stored position";
-        } else {
-            movementString = "Speed " + FORMAT.format(speed);
-        }
+    private void report(String movementString){
         reportMap.report("Climber Movement", movementString);
     }
 }
