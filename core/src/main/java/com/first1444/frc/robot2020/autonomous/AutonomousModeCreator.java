@@ -10,9 +10,11 @@ import com.first1444.frc.util.autonomous.actions.movement.LinearDistanceRotation
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
+import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
+import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 public class AutonomousModeCreator {
@@ -76,8 +78,15 @@ public class AutonomousModeCreator {
         throw new UnsupportedOperationException("Unknown basicMovementType=" + basicMovementType);
     }
     private Action createSimpleTurnShoot(Transform2 startingTransform){
-        // TODO also physically turn robot if we need to
-        return creator.getOperatorCreator().createTurretAlignAndShootAll();
+        Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(startingTransform.getPosition()).getAngle();
+        Action alignAndShootAll = creator.getOperatorCreator().createTurretAlignAndShootAll();
+        if(abs(angle.getDegrees() - startingTransform.getRotationDegrees()) > 45.0){
+            return new Actions.ActionQueueBuilder(
+                    creator.getDriveCreator().createTurnToOrientation(angle),
+                    alignAndShootAll
+            ).build();
+        }
+        return alignAndShootAll;
     }
     // endregion
 

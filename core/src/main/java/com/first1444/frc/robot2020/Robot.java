@@ -6,6 +6,7 @@ import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
@@ -140,6 +141,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
+        dashboardMap.getUserTab().add("PS4 Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isControllerConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(3, 4).setSize(1, 1));
+        dashboardMap.getUserTab().add("Extreme Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isExtremeConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(4, 4).setSize(1, 1));
+        dashboardMap.getUserTab().add("Attack Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isAttackConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(5, 4).setSize(1, 1));
         drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
         {

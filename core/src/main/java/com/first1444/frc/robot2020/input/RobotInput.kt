@@ -60,20 +60,20 @@ class RobotInput(
     val swerveRecalibrate: InputPart = controller.start
     // endregion
 
-    val intakeSpeed: InputPart = controller.rightStick // temp
-    val indexerSpeed: InputPart = controller.rightStick // temp
-    val feederSpeed: InputPart = controller.rightStick // temp
+    val shooterOn: InputPart = extremeJoystick.thumbLeftUpper
+    val shooterOff: InputPart = extremeJoystick.thumbLeftLower
+
+
+    val intakeSpeed: InputPart = extremeJoystick.dPad.yAxis
+    val shootButton: InputPart = extremeJoystick.trigger
     val manualShootSpeed: InputPart
 
     // region Turret Controls
-    val turretCenterOrient: InputPart = controller.faceDown
-    @Deprecated("Going to remove")
-    val turretLeftOrient: InputPart = controller.faceRight
-    @Deprecated("Going to remove")
-    val turretRightOrient: InputPart = dummyInput
+    val turretTrim: InputPart = extremeJoystick.mainJoystick.xAxis
+    val turretCenterOrient: InputPart = attackJoystick.leftUpper
     val turretRawControl: InputPart
-    /** When pressed, this enables the turret to auto target using vision or absolute position. This also enables/disables vision*/
-    val enableAutoAim: InputPart
+    /** When pressed, this enables the turret to auto target using vision or absolute position. */
+    val enableAuto: InputPart
     // endregion
 
     // region Climb Controls
@@ -88,6 +88,13 @@ class RobotInput(
     val climbRawControl: InputPart
     // endregion
 
+    // region Vision Controls
+    val visionOn: InputPart
+        get() = dummyInput
+    val visionOff: InputPart
+        get() = dummyInput
+    // endregion
+
     init {
         partUpdater.addPartsAssertNonePresent(
                 controller,
@@ -99,19 +106,12 @@ class RobotInput(
         turretRawControl = MultiplierInputPart(false, listOf(attackJoystick.thumbLower, attackJoystick.mainJoystick.xAxis), false)
         partUpdater.addPartAssertNotPresent(turretRawControl)
 
-        val scaledShootSlider: InputPart = ScaledInputPart(AxisType.ANALOG, extremeJoystick.slider, false)
-        manualShootSpeed = MultiplierInputPart(false, listOf(
-                extremeJoystick.gridLowerLeft, // TODO temp
-                scaledShootSlider
-        ), false)
-        partUpdater.addPartsAssertNonePresent(
-                manualShootSpeed,
-                scaledShootSlider
-        )
 
-        val scaledAutoAimSlider: InputPart = ScaledInputPart(AxisType.ANALOG, attackJoystick.slider, false)
-        enableAutoAim = scaledShootSlider
-        partUpdater.addPartAssertNotPresent(scaledAutoAimSlider)
+        manualShootSpeed = ScaledInputPart(AxisType.ANALOG, extremeJoystick.slider, false)
+        partUpdater.addPartsAssertNonePresent(manualShootSpeed)
+
+        enableAuto = ScaledInputPart(AxisType.ANALOG, attackJoystick.slider, false)
+        partUpdater.addPartAssertNotPresent(enableAuto)
 
         climbRawControl = MultiplierInputPart(false, listOf(
                 attackJoystick.trigger,
@@ -121,4 +121,11 @@ class RobotInput(
     }
 
     override fun isConnected() = controller.isConnected
+
+    val isControllerConnected: Boolean
+        get() = controller.isConnected
+    val isExtremeConnected: Boolean
+        get() = extremeJoystick.isConnected
+    val isAttackConnected: Boolean
+        get() = attackJoystick.isConnected
 }

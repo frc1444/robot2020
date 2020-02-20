@@ -105,7 +105,7 @@ public class VisionPacketParser {
     /**
      * More info <a href="https://github.com/frc1444/robot2020-vision/blob/master/VisionStatus.hpp">here</a>
      */
-    private enum VisionStatus { // TODO use this
+    private enum VisionStatus { // use this if we find it useful later
         TARGET_FOUND,
         NO_TARGET_FOUND,
         CAMERA_ERROR,
