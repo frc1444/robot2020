@@ -1,11 +1,11 @@
 buildscript {
     ext {
         kotlinVersion = '1.3.61'
-        wpiLibVersion = "2020.2.2"
+        wpiLibVersion = "2020.3.2"
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "aae24f38c9"
+        roboSimVersion = "2de59f2ec1"
         abstractControllerLibVersion = "v2.5.0"
         abstractDashboardVersion = "e635c7080d"
         jacksonVersion = "2.10.1"
@@ -21,7 +21,6 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
-    def makeIntelliJUpdateVendorDeps = "Increment this when you need IntelliJ to update your vendordeps (001)"
 }
 
 subprojects {

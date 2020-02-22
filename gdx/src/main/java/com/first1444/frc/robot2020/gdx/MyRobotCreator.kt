@@ -47,6 +47,7 @@ import com.first1444.sim.gdx.implementations.infiniterecharge2020.FieldSetup2020
 import com.first1444.sim.gdx.implementations.infiniterecharge2020.surroundings.VisionProvider2020
 import com.first1444.sim.gdx.implementations.infiniterecharge2020.surroundings.VisionTypeFilter
 import com.first1444.sim.gdx.implementations.surroundings.EntityRangeVisionFilter
+import com.first1444.sim.gdx.implementations.surroundings.FovVisionFilter
 import com.first1444.sim.gdx.implementations.surroundings.VisionFilterMultiplexer
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
