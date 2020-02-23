@@ -61,14 +61,13 @@ public class DutyCycleEncoder implements Sendable, AutoCloseable {
     }
 
     private void init() {
-        m_counter = new Counter();
-
         m_simDevice = SimDevice.create("DutyCycleEncoder", m_dutyCycle.getFPGAIndex());
 
         if (m_simDevice != null) {
             m_simPosition = m_simDevice.createDouble("Position", false, 0.0);
             m_simIsConnected = m_simDevice.createBoolean("Connected", false, true);
         } else {
+            m_counter = new Counter();
             m_analogTrigger = new AnalogTrigger(m_dutyCycle);
             m_analogTrigger.setLimitsDutyCycle(0.25, 0.75);
             m_counter.setUpSource(m_analogTrigger, AnalogTriggerType.kRisingPulse);

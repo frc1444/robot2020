@@ -94,9 +94,11 @@ public class WpiRunnableCreator implements RunnableCreator {
         } else {
             throw new UnsupportedOperationException("Unknown drive type: " + driveType);
         }
+        // We tuned our steer modules in 2018, so we'll adjust the constants accordingly
+        double steerRatio = Constants.Swerve2018.INSTANCE.getQuadCountsPerRevolution() / SWERVE.getQuadCountsPerRevolution();
         steerPid
-                .setDouble(PidKey.P, 12)
-                .setDouble(PidKey.I, .03);
+                .setDouble(PidKey.P, 12 * steerRatio)
+                .setDouble(PidKey.I, .03 * steerRatio);
         final FourWheelSwerveDriveData data;
         if(DUMMY_SWERVE){
             data = new FourWheelSwerveDriveData(
@@ -104,7 +106,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     SWERVE.getWheelBase(), SWERVE.getTrackWidth()
             );
         } else {
-            final int quadCounts = SWERVE.getQuadCountsPerRevolution();
+            final double quadCounts = SWERVE.getQuadCountsPerRevolution();
             data = new FourWheelSwerveDriveData(
                     new TalonSwerveModule("front right", driveType, SWERVE.getFRDriveCAN(), SWERVE.getFRSteerCAN(), quadCounts, drivePid, steerPid,
                             SWERVE.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),

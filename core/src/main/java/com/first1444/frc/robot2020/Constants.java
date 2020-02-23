@@ -31,13 +31,13 @@ public final class Constants {
             return DriveType.CIM;
         }
 
-        @Override public int getFLDriveCAN() { return 4; }
         @Override public int getFRDriveCAN() { return 3; }
+        @Override public int getFLDriveCAN() { return 4; }
         @Override public int getRLDriveCAN() { return 2; }
         @Override public int getRRDriveCAN() { return 1; }
 
-        @Override public int getFLSteerCAN() { return 8; }
         @Override public int getFRSteerCAN() { return 7; }
+        @Override public int getFLSteerCAN() { return 8; }
         @Override public int getRLSteerCAN() { return 6; }
         @Override public int getRRSteerCAN() { return 5; }
 
@@ -52,15 +52,8 @@ public final class Constants {
         }
 
         @Override
-        public int getQuadCountsPerRevolution() {
+        public double getQuadCountsPerRevolution() {
             return 1657;
-        }
-
-        @Override
-        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 516)
-                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
-                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
@@ -68,6 +61,14 @@ public final class Constants {
             return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 58)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 12);
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+            throw new UnsupportedOperationException("We need to get the offset for this again!");
+//            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 516)
+//                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 899)
+//                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
@@ -93,13 +94,13 @@ public final class Constants {
         }
 
         // Yup, we're using some of the same constants as last year, that doesn't mean everything will be the same, though!
-        @Override public int getFLDriveCAN() { return 4; }
         @Override public int getFRDriveCAN() { return 3; }
+        @Override public int getFLDriveCAN() { return 4; }
         @Override public int getRLDriveCAN() { return 2; }
         @Override public int getRRDriveCAN() { return 1; }
 
-        @Override public int getFLSteerCAN() { return 8; }
         @Override public int getFRSteerCAN() { return 7; }
+        @Override public int getFLSteerCAN() { return 8; }
         @Override public int getRLSteerCAN() { return 6; }
         @Override public int getRRSteerCAN() { return 5; }
 
@@ -114,21 +115,21 @@ public final class Constants {
         }
 
         @Override
-        public int getQuadCountsPerRevolution() {
+        public double getQuadCountsPerRevolution() {
             return 628;
-        }
-
-        @Override
-        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 131)
-                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
-                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
         @Override
         public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
             return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 74)
                     .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 891)
+                    .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
+        }
+
+        @Override
+        public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 131)
+                    .setDouble(ModuleConfig.MAX_ENCODER_VALUE, 883)
                     .setDouble(ModuleConfig.MIN_ENCODER_VALUE, 10);
         }
 
@@ -176,7 +177,7 @@ public final class Constants {
         }
 
         @Override
-        public int getQuadCountsPerRevolution() {
+        public double getQuadCountsPerRevolution() {
             return 628;
         }
 

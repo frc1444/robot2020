@@ -23,7 +23,7 @@ public interface SwerveSetup {
     /** @return track width in meters*/
     double getTrackWidth();
 
-    int getQuadCountsPerRevolution();
+    double getQuadCountsPerRevolution();
 
     MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config);
     MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config);

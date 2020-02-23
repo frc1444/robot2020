@@ -37,7 +37,7 @@ public class TalonSwerveModule implements SwerveModule {
     private static final boolean VELOCITY_CONTROL = true;
 
     private final String name;
-    private final int quadCountsPerRevolution;
+    private final double quadCountsPerRevolution;
 
     private final BaseMotorController drive;
     private final SwerveSetup.DriveType driveType;
@@ -50,7 +50,7 @@ public class TalonSwerveModule implements SwerveModule {
     private double targetPositionDegrees = 0;
 
     public TalonSwerveModule(
-            String name, SwerveSetup.DriveType driveType, int driveId, int steerId, int quadCountsPerRevolution,
+            String name, SwerveSetup.DriveType driveType, int driveId, int steerId, double quadCountsPerRevolution,
             MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
             MutableValueMap<ModuleConfig> moduleConfig, DashboardMap dashboardMap) {
         this.name = name;
@@ -94,13 +94,13 @@ public class TalonSwerveModule implements SwerveModule {
         )));
     }
     private void updateEncoderOffset(ValueMap<ModuleConfig> config){
-        final int min = (int) config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
-        final int max = (int) config.getDouble(ModuleConfig.MAX_ENCODER_VALUE);
-        final int difference = max - min;
-        final int currentPosition = (steer.getSensorCollection().getAnalogInRaw() - (int)config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET)) * getCountsPerRevolution() / difference;
+        final double min = config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
+        final double max = config.getDouble(ModuleConfig.MAX_ENCODER_VALUE);
+        final double difference = max - min;
+        final double currentPosition = (steer.getSensorCollection().getAnalogInRaw() - config.getDouble(ModuleConfig.ABS_ENCODER_OFFSET)) * getCountsPerRevolution() / difference;
 
         steer.setSelectedSensorPosition(
-                currentPosition,
+                (int) currentPosition,
                 RobotConstants.PID_INDEX, RobotConstants.LOOP_TIMEOUT
         );
     }
@@ -115,12 +115,12 @@ public class TalonSwerveModule implements SwerveModule {
         final double speedMultiplier;
 
         { // steer code
-            final int wrap = getCountsPerRevolution(); // in encoder counts
+            final double wrap = getCountsPerRevolution(); // in encoder counts
             final int current = steer.getSelectedSensorPosition(RobotConstants.PID_INDEX);
-            final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
+            final double desired = Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
             if(quickReverseAllowed){
-                final int newPosition = (int) MathUtil.minChange(desired, current, wrap / 2.0) + current;
+                final double newPosition = MathUtil.minChange(desired, current, wrap / 2.0) + current;
                 if(MathUtil.minDistance(newPosition, desired, wrap) < .001){ // check if equal
                     speedMultiplier = 1;
                 } else {
@@ -129,7 +129,7 @@ public class TalonSwerveModule implements SwerveModule {
                 steer.set(ControlMode.Position, newPosition);
             } else {
                 speedMultiplier = 1;
-                final int newPosition = (int) MathUtil.minChange(desired, current, wrap) + current;
+                final double newPosition = MathUtil.minChange(desired, current, wrap) + current;
                 steer.set(ControlMode.Position, newPosition);
             }
         }
@@ -144,7 +144,7 @@ public class TalonSwerveModule implements SwerveModule {
                 } else throw new UnsupportedOperationException("Unknown drive type: " + driveType);
 
                 final double velocity = speed * speedMultiplier * countsPerRevolution
-                        * RobotConstants.MAX_CIM_RPM / (double) RobotConstants.CTRE_UNIT_CONVERSION; // TODO we might want to make falcons faster
+                        * RobotConstants.MAX_CIM_RPM / RobotConstants.CTRE_UNIT_CONVERSION; // TODO we might want to make falcons faster
                 drive.set(ControlMode.Velocity, velocity);
             } else {
                 drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
@@ -197,7 +197,7 @@ public class TalonSwerveModule implements SwerveModule {
     @Override
     public double getCurrentAngleDegrees() {
         final int encoderPosition = steer.getSelectedSensorPosition(RobotConstants.PID_INDEX);
-        final int totalCounts = getCountsPerRevolution();
+        final double totalCounts = getCountsPerRevolution();
         return MathUtil.mod(encoderPosition * 360.0 / totalCounts, 360.0);
     }
 
@@ -214,7 +214,7 @@ public class TalonSwerveModule implements SwerveModule {
 
 
     /** @return The number of encoder counts per revolution steer*/
-    private int getCountsPerRevolution(){
+    private double getCountsPerRevolution(){
         return quadCountsPerRevolution;
     }
 

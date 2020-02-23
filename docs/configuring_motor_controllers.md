@@ -13,6 +13,7 @@ Using a breakout board? This will help: https://andymark-weblinc.netdna-ssl.com/
 
 ## REV Robotics Motor Controllers (Sparks)
 * Use Spark MAX Client Application
+* REV Motor controllers don't like it when you use 0 as a CAN id (when testing)
 * https://www.revrobotics.com/sparkmax-software/#spark-max-client-application
 * https://www.revrobotics.com/sparkmax-users-manual/#section-3-3-2
 * https://www.revrobotics.com/sparkmax-quickstart/#mode-configuration
