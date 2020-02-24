@@ -36,6 +36,7 @@ public final class RobotConstants {
 //        public static final int TURRET = 30;
 //        public static final int SHOOTER = 31;
 
-        public static final int INDEXER = 40;
+        public static final int INDEXER = 40; // TODO
+        public static final int INTAKE = 33; // TODO
     }
 }
