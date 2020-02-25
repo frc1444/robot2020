@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
@@ -27,6 +29,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
+import com.first1444.sim.api.frc.sim.DriverStationSendable;
 import com.first1444.sim.api.sensors.DefaultOrientationHandler;
 import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.wpi.WpiClock;
@@ -61,8 +64,8 @@ public class WpiRunnableCreator implements RunnableCreator {
     @Override
     public RobotRunnable createRunnable() {
         System.out.println("======== Start of createRunnable ========");
-//        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin, 0, WPILibVersion.Version); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
-//        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed);
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin, 0, WPILibVersion.Version); // All of robo-sim is in Kotlin and this uses Kotlin code in some places.
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Framework, FRCNetComm.tInstances.kFramework_Timed);
 
         BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
         ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
@@ -86,7 +89,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
         } else if(driveType == SwerveSetup.DriveType.FALCON){
             // TODO tune PID constants for Falcon
-            double ratio = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION / (double) RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
+            double ratio = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION / RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
             drivePid
                     .setDouble(PidKey.P, 1.5 * ratio)
                     .setDouble(PidKey.F, 1.0 * ratio)

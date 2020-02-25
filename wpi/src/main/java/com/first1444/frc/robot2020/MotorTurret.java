@@ -35,7 +35,7 @@ public class MotorTurret extends BaseTurret {
         talon.configOpenloopRamp(.25);
         talon.setInverted(InvertType.InvertMotorOutput);
 
-        talon.configVoltageCompSaturation(10.0, RobotConstants.INIT_TIMEOUT); // TODO see what the best value for new motor is
+        talon.configVoltageCompSaturation(10.0, RobotConstants.INIT_TIMEOUT);
         talon.enableVoltageCompensation(true); // make sure to configure the saturation voltage before this
         encoder = new DutyCycleEncoder(0);
         encoder.setDistancePerRotation(-180);

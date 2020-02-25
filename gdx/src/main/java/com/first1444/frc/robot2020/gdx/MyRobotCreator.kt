@@ -32,10 +32,10 @@ import com.first1444.frc.util.reportmap.DashboardReportMap
 import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule
-import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
-import com.first1444.sim.api.frc.BasicRobotRunnable
+import com.first1444.sim.api.frc.*
 import com.first1444.sim.api.frc.implementations.infiniterecharge.VisionType2020
 import com.first1444.sim.api.frc.sim.DriverStationSendable
+import com.first1444.sim.api.frc.sim.MutableFrcDriverStation
 import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
 import com.first1444.sim.api.sensors.DefaultOrientationHandler
 import com.first1444.sim.gdx.*
@@ -194,6 +194,19 @@ class MyRobotCreator(
         private val dashboardBundle: ActiveDashboardBundle
 ) : RobotCreator {
     override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): Updateable {
+        val driverStation = data.driverStation
+        if(driverStation is MutableFrcDriverStation){
+            val controlWord = driverStation.controlWord
+            driverStation.controlWord = ControlWord(
+                    controlWord.isEnabled,
+                    controlWord.isAutonomous,
+                    controlWord.isTest,
+                    isEmergencyStop = false,
+                    isFMSAttached = false,
+                    isDriverStationAttached = true
+            )
+            driverStation.matchInfo = MatchInfo("St. Louis Regional", MatchType.QUALIFICATION, 1, 0)
+        }
         val networkTable = NetworkTableInstance.getDefault()
         networkTable.startServer()
         val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", dashboardBundle.rootDashboard.getSubDashboard("FMSInfo"))

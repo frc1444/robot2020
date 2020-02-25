@@ -5,6 +5,7 @@ import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
+import com.first1444.dashboard.advanced.SendableHelper;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
@@ -42,6 +43,7 @@ import com.first1444.sim.api.frc.AdvancedIterativeRobotAdapter;
 import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.api.frc.FrcLogger;
 import com.first1444.sim.api.frc.FrcMode;
+import com.first1444.sim.api.frc.sim.DriverStationSendable;
 import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchSchedulerRunnable;
 import com.first1444.sim.api.scheduler.match.MatchTime;
@@ -198,6 +200,14 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         dynamicAction = new Actions.ActionMultiplexerBuilder().canBeDone(true).canRecycle(true).build();
 
         autonomousChooserState = new AutonomousChooserState(clock, new AutonomousModeCreator(new AutonomousActionCreator(this)), dashboardMap);
+
+        var driverStationSendable = new DriverStationSendable(driverStation);
+        dashboardMap.getUserTab().add("FMS", new SendableComponent<>((title, dashboard) -> {
+            dashboard.get(".type").getStrictSetter().setString("FMSInfo"); // temporary fix until we update robo-sim
+            return driverStationSendable.init(title, dashboard);
+        }), (metadata) -> {
+            new ComponentMetadataHelper(metadata).setSize(3, 1).setPosition(2, 3);
+        }); // 2,3
 
         System.out.println("Finished constructor 1");
     }
