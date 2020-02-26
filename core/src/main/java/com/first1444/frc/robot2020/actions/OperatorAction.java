@@ -27,6 +27,12 @@ public class OperatorAction extends SimpleAction {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        isShooterOn = false;
+    }
+
+    @Override
     protected void onUpdate() {
         super.onUpdate();
 
@@ -74,17 +80,32 @@ public class OperatorAction extends SimpleAction {
 
         { // intake stuff
             Intake intake = robot.getIntake();
+            if(shootDown){
+                intake.setFeederSpeed(1.0); // TODO only do this if RPM of shooter is up to speed
+                intake.setIndexerSpeed(0.4);
+            }
             int intakePosition = input.getIntakeSpeed().getDigitalPosition();
             if(intakePosition < 0){ // suck in
                 intake.setIntakeSpeed(1);
                 intake.setIndexerSpeed(1);
-            } else if(intakePosition > 1){ // spit out
+            } else if(intakePosition > 0){ // spit out
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
             }
-            if(shootDown){
-                intake.setFeederSpeed(1.0); // TODO only do this if RPM of shooter is up to speed
+            if(input.getFeederManualInButton().isDown()){
+                intake.setFeederSpeed(1.0);
+            } else if(input.getFeederManualOutButton().isDown()){
+                intake.setFeederSpeed(-1.0);
+            }
+            if(input.getIndexerManualInButton().isDown()){
                 intake.setIndexerSpeed(1.0);
+            } else if(input.getIndexerManualOutButton().isDown()){
+                intake.setIndexerSpeed(-1.0);
+            }
+            if(input.getIntakeManualInButton().isDown()){
+                intake.setIntakeSpeed(1.0);
+            } else if (input.getIntakeManualOutButton().isDown()){
+                intake.setIntakeSpeed(-1.0);
             }
         }
     }

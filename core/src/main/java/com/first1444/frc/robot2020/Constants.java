@@ -178,25 +178,26 @@ public final class Constants {
 
         @Override
         public double getQuadCountsPerRevolution() {
-            return 628;
+//            return 628;
+            return 1657;
         }
 
         // TODO offsets
         @Override
         public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 357);
         }
         @Override
         public MutableValueMap<ModuleConfig> setupFL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 599);
         }
         @Override
         public MutableValueMap<ModuleConfig> setupRL(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 102);
         }
         @Override
         public MutableValueMap<ModuleConfig> setupRR(MutableValueMap<ModuleConfig> config) {
-            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 10);
+            return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 100);
         }
     }
 

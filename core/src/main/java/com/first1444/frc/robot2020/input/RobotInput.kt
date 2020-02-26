@@ -68,9 +68,17 @@ class RobotInput(
     val shootButton: InputPart = extremeJoystick.trigger
     val manualShootSpeed: InputPart
 
+    /** Should make the ball move towards the shooter*/
+    val feederManualInButton: InputPart = extremeJoystick.gridUpperLeft
+    val feederManualOutButton: InputPart = extremeJoystick.gridUpperRight
+    val indexerManualInButton: InputPart = extremeJoystick.gridMiddleLeft
+    val indexerManualOutButton: InputPart = extremeJoystick.gridMiddleRight
+    val intakeManualInButton: InputPart = extremeJoystick.gridLowerLeft
+    val intakeManualOutButton: InputPart = extremeJoystick.gridLowerRight
+
     // region Turret Controls
     val turretTrim: InputPart = extremeJoystick.mainJoystick.xAxis
-    val turretCenterOrient: InputPart = attackJoystick.leftUpper
+    val turretCenterOrient: InputPart = attackJoystick.rightUpper
     val turretRawControl: InputPart
     /** When pressed, this enables the turret to auto target using vision or absolute position. */
     val enableAuto: InputPart

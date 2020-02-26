@@ -31,12 +31,16 @@ public final class RobotConstants {
     public static final class CAN {
         private CAN() { throw new UnsupportedOperationException(); }
 
-        public static final int TURRET = 21;
-        public static final int SHOOTER = 23;
-//        public static final int TURRET = 30;
-//        public static final int SHOOTER = 31;
+//        public static final int TURRET = 21;
+//        public static final int SHOOTER = 23;
+        public static final int TURRET = 30;
+        public static final int SHOOTER = 31;
 
-        public static final int INDEXER = 40; // TODO
-        public static final int INTAKE = 33; // TODO
+
+        public static final int INTAKE = 32;
+        public static final int INDEXER = 41;
+        public static final int FEEDER = 42;
+
+        public static final int CLIMBER = 43;
     }
 }

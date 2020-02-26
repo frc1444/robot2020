@@ -52,9 +52,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
-    private static final boolean DUMMY_SWERVE = true;
-    private static final boolean DUMMY_GYRO = DUMMY_SWERVE;
-    private static final SwerveSetup SWERVE = Constants.Swerve2019.INSTANCE;
+    private static final boolean DUMMY_SWERVE = false;
+    private static final boolean DUMMY_GYRO = true;
+    private static final SwerveSetup SWERVE = Constants.Swerve2020.INSTANCE;
 
     @Override
     public void prematureInit() {
@@ -154,7 +154,8 @@ public class WpiRunnableCreator implements RunnableCreator {
                 controller, InputUtil.createExtremeJoystick(new WpiInputCreator(1)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 orientationHandler,
                 data,
-                new DummyIntake(reportMap),
+//                new DummyIntake(reportMap),
+                new MotorIntake(),
 //                new DummyTurret(reportMap),
                 new MotorTurret(clock, dashboardMap),
                 new MotorBallShooter(ballTracker, dashboardMap),
