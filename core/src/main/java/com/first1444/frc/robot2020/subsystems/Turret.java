@@ -8,6 +8,15 @@ import static java.util.Objects.requireNonNull;
 
 public interface Turret extends Runnable {
 
+    /**
+     * @param trim The trim to use when the desired state is set to use desired rotation control
+     */
+    void setDesiredTrim(Rotation2 trim);
+
+    /**
+     * If this uses raw speed control, this must be set each iteration
+     * @param desiredState The desired state to set.
+     */
     void setDesiredState(DesiredState desiredState);
 
     Rotation2 getCurrentRotation();

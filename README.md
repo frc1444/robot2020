@@ -58,4 +58,3 @@ If you are brave, you can change [MyRobotCreator.kt](gdx/src/main/java/com/first
 [Robot.java](core/src/main/java/com/first1444/frc/robot2020/Robot.java) for the simulation. It does, however, use Kotlin.
 
 # TODO
-* Make trim work in any mode

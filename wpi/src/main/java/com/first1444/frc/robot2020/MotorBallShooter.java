@@ -75,11 +75,13 @@ public class MotorBallShooter implements BallShooter {
         dashboardMap.getDebugTab().getRawDashboard().get("Shooter Actual (RPM)").getStrictSetter().setDouble(currentRpm);
 
         double current = talon.getSupplyCurrent();
+        dashboardMap.getDebugTab().getRawDashboard().get("Ball Shooter Current").getStrictSetter().setDouble(current);
         if(current > BALL_DETECT_CURRENT_THRESHOLD){
             ballDetectThresholdMet = true;
         } else if(current < BALL_DETECT_CURRENT_RECOVERY){
             if(ballDetectThresholdMet){ // ball just left
                 ballTracker.removeBallTop();
+                System.out.println("Ball detected leaving shooter");
             }
             ballDetectThresholdMet = false;
         }

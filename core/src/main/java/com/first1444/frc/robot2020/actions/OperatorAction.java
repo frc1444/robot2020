@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2020.actions;
 
+import com.first1444.frc.robot2020.Constants;
 import com.first1444.frc.robot2020.Robot;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
@@ -10,6 +11,8 @@ import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.controller.input.InputPart;
+
+import static java.lang.Math.abs;
 
 /**
  * The operator action that takes input from a {@link RobotInput} and sets the desired states of the different subsystems
@@ -38,6 +41,16 @@ public class OperatorAction extends SimpleAction {
 
         final boolean autoDown = input.getEnableAuto().isDown();
         final boolean shootDown = input.getShootButton().isDown();
+        {
+            final Rotation2 trim;
+            if (input.getTurretTrim().isDeadzone()) {
+                trim = Rotation2.ZERO;
+            } else {
+                double value = input.getTurretTrim().getPosition();
+                trim = Rotation2.fromDegrees(value * -5.0);
+            }
+            robot.getTurret().setDesiredTrim(trim);
+        }
         if(input.getTurretCenterOrient().isDown()){
             robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(Rotation2.ZERO));
         } else {
@@ -45,18 +58,11 @@ public class OperatorAction extends SimpleAction {
             if(!rawSpeedPart.isDeadzone()){
                 robot.getTurret().setDesiredState(Turret.DesiredState.createRawSpeedClockwise(rawSpeedPart.getPosition()));
             } else if(autoDown) {
-                final Rotation2 trim;
-                if(input.getTurretTrim().isDeadzone()){
-                    trim = Rotation2.ZERO;
-                } else {
-                    double value = input.getTurretTrim().getPosition();
-                    trim = Rotation2.fromDegrees(value * -5.0);
-                }
                 Vector2 position = robot.getAbsoluteDistanceAccumulator().getPosition();
                 Rotation2 rotation = robot.getOrientation().getOrientation();
                 Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
 
-                Rotation2 desired = angle.minus(rotation).plus(trim);
+                Rotation2 desired = angle.minus(rotation);
                 if (desired.getRadians() <= Turret.MAX_ROTATION.getRadians() && desired.getRadians() >= Turret.MIN_ROTATION.getRadians()) {
                     robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(desired));
                 }
@@ -67,22 +73,39 @@ public class OperatorAction extends SimpleAction {
         } else if(input.getShooterOff().isDown()){
             isShooterOn = false;
         }
+        final Double desiredRpm;
         if(autoDown){
             if(isShooterOn){
-                robot.getBallShooter().setDesiredRpm(robot.getBestEstimatedTargetRpm());
+                desiredRpm = robot.getBestEstimatedTargetRpm();
+                robot.getBallShooter().setDesiredRpm(desiredRpm);
+            } else {
+                desiredRpm = null;
             }
         } else {
             if(isShooterOn){
                 final double shootSpeed = input.getManualShootSpeed().getPosition() * .55 + .45;
-                robot.getBallShooter().setDesiredRpm(shootSpeed * BallShooter.MAX_RPM);
+                desiredRpm = shootSpeed * BallShooter.MAX_RPM;
+                robot.getBallShooter().setDesiredRpm(desiredRpm);
+            } else {
+                desiredRpm = null;
             }
         }
 
         { // intake stuff
             Intake intake = robot.getIntake();
             if(shootDown){
-                intake.setFeederSpeed(1.0); // TODO only do this if RPM of shooter is up to speed
-                intake.setIndexerSpeed(0.4);
+                //noinspection ConstantConditions
+                assert desiredRpm != null : "always true";
+                if(abs(desiredRpm - robot.getBallShooter().getCurrentRpm()) < Constants.BALL_SHOOTER_RPM_AT_SETPOINT_DEADBAND){
+                    intake.setFeederSpeed(1.0);
+                }
+                double timestamp = robot.getClock().getTimeSeconds();
+                double result = timestamp % 1.0;
+                if(result < .3){ // between 0 and .3
+                    intake.setIndexerSpeed(-.7);
+                } else if(result > .4 && result < .9) { // between .5 and .8
+                    intake.setIndexerSpeed(1.0);
+                }
             }
             int intakePosition = input.getIntakeSpeed().getDigitalPosition();
             if(intakePosition < 0){ // suck in
