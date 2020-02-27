@@ -32,4 +32,9 @@ public class DummyBallShooter implements BallShooter {
     public double getCurrentRpm() {
         return lastRpm;
     }
+
+    @Override
+    public boolean atSetpoint() {
+        return true; // TODO simulate better
+    }
 }

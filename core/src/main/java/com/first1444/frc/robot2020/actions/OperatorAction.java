@@ -47,7 +47,7 @@ public class OperatorAction extends SimpleAction {
                 trim = Rotation2.ZERO;
             } else {
                 double value = input.getTurretTrim().getPosition();
-                trim = Rotation2.fromDegrees(value * -5.0);
+                trim = Rotation2.fromDegrees(value * -10.0);
             }
             robot.getTurret().setDesiredTrim(trim);
         }
@@ -96,7 +96,8 @@ public class OperatorAction extends SimpleAction {
             if(shootDown){
                 //noinspection ConstantConditions
                 assert desiredRpm != null : "always true";
-                if(abs(desiredRpm - robot.getBallShooter().getCurrentRpm()) < Constants.BALL_SHOOTER_RPM_AT_SETPOINT_DEADBAND){
+                boolean upToSpeed = robot.getBallShooter().atSetpoint();
+                if(upToSpeed){
                     intake.setFeederSpeed(1.0);
                 }
                 double timestamp = robot.getClock().getTimeSeconds();

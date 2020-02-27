@@ -329,6 +329,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     public Clock getClock() { return clock; }
     public FrcLogger getLogger(){ return logger; }
+    public DashboardMap getDashboardMap(){ return dashboardMap; }
 
     public SwerveDrive getDrive(){ return drive; }
     public Intake getIntake() { return intake; }

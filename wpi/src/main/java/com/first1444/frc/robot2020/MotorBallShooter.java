@@ -15,9 +15,16 @@ import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 
 import static com.first1444.frc.robot2020.CtreUtil.nativeToRpm;
 import static com.first1444.frc.robot2020.CtreUtil.rpmToNative;
+import static java.lang.Math.abs;
 
 public class MotorBallShooter implements BallShooter {
-    private static final boolean VELOCITY_CONTROL = true;
+    private enum State {
+        SPIN_UP,
+        RECOVERY,
+        READY
+    }
+    public static final double AT_SETPOINT_DEADBAND = 300;
+    public static final double RECOVERY_DEADBAND = 600;
     private static final double BALL_DETECT_CURRENT_THRESHOLD = 40.0; // TODO change
     private static final double BALL_DETECT_CURRENT_RECOVERY = 20.0; // TODO change
     private final BallTracker ballTracker;
@@ -27,6 +34,8 @@ public class MotorBallShooter implements BallShooter {
     private double rpm;
     private double currentRpm;
     private boolean ballDetectThresholdMet = false;
+
+    private State state = State.SPIN_UP;
 
     public MotorBallShooter(BallTracker ballTracker, DashboardMap dashboardMap) {
         this.ballTracker = ballTracker;
@@ -60,35 +69,40 @@ public class MotorBallShooter implements BallShooter {
     public void run() {
         final double rpm = this.rpm;
         this.rpm = 0;
-        if(rpm != 0 && VELOCITY_CONTROL){
+        if(rpm != 0){
             double velocity = rpmToNative(rpm, RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
             talon.set(ControlMode.Velocity, velocity);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(velocity);
+            double rpmDifference = abs(currentRpm - rpm);
+            if(rpmDifference < AT_SETPOINT_DEADBAND){
+                state = State.READY;
+            } else if(rpmDifference > RECOVERY_DEADBAND){
+                if(state == State.READY){
+                    ballTracker.removeBallTop();
+                    System.out.println("Ball shot");
+                }
+                state = State.RECOVERY;
+            }
         } else {
             talon.set(ControlMode.PercentOutput, rpm / BallShooter.MAX_RPM);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(0.0);
+            state = State.SPIN_UP;
         }
+        dashboardMap.getDebugTab().getRawDashboard().get("up to speed").getForceSetter().setString(state.toString());
         double currentRpm = nativeToRpm(talon.getSelectedSensorVelocity(), RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
         this.currentRpm = currentRpm;
         dashboardMap.getDebugTab().getRawDashboard().get("Shooter Actual (RPM)").getStrictSetter().setDouble(currentRpm);
-
-        double current = talon.getSupplyCurrent();
-        dashboardMap.getDebugTab().getRawDashboard().get("Ball Shooter Current").getStrictSetter().setDouble(current);
-        if(current > BALL_DETECT_CURRENT_THRESHOLD){
-            ballDetectThresholdMet = true;
-        } else if(current < BALL_DETECT_CURRENT_RECOVERY){
-            if(ballDetectThresholdMet){ // ball just left
-                ballTracker.removeBallTop();
-                System.out.println("Ball detected leaving shooter");
-            }
-            ballDetectThresholdMet = false;
-        }
     }
 
     @Override
     public double getCurrentRpm() {
         return currentRpm;
+    }
+
+    @Override
+    public boolean atSetpoint() {
+        return state == State.READY;
     }
 }

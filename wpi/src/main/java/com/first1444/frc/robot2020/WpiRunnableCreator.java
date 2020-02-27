@@ -53,7 +53,7 @@ import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = false;
-    private static final boolean DUMMY_GYRO = true;
+    private static final boolean DUMMY_GYRO = false;
     private static final SwerveSetup SWERVE = Constants.Swerve2020.INSTANCE;
 
     @Override

@@ -17,7 +17,6 @@ public final class Constants {
     public static final Map<String, BasicValue> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", BasicValue.FALSE);
 
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(" #0.00;-#0.00");
-    public static final double BALL_SHOOTER_RPM_AT_SETPOINT_DEADBAND = 100;
 
     private static final double PERSPECTIVE_BACK = 2.0;
     public static final Vector2 DRIVER_STATION_1_DRIVER_LOCATION = new Vector2(-3.667, -8.000 - PERSPECTIVE_BACK);
