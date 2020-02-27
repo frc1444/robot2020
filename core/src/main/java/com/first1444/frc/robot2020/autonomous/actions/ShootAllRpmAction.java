@@ -11,7 +11,6 @@ import static java.lang.Math.abs;
  * Shoots all of the balls at a certain RPM
  */
 public class ShootAllRpmAction extends SimpleAction {
-    private static final double RPM_TOLERANCE = 100.0;
     private final Intake intake;
     private final BallShooter ballShooter;
     private final BallTracker ballTracker;
@@ -31,10 +30,8 @@ public class ShootAllRpmAction extends SimpleAction {
             setDone(true);
         }
         ballShooter.setDesiredRpm(rpm);
-        double currentRpm = ballShooter.getCurrentRpm();
-        if(abs(rpm - currentRpm) < RPM_TOLERANCE){
-            intake.setFeederSpeed(1.0);
-            intake.setIndexerSpeed(.75);
+        if(ballShooter.atSetpoint()){
+            intake.setControl(Intake.Control.FEED_ALL);
         }
     }
 }

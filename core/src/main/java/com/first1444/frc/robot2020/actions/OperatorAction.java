@@ -1,6 +1,5 @@
 package com.first1444.frc.robot2020.actions;
 
-import com.first1444.frc.robot2020.Constants;
 import com.first1444.frc.robot2020.Robot;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
@@ -93,28 +92,29 @@ public class OperatorAction extends SimpleAction {
 
         { // intake stuff
             Intake intake = robot.getIntake();
-            if(shootDown){
-                //noinspection ConstantConditions
-                assert desiredRpm != null : "always true";
-                boolean upToSpeed = robot.getBallShooter().atSetpoint();
-                if(upToSpeed){
-                    intake.setFeederSpeed(1.0);
-                }
-                double timestamp = robot.getClock().getTimeSeconds();
-                double result = timestamp % 1.0;
-                if(result < .3){ // between 0 and .3
-                    intake.setIndexerSpeed(-.7);
-                } else if(result > .4 && result < .9) { // between .5 and .8
-                    intake.setIndexerSpeed(1.0);
-                }
-            }
+            boolean feedBalls = shootDown && robot.getBallShooter().atSetpoint();
+//            if(shootDown){
+//                //noinspection ConstantConditions
+//                assert desiredRpm != null : "always true";
+//                boolean upToSpeed = ;
+//                if(upToSpeed){
+//                    intake.setFeederSpeed(1.0);
+//                }
+//            }
             int intakePosition = input.getIntakeSpeed().getDigitalPosition();
             if(intakePosition < 0){ // suck in
-                intake.setIntakeSpeed(1);
-                intake.setIndexerSpeed(1);
+                if(feedBalls){
+                    intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
+                } else {
+                    intake.setControl(Intake.Control.INTAKE);
+                }
             } else if(intakePosition > 0){ // spit out
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
+            } else {
+                if(feedBalls){
+                    intake.setControl(Intake.Control.FEED_ALL);
+                }
             }
             if(input.getFeederManualInButton().isDown()){
                 intake.setFeederSpeed(1.0);

@@ -1,14 +1,15 @@
 package com.first1444.frc.robot2020.gdx
 
-import com.badlogic.gdx.scenes.scene2d.ui.*
+import com.badlogic.gdx.scenes.scene2d.ui.Button
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.first1444.frc.robot2020.subsystems.Intake
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker
 import com.first1444.frc.robot2020.subsystems.implementations.BaseIntake
-import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake
-import com.first1444.frc.util.reportmap.ReportMap
 import com.first1444.sim.api.Clock
 import com.first1444.sim.api.EnabledState
 import com.first1444.sim.gdx.Updateable
-import com.first1444.sim.gdx.WorldManager
 import com.first1444.sim.gdx.clickDownListener
 import com.first1444.sim.gdx.init.UpdateableCreator
 import java.text.DecimalFormat
@@ -61,7 +62,20 @@ class GdxIntake(
     val balls: List<IntakeBall>
         get() = mutableBalls
 
-    override fun run(intakeSpeed: Double, indexerSpeed: Double, feederSpeed: Double) {
+    @Suppress("NAME_SHADOWING")
+    override fun run(control: Intake.Control, intakeSpeed: Double, indexerSpeed: Double, feederSpeed: Double) {
+        var intakeSpeed = intakeSpeed
+        var indexerSpeed = indexerSpeed
+        var feederSpeed = feederSpeed
+        if (control.isAutomaticIntake) {
+            intakeSpeed = control.defaultIntakeSpeed
+        }
+        if (control.isAutomaticIndexer) {
+            indexerSpeed = control.defaultIndexerSpeed
+        }
+        if (control.isAutomaticFeeder) {
+            feederSpeed = control.defaultFeederSpeed
+        }
         previousIntakeSpeed = intakeSpeed
         val timestamp = clock.timeSeconds
         val lastTimestamp = lastTimestamp

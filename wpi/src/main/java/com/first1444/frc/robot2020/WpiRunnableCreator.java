@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
-import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
-import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
+import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
-import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
-import com.first1444.frc.robot2020.subsystems.implementations.DummyIntake;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
@@ -29,7 +26,6 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
-import com.first1444.sim.api.frc.sim.DriverStationSendable;
 import com.first1444.sim.api.sensors.DefaultOrientationHandler;
 import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.wpi.WpiClock;
@@ -49,7 +45,6 @@ import me.retrodaredevil.controller.wpi.WpiInputCreator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = false;
@@ -126,11 +121,13 @@ public class WpiRunnableCreator implements RunnableCreator {
             );
         }
         final Clock clock = new WpiClock();
+        final Turret turret = new MotorTurret(clock, dashboardMap);
         VisionPacketListener visionPacketListener = new VisionPacketListener(
                 clock,
                 new VisionPacketParser(
                         new ObjectMapper(),
-                        Map.of(1, Rotation2.ZERO)
+//                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
+                        (cameraId) -> turret.getCurrentRotation() // we're putting the camera on the turret
                 ),
                 "tcp://10.14.44.5:5801"
         );
@@ -155,9 +152,8 @@ public class WpiRunnableCreator implements RunnableCreator {
                 orientationHandler,
                 data,
 //                new DummyIntake(reportMap),
-                new MotorIntake(),
-//                new DummyTurret(reportMap),
-                new MotorTurret(clock, dashboardMap),
+                new MotorIntake(clock),
+                turret,
                 new MotorBallShooter(ballTracker, dashboardMap),
 //                new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),

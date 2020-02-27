@@ -15,7 +15,16 @@ public class DummyIntake extends BaseIntake {
         this.reportMap = requireNonNull(reportMap);
     }
     @Override
-    protected void run(double intakeSpeed, double indexerSpeed, double feederSpeed){
+    protected void run(Control control, double intakeSpeed, double indexerSpeed, double feederSpeed){
+        if(control.isAutomaticIntake()){
+            intakeSpeed = control.getDefaultIntakeSpeed();
+        }
+        if(control.isAutomaticIndexer()){
+            indexerSpeed = control.getDefaultIndexerSpeed();
+        }
+        if(control.isAutomaticFeeder()){
+            feederSpeed = control.getDefaultFeederSpeed();
+        }
         reportMap.report("Intake Speed", FORMAT.format(intakeSpeed));
         reportMap.report("Indexer Speed", FORMAT.format(indexerSpeed));
         reportMap.report("Feeder Speed", FORMAT.format(feederSpeed));

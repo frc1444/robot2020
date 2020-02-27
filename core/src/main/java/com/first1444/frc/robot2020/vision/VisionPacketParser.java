@@ -3,43 +3,44 @@ package com.first1444.frc.robot2020.vision;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.first1444.sim.api.Clock;
+import com.first1444.frc.robot2020.vision.offset.OffsetProvider;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.Extra2020;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.VisionType2020;
 import com.first1444.sim.api.surroundings.Surrounding;
-import com.first1444.sim.api.surroundings.Surrounding3DExtra;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class VisionPacketParser {
     private final ObjectMapper mapper;
-    // TODO instead of using a map, maybe create an interface so that if we have a turret, we can adjust the angle based on that
-    private final Map<Integer, Rotation2> cameraOffsetMap;
+    private final OffsetProvider offsetProvider;
 
-    public VisionPacketParser(ObjectMapper mapper, Map<Integer, Rotation2> cameraOffsetMap) {
+    private final JavaType visionInstantArrayListType;
+
+    public VisionPacketParser(ObjectMapper mapper, OffsetProvider offsetProvider) {
         this.mapper = mapper;
-        this.cameraOffsetMap = cameraOffsetMap;
+        this.offsetProvider = offsetProvider;
+        visionInstantArrayListType = mapper.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class);
     }
 
     public List<Surrounding> parseSurroundings(double timestamp, String jsonString) throws IOException {
-        List<VisionInstant> instants = mapper.readValue(jsonString, mapper.getTypeFactory().constructCollectionType(ArrayList.class, VisionInstant.class));
+        List<VisionInstant> instants = mapper.readValue(jsonString, visionInstantArrayListType);
         return parseSurroundings(timestamp, instants);
     }
     private List<Surrounding> parseSurroundings(double timestamp, List<VisionInstant> instants) throws IOException {
         final List<Surrounding> surroundings = new ArrayList<>();
         for(VisionInstant instant : instants){
-            final Rotation2 offset = cameraOffsetMap.get(instant.cameraId);
-            if(offset == null){
-                throw new IOException("The JSON requested cameraId=" + instant.cameraId + " but we don't have an offset rotation defined in cameraOffsetMap=" + cameraOffsetMap);
+            final Rotation2 offset;
+            try {
+                offset = offsetProvider.getOffset(instant.cameraId);
+            } catch (InvalidCameraIdException e) {
+                throw new IOException(e);
             }
             for (VisionPacket packet : instant.packets) {
                 final Surrounding surrounding = new Surrounding(
