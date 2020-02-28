@@ -8,6 +8,7 @@ public enum PidKey implements ValueKey {
     I("i", ValueType.DOUBLE, 0.0),
     D("d", ValueType.DOUBLE, 0.0),
     F("f", ValueType.DOUBLE, 0.0),
+    MAX_I("max i", ValueType.DOUBLE, 0.0),
 
     CLOSED_RAMP_RATE("closed ramp rate", ValueType.DOUBLE, 0.0)
 

@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.bundle.ActiveDashboardBundle;
 import com.first1444.dashboard.bundle.DefaultDashboardBundle;
+import com.first1444.dashboard.shuffleboard.PropertyComponent;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
+import com.first1444.dashboard.value.BasicValue;
+import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
-import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
@@ -34,6 +37,7 @@ import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
 import edu.wpi.first.hal.FRCNetComm;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
@@ -132,7 +136,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                 "tcp://10.14.44.5:5801"
         );
         visionPacketListener.start();
-        BallTracker ballTracker = new SimpleBallTracker();
+        BallTracker ballTracker = new BallTracker(clock);
 
         final StandardControllerInput controller;
         if(RobotBase.isSimulation() && SystemType.isUnixBased()){
@@ -146,13 +150,15 @@ public class WpiRunnableCreator implements RunnableCreator {
         } else {
             orientationHandler = new BNOOrientationHandler(new BNO055());
         }
+        DigitalInput testSensorInput = new DigitalInput(1);
+        dashboardMap.getDebugTab().add("test sensor 1", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(!testSensorInput.get()))));
         Robot robot = new Robot(
                 driverStation, DriverStationLogger.INSTANCE, clock, dashboardMap,
                 controller, InputUtil.createExtremeJoystick(new WpiInputCreator(1)), InputUtil.createAttackJoystick(new WpiInputCreator(2)), new DualShockRumble(new WpiInputCreator(5).createRumble(), .5, .6, true),
                 orientationHandler,
                 data,
 //                new DummyIntake(reportMap),
-                new MotorIntake(clock),
+                new MotorIntake(clock, ballTracker),
                 turret,
                 new MotorBallShooter(ballTracker, dashboardMap),
 //                new DummyBallShooter(reportMap),
