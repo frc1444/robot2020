@@ -93,28 +93,16 @@ public class OperatorAction extends SimpleAction {
         { // intake stuff
             Intake intake = robot.getIntake();
             boolean feedBalls = shootDown && robot.getBallShooter().atSetpoint();
-//            if(shootDown){
-//                //noinspection ConstantConditions
-//                assert desiredRpm != null : "always true";
-//                boolean upToSpeed = ;
-//                if(upToSpeed){
-//                    intake.setFeederSpeed(1.0);
-//                }
-//            }
             int intakePosition = input.getIntakeSpeed().getDigitalPosition();
-            if(intakePosition < 0){ // suck in
-                if(feedBalls){
-                    intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
-                } else {
-                    intake.setControl(Intake.Control.INTAKE);
-                }
+            if(feedBalls){
+                intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
+            } else if(intakePosition < 0){ // suck in
+                intake.setControl(Intake.Control.INTAKE_AND_ACTIVE_STORE);
             } else if(intakePosition > 0){ // spit out
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
             } else {
-                if(feedBalls){
-                    intake.setControl(Intake.Control.FEED_ALL);
-                }
+                intake.setControl(Intake.Control.STORE);
             }
             if(input.getFeederManualInButton().isDown()){
                 intake.setFeederSpeed(1.0);

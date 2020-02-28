@@ -36,7 +36,6 @@ public class MotorBallShooter implements BallShooter {
 
     private double rpm;
     private double currentRpm;
-    private boolean ballDetectThresholdMet = false;
 
     private State state = State.SPIN_UP;
 

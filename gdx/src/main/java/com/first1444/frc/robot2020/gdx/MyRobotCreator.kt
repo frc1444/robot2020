@@ -220,7 +220,7 @@ class MyRobotCreator(
         val ballShooter = DummyBallShooter(reportMap)
         val intakeListener: IntakeListener
         val intake: Intake
-        val ballTracker: BallTracker = BallTracker(clock)
+        val ballTracker: BallTracker = BallTracker(updateableData.clock)
         val updateLast = mutableListOf<Updateable>()
         run {
             val gdxIntake = GdxIntake(data.driverStation, preciseClock, ballTracker) {

@@ -31,7 +31,7 @@ public class ShootAllRpmAction extends SimpleAction {
         }
         ballShooter.setDesiredRpm(rpm);
         if(ballShooter.atSetpoint()){
-            intake.setControl(Intake.Control.FEED_ALL);
+            intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
         }
     }
 }

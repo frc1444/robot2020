@@ -30,15 +30,13 @@ public interface Intake extends Runnable {
     enum Control {
         MANUAL(false, false, false),
         /** Feeds balls into shooter. Runs indexer and feeder*/
-        FEED_ALL(false, true, true),
-        /** Feeds balls into shooter and intakes. Runs all*/
         FEED_ALL_AND_INTAKE(true, true, true),
-        /** Stores balls as close to shooter as possible. Runs indexer and feeder*/
+        /** Intakes balls and stores them*/
+        INTAKE_AND_ACTIVE_STORE(true, true, false),
+        /** Stores balls without running intake*/
+        ACTIVE_STORE(false, true, true),
+        /** Stores balls if sensors detect no ball and the robot has balls*/
         STORE(false, true, true),
-        /** Intakes balls. Runs intake and indexer*/
-        INTAKE(true, true, false),
-        /** Intakes balls and gets them as close to shooter as possible. Runs all */
-        STORE_AND_INTAKE(true, true, true)
         ;
         private final boolean automaticIntake;
         private final boolean automaticIndexer;

@@ -2,6 +2,7 @@ package com.first1444.frc.robot2020;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.first1444.frc.robot2020.setpoint.PIDController;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.implementations.BaseIntake;
 import com.first1444.sim.api.Clock;
@@ -9,6 +10,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
 public class MotorIntake extends BaseIntake {
+    private static final double ANTI_JAM_PERIOD = 1.2;
     private static final CANSparkMaxLowLevel.MotorType INDEXER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
     private static final CANSparkMaxLowLevel.MotorType FEEDER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
 
@@ -19,12 +21,20 @@ public class MotorIntake extends BaseIntake {
     private final CANSparkMax indexerMotor;
     private final CANSparkMax feederMotor;
 
+    private final SensorArray sensorArray;
+
+    private final PIDController velocityEstimateController;
+    private double currentVelocity = 0;
+    private boolean wasIntakeSensor = false;
+
     public MotorIntake(Clock clock, BallTracker ballTracker) {
         this.clock = clock;
         this.ballTracker = ballTracker;
         intakeMotor = new WPI_VictorSPX(RobotConstants.CAN.INTAKE);
         indexerMotor = new CANSparkMax(RobotConstants.CAN.INDEXER, INDEXER_TYPE);
         feederMotor = new CANSparkMax(RobotConstants.CAN.FEEDER, FEEDER_TYPE);
+        sensorArray = new SensorArray();
+        velocityEstimateController = new PIDController(clock, 1.0 / 0.2, 0.1, 0.0);
 
         intakeMotor.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         intakeMotor.setInverted(InvertType.InvertMotorOutput);
@@ -42,23 +52,25 @@ public class MotorIntake extends BaseIntake {
 
     @Override
     protected void run(Control control, Double intakeSpeed, Double indexerSpeed, Double feederSpeed) {
-        boolean intake = control == Control.INTAKE || control == Control.FEED_ALL_AND_INTAKE || control == Control.STORE_AND_INTAKE;
+        boolean intake = control == Control.INTAKE_AND_ACTIVE_STORE || control == Control.FEED_ALL_AND_INTAKE;
         if(intake){
             if(intakeSpeed == null) {
                 intakeSpeed = 1.0;
             }
         }
         if(indexerSpeed == null) {
-            if (control == Control.FEED_ALL || control == Control.FEED_ALL_AND_INTAKE) { // TODO fix
+            if (control == Control.FEED_ALL_AND_INTAKE) {
                 feederSpeed = 1.0;
                 double timestamp = clock.getTimeSeconds();
                 Double lastShootTime = ballTracker.getLastShootTimestamp();
-                if (/*ballTracker.getBallCount() > 2 && */(lastShootTime == null || timestamp - lastShootTime > 5.0)) { // more than two balls and we haven't shot recently
-                    double result = timestamp % 1.0;
-                    if (result < .2) {
-                        indexerSpeed = -.7;
-                    } else if (result > .3 && result < .9) {
+                if (ballTracker.getBallCount() >= 3 && sensorArray.isTransferSensor() && (lastShootTime == null || timestamp - lastShootTime > 2.0)) { // more than two balls and we haven't shot recently
+                    double result = (timestamp % ANTI_JAM_PERIOD) / ANTI_JAM_PERIOD;
+                    if (result < .25) {
+                        indexerSpeed = -1.0;
+                    } else if (result > .3 && result < .95) {
                         indexerSpeed = 1.0;
+                    } else {
+                        indexerSpeed = 0.0;
                     }
                 } else {
                     indexerSpeed = 1.0;
@@ -67,10 +79,26 @@ public class MotorIntake extends BaseIntake {
                 indexerSpeed = 1.0;
             }
         }
-        if(control == Control.STORE || control == Control.STORE_AND_INTAKE){
-            if(feederSpeed == null) {
-                feederSpeed = 0.0;
+        if(control == Control.ACTIVE_STORE || control == Control.STORE){
+            int ballCount = ballTracker.getBallCount();
+            if(ballCount >= 1){
+                if(!sensorArray.isFeederSensor()){
+                    if(feederSpeed == null) {
+                        feederSpeed = 1.0;
+                    }
+                    if(indexerSpeed == null) {
+                        indexerSpeed = 1.0;
+                    }
+                } else if(ballCount >= 2){
+                    if(!sensorArray.isTransferSensor()){
+                        if(indexerSpeed == null) {
+                            indexerSpeed = 1.0;
+                        }
+                    }
+                }
             }
+        }
+        if(control == Control.ACTIVE_STORE || control == Control.INTAKE_AND_ACTIVE_STORE){
             if(indexerSpeed == null){
                 indexerSpeed = 1.0;
             }
@@ -78,5 +106,31 @@ public class MotorIntake extends BaseIntake {
         intakeMotor.set((intakeSpeed == null ? 0 : intakeSpeed) * 1.0);
         indexerMotor.set((indexerSpeed == null ? 0 : indexerSpeed) * .5);
         feederMotor.set((feederSpeed == null ? 0 : feederSpeed) * 1.0);
+
+        updateBallEnter((indexerSpeed == null ? 0 : indexerSpeed));
+    }
+
+    private void updateBallEnter(double speed) {
+        final double lastCurrentVelocity = this.currentVelocity;
+        double change = velocityEstimateController.calculate(lastCurrentVelocity, speed);
+        double currentVelocity = this.currentVelocity + change;
+        if(Math.signum(speed - currentVelocity) != Math.signum(speed - lastCurrentVelocity)){
+            currentVelocity = speed;
+        }
+        this.currentVelocity = currentVelocity;
+        final boolean isIntake = sensorArray.isIntakeSensor();
+        final boolean wasSensor = wasIntakeSensor;
+        wasIntakeSensor = isIntake;
+        if(isIntake && !wasSensor){
+            if(currentVelocity >= 0){ // we're intaking
+                ballTracker.addBall();
+                System.out.println("Intake a ball");
+            }
+        } else if(!isIntake && wasSensor){
+            if(currentVelocity <= 0){ // we're spitting out
+                ballTracker.removeBall();
+                System.out.println("Split out a ball");
+            }
+        }
     }
 }

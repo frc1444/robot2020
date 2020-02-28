@@ -26,7 +26,7 @@ public class OperatorActionCreator {
 
     public Action createIntakeRunForever() {
         Intake intake = robot.getIntake();
-        return Actions.createRunForeverRecyclable(() -> intake.setControl(Intake.Control.INTAKE));
+        return Actions.createRunForeverRecyclable(() -> intake.setControl(Intake.Control.INTAKE_AND_ACTIVE_STORE));
     }
 
     public Action createTurretAlign() {
