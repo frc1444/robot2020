@@ -5,7 +5,6 @@ import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
-import com.first1444.dashboard.advanced.SendableHelper;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
@@ -53,7 +52,6 @@ import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
-import me.retrodaredevil.controller.implementations.ControllerPartCreator;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
 import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
@@ -146,19 +144,18 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         dashboardMap.getUserTab().add("PS4 Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isControllerConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(3, 4).setSize(1, 1));
         dashboardMap.getUserTab().add("Extreme Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isExtremeConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(4, 4).setSize(1, 1));
         dashboardMap.getUserTab().add("Attack Connected", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(robotInput.isAttackConnected()))), (metadata) -> new ComponentMetadataHelper(metadata).setPosition(5, 4).setSize(1, 1));
+        dashboardMap.getUserTab().add("Ball Count", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(ballTracker.getBallCount()))), (metadata) -> new ComponentMetadataHelper(metadata).setSize(1, 1).setPosition(4, 2));
         drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
         {
             PacketQueue packetQueue = ZMQPacketQueue.create(new ObjectMapper(), 5808);
             packetSender = ZMQPacketSender.create(new ObjectMapper(), 5809);
             packetQueueCreator = new PacketQueueMaster(packetQueue, true);
-//            packetSender = PacketSender.NOTHING;
-//            packetQueueCreator = PacketQueueCreator.NOTHING;
         }
         soundMap = new SoundMap(new PacketSenderSoundCreator(packetSender, false));
 
-        this.orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
-        this.matchScheduler = new DefaultMatchScheduler(driverStation, clock);
+        orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
+        matchScheduler = new DefaultMatchScheduler(driverStation, clock);
 
         relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), getOrientation()));
         absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);

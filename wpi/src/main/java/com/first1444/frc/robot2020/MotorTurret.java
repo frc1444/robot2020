@@ -37,7 +37,7 @@ public class MotorTurret extends BaseTurret {
 
         talon.configVoltageCompSaturation(10.0, RobotConstants.INIT_TIMEOUT);
         talon.enableVoltageCompensation(true); // make sure to configure the saturation voltage before this
-        encoder = new DutyCycleEncoder(0);
+        encoder = new DutyCycleEncoder(RobotConstants.DIO.TURRET_ENCODER);
         encoder.setDistancePerRotation(-180);
 
         pidController = new PIDController(clock, 0, 0, 0);

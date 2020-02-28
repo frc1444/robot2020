@@ -43,4 +43,11 @@ public final class RobotConstants {
 
         public static final int CLIMBER = 43;
     }
+    public static final class DIO {
+        private DIO() { throw new UnsupportedOperationException(); }
+        public static final int TURRET_ENCODER = 0;
+        public static final int INTAKE_SENSOR = 1;
+        public static final int TRANSFER_SENSOR = 2;
+        public static final int FEEDER_SENSOR = 3;
+    }
 }

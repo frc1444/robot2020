@@ -41,7 +41,7 @@ class RobotInput(
     }
 
     // region Swerve Controls
-    /** @return A JoystickPart representing the direction to move */
+    /** @return A JoystickPart representing the direction to move. If [movementJoyResetGyroButton] is pressed, this is used to reset the gyro */
     val movementJoy: JoystickPart = controller.leftJoy
     val turnAmount: InputPart = controller.rightJoy.xAxis
     /** @return An InputPart that can have a range of [0..1] or [-1..1] representing the speed multiplier */
@@ -50,7 +50,6 @@ class RobotInput(
     val firstPersonHoldButton: InputPart = controller.leftBumper
     // endregion
     // region Gyro Controls
-    val resetGyroJoy: JoystickPart = controller.dPad
     val gyroReinitializeButton: InputPart = controller.faceUp
     /** When this button is pressed, [movementJoy]'s angle should be used to reset the gyro  */
     val movementJoyResetGyroButton: InputPart = controller.faceLeft
@@ -68,7 +67,6 @@ class RobotInput(
     val shootButton: InputPart = extremeJoystick.trigger
     val manualShootSpeed: InputPart
 
-    /** Should make the ball move towards the shooter*/
     val feederManualInButton: InputPart = extremeJoystick.gridUpperLeft
     val feederManualOutButton: InputPart = extremeJoystick.gridUpperRight
     val indexerManualInButton: InputPart = extremeJoystick.gridMiddleLeft

@@ -14,6 +14,8 @@ import com.first1444.sim.api.sensors.MutableOrientation;
 import com.first1444.sim.api.surroundings.Surrounding;
 import me.retrodaredevil.action.SimpleAction;
 
+import java.util.List;
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -45,38 +47,40 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
         final double lastTimestamp = this.lastTimestamp;
         VisionInstant instant = visionProvider.getVisionInstant();
         if(instant != null) {
-            for (Surrounding surrounding : instant.getSurroundings()) {
-                double timestamp = surrounding.getTimestamp();
-                this.lastTimestamp = timestamp; // for this to work, we're just going to assume that all the surroundings we see have the same timestamp.
-                if (timestamp + VISION_DELAY_TIME_ALLOWED < currentTimestamp) {
-                    continue; // this is too old!
-                }
-                if (timestamp <= lastTimestamp) {
-                    continue; // this isn't new!
-                }
-
-                Object extraData = surrounding.getExtraData();
-                final Extra2020 extra = extraData instanceof Extra2020 ? (Extra2020) extraData : null;
-                Transform2 transform = surrounding.getTransform();
-                Transform2 visionTransform = transform.rotate(rotation).plus(position);
-                VisionTarget2020 best = null;
-                double closest2 = Double.MAX_VALUE;
-                for (VisionTarget2020 target : Field2020.ALL_VISION_TARGETS) {
-                    Transform2 targetTransform = target.getTransform();
-                    double distance2 = targetTransform.getPosition().distance2(visionTransform.getPosition());
-                    if (distance2 < closest2 && (extra == null || extra.getVisionType() == target.getIdentifier().getVisionType())) {
-                        best = target;
-                        closest2 = distance2;
-                    }
-                }
-                requireNonNull(best);
-//            System.out.println("We see: " + best.getIdentifier() + " distance error: " + Math.sqrt(closest2) + " yaw error: " + Math.abs(visionTransform.getRotationDegrees() - best.getTransform().getRotationDegrees()));
-                Rotation2 visionOffset = transform.getRotation();
-
-                Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);
-                absoluteDistanceAccumulator.setPosition(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)));
-                orientation.setOrientation(calculatedOrientation);
+            double timestamp = instant.getTimestamp();
+            this.lastTimestamp = timestamp; // for this to work, we're just going to assume that all the surroundings we see have the same timestamp.
+            if (timestamp + VISION_DELAY_TIME_ALLOWED < currentTimestamp) {
+                return; // this is too old!
             }
+            if (timestamp <= lastTimestamp) {
+                return; // this isn't new!
+            }
+            List<Surrounding> surroundingList = instant.getSurroundings();
+            if(surroundingList.isEmpty()){
+                return;
+            }
+            Surrounding surrounding = surroundingList.get(0);
+            Object extraData = surrounding.getExtraData();
+            final Extra2020 extra = extraData instanceof Extra2020 ? (Extra2020) extraData : null;
+            Transform2 transform = surrounding.getTransform();
+            Transform2 visionTransform = transform.rotate(rotation).plus(position);
+            VisionTarget2020 best = null;
+            double closest2 = Double.MAX_VALUE;
+            for (VisionTarget2020 target : Field2020.ALL_VISION_TARGETS) {
+                Transform2 targetTransform = target.getTransform();
+                double distance2 = targetTransform.getPosition().distance2(visionTransform.getPosition());
+                if (distance2 < closest2 && (extra == null || extra.getVisionType() == target.getIdentifier().getVisionType())) {
+                    best = target;
+                    closest2 = distance2;
+                }
+            }
+            requireNonNull(best);
+//            System.out.println("We see: " + best.getIdentifier() + " distance error: " + Math.sqrt(closest2) + " yaw error: " + Math.abs(visionTransform.getRotationDegrees() - best.getTransform().getRotationDegrees()));
+            Rotation2 visionOffset = transform.getRotation();
+
+            Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);
+            absoluteDistanceAccumulator.setPosition(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)));
+            orientation.setOrientation(calculatedOrientation);
         }
     }
 }

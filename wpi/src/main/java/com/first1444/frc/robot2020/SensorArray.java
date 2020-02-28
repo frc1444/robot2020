@@ -7,9 +7,9 @@ public class SensorArray {
     private final DigitalInput transferSensor;
     private final DigitalInput feederSensor;
     public SensorArray(){
-        intakeSensor = new DigitalInput(1);
-        transferSensor = new DigitalInput(2);
-        feederSensor = new DigitalInput(3);
+        intakeSensor = new DigitalInput(RobotConstants.DIO.INTAKE_SENSOR);
+        transferSensor = new DigitalInput(RobotConstants.DIO.TRANSFER_SENSOR);
+        feederSensor = new DigitalInput(RobotConstants.DIO.FEEDER_SENSOR);
     }
     public boolean isIntakeSensor(){ return !intakeSensor.get(); }
     public boolean isTransferSensor(){ return !transferSensor.get(); }

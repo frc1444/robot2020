@@ -39,6 +39,9 @@ To alter them on Windows, replace `./gradlew` with `gradlew.bat`
 # Running RIOLog
 ./gradlew wpi:riolog
 
+# Helpful for debugging simulateJava:
+tail -f wpi/build/stdout/simulateJava.log | grep -Ev "Talon|CTR|Victor|Stop"
+
 ```
 
 ### Project Structure

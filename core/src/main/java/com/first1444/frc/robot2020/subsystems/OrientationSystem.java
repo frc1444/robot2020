@@ -53,12 +53,6 @@ public class OrientationSystem implements Runnable {
         orientation.rawOrientationDegrees = rawOrientationDegrees;
 
         // resetting the gyro code
-        final InputPart x = robotInput.getResetGyroJoy().getXAxis();
-        final InputPart y = robotInput.getResetGyroJoy().getYAxis();
-        if (x.isDown() || y.isDown()){
-            final double angle = robotInput.getResetGyroJoy().getAngle();
-            orientation.setOrientationDegrees(angle);
-        }
         if(robotInput.getMovementJoyResetGyroButton().isJustPressed()){
             final double angle = robotInput.getMovementJoy().getAngle();
             orientation.setOrientationDegrees(angle);

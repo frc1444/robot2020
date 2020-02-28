@@ -16,6 +16,7 @@ public class MotorIntake extends BaseIntake {
 
     private final Clock clock;
     private final BallTracker ballTracker;
+    private final DashboardMap dashboardMap;
 
     private final WPI_VictorSPX intakeMotor;
     private final CANSparkMax indexerMotor;
@@ -23,18 +24,18 @@ public class MotorIntake extends BaseIntake {
 
     private final SensorArray sensorArray;
 
-    private final PIDController velocityEstimateController;
     private double currentVelocity = 0;
     private boolean wasIntakeSensor = false;
+    private Double lastUpdate = null;
 
-    public MotorIntake(Clock clock, BallTracker ballTracker) {
+    public MotorIntake(Clock clock, BallTracker ballTracker, DashboardMap dashboardMap) {
         this.clock = clock;
         this.ballTracker = ballTracker;
+        this.dashboardMap = dashboardMap;
         intakeMotor = new WPI_VictorSPX(RobotConstants.CAN.INTAKE);
         indexerMotor = new CANSparkMax(RobotConstants.CAN.INDEXER, INDEXER_TYPE);
         feederMotor = new CANSparkMax(RobotConstants.CAN.FEEDER, FEEDER_TYPE);
         sensorArray = new SensorArray();
-        velocityEstimateController = new PIDController(clock, 1.0 / 0.2, 0.1, 0.0);
 
         intakeMotor.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         intakeMotor.setInverted(InvertType.InvertMotorOutput);
@@ -107,29 +108,42 @@ public class MotorIntake extends BaseIntake {
         indexerMotor.set((indexerSpeed == null ? 0 : indexerSpeed) * .5);
         feederMotor.set((feederSpeed == null ? 0 : feederSpeed) * 1.0);
 
-        updateBallEnter((indexerSpeed == null ? 0 : indexerSpeed));
+        updateBallEnter(indexerSpeed == null ? 0 : indexerSpeed);
     }
 
     private void updateBallEnter(double speed) {
-        final double lastCurrentVelocity = this.currentVelocity;
-        double change = velocityEstimateController.calculate(lastCurrentVelocity, speed);
-        double currentVelocity = this.currentVelocity + change;
-        if(Math.signum(speed - currentVelocity) != Math.signum(speed - lastCurrentVelocity)){
-            currentVelocity = speed;
-        }
-        this.currentVelocity = currentVelocity;
-        final boolean isIntake = sensorArray.isIntakeSensor();
-        final boolean wasSensor = wasIntakeSensor;
-        wasIntakeSensor = isIntake;
-        if(isIntake && !wasSensor){
-            if(currentVelocity >= 0){ // we're intaking
-                ballTracker.addBall();
-                System.out.println("Intake a ball");
+        double timestamp = clock.getTimeSeconds();
+        Double lastTimestamp = lastUpdate;
+        lastUpdate = timestamp;
+        if(lastTimestamp != null){
+            double delta = timestamp - lastTimestamp;
+
+            double currentVelocity = this.currentVelocity;
+            double error = speed - currentVelocity;
+            double change = Math.signum(error) * delta / .2;
+            currentVelocity += change;
+            if(Math.signum(error) != Math.signum(speed - currentVelocity)){
+                currentVelocity = speed;
             }
-        } else if(!isIntake && wasSensor){
-            if(currentVelocity <= 0){ // we're spitting out
-                ballTracker.removeBall();
-                System.out.println("Split out a ball");
+            this.currentVelocity = currentVelocity;
+
+            final boolean isIntake = sensorArray.isIntakeSensor();
+            final boolean wasSensor = wasIntakeSensor;
+            wasIntakeSensor = isIntake;
+            if(isIntake && !wasSensor){
+                if(currentVelocity >= 0){ // we're intaking
+                    if(currentVelocity > .2 || ballTracker.getBallCount() < 5) {
+                        ballTracker.addBall();
+                        System.out.println("Added ball");
+                    } else {
+                        System.out.println("Not adding ball. Hopefully we made the right choice");
+                    }
+                }
+            } else if(!isIntake && wasSensor){
+                if(currentVelocity <= 0){ // we're spitting out
+                    ballTracker.removeBall();
+                    System.out.println("Split out a ball");
+                }
             }
         }
     }
