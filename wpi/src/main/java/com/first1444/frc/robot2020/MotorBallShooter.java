@@ -4,7 +4,6 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.music.Orchestra;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
@@ -13,6 +12,7 @@ import com.first1444.frc.robot2020.subsystems.BallShooter;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
+import com.first1444.sim.api.Clock;
 
 import java.util.Arrays;
 
@@ -31,9 +31,10 @@ public class MotorBallShooter implements BallShooter {
     private static final double BALL_DETECT_CURRENT_THRESHOLD = 40.0; // TODO change
     private static final double BALL_DETECT_CURRENT_RECOVERY = 20.0; // TODO change
     private final BallTracker ballTracker;
+    private final Clock clock;
     private final DashboardMap dashboardMap;
     private final TalonFX talon;
-    private final Orchestra sound;
+    private final SoundHandler soundHandler;
 
     private double rpm;
     private double currentRpm;
@@ -41,8 +42,9 @@ public class MotorBallShooter implements BallShooter {
 
     private State state = State.SPIN_UP;
 
-    public MotorBallShooter(BallTracker ballTracker, DashboardMap dashboardMap) {
+    public MotorBallShooter(BallTracker ballTracker, Clock clock, DashboardMap dashboardMap) {
         this.ballTracker = ballTracker;
+        this.clock = clock;
         this.dashboardMap = dashboardMap;
         talon = new TalonFX(RobotConstants.CAN.SHOOTER);
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
@@ -50,8 +52,7 @@ public class MotorBallShooter implements BallShooter {
         talon.setSensorPhase(true);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
 
-        sound = new Orchestra(Arrays.asList(talon));
-        playSoundFile("sound/test.chrp");
+        soundHandler = new SoundHandler(clock, dashboardMap, talon);
 
         var sendable = new MutableValueMapSendable<>(PidKey.class);
         var pidConfig = sendable.getMutableValueMap();
@@ -100,9 +101,7 @@ public class MotorBallShooter implements BallShooter {
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(0.0);
             state = State.SPIN_UP;
 
-            if (!sound.isPlaying()) {
-                sound.play();
-            }
+            soundHandler.update();
         }
         dashboardMap.getDebugTab().getRawDashboard().get("up to speed").getForceSetter().setString(state.toString());
         double currentRpm = nativeToRpm(talon.getSelectedSensorVelocity(), RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
@@ -118,9 +117,5 @@ public class MotorBallShooter implements BallShooter {
     @Override
     public boolean atSetpoint() {
         return state == State.READY;
-    }
-
-    public void playSoundFile(String fileName) {
-        sound.loadMusic(fileName);
     }
 }

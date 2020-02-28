@@ -154,7 +154,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 //                new DummyIntake(reportMap),
                 new MotorIntake(clock),
                 turret,
-                new MotorBallShooter(ballTracker, dashboardMap),
+                new MotorBallShooter(ballTracker, clock, dashboardMap),
 //                new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 ballTracker,
