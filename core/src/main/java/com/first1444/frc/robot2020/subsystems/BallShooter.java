@@ -10,5 +10,6 @@ public interface BallShooter extends Runnable {
     double getCurrentRpm();
     boolean atSetpoint();
 
-    double MAX_RPM = 6380;
+//    double MAX_RPM = 6380;
+    double MAX_RPM = 6100;
 }

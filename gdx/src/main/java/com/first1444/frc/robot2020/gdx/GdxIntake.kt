@@ -63,17 +63,17 @@ class GdxIntake(
         get() = mutableBalls
 
     @Suppress("NAME_SHADOWING")
-    override fun run(control: Intake.Control, intakeSpeed: Double, indexerSpeed: Double, feederSpeed: Double) {
+    override fun run(control: Intake.Control, intakeSpeed: Double?, indexerSpeed: Double?, feederSpeed: Double?) {
         var intakeSpeed = intakeSpeed
         var indexerSpeed = indexerSpeed
         var feederSpeed = feederSpeed
-        if (control.isAutomaticIntake) {
+        if (intakeSpeed == null) {
             intakeSpeed = control.defaultIntakeSpeed
         }
-        if (control.isAutomaticIndexer) {
+        if (indexerSpeed == null) {
             indexerSpeed = control.defaultIndexerSpeed
         }
-        if (control.isAutomaticFeeder) {
+        if (feederSpeed == null) {
             feederSpeed = control.defaultFeederSpeed
         }
         previousIntakeSpeed = intakeSpeed
@@ -92,7 +92,7 @@ class GdxIntake(
                     position = INDEXER_SPACE + FEEDER_SPACE
                     if(shootBall()){
                         iterator.remove()
-                        ballTracker.removeBallTop() // This is where we have this right now. We may move this call in the future (for the simulation only)
+                        ballTracker.onShootBall() // This is where we have this right now. We may move this call in the future (for the simulation only)
                     }
                 }
                 if(lastPosition != null && position > lastPosition - SPACE_BETWEEN){

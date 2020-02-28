@@ -26,10 +26,8 @@ public class MotorBallShooter implements BallShooter {
         RECOVERY,
         READY
     }
-    public static final double AT_SETPOINT_DEADBAND = 300;
-    public static final double RECOVERY_DEADBAND = 600;
-    private static final double BALL_DETECT_CURRENT_THRESHOLD = 40.0; // TODO change
-    private static final double BALL_DETECT_CURRENT_RECOVERY = 20.0; // TODO change
+    public static final double AT_SETPOINT_DEADBAND = 500;
+    public static final double RECOVERY_DEADBAND = 800;
     private final BallTracker ballTracker;
     private final Clock clock;
     private final DashboardMap dashboardMap;
@@ -57,8 +55,8 @@ public class MotorBallShooter implements BallShooter {
         var sendable = new MutableValueMapSendable<>(PidKey.class);
         var pidConfig = sendable.getMutableValueMap();
         pidConfig.setDouble(PidKey.CLOSED_RAMP_RATE, .25);
-        pidConfig.setDouble(PidKey.P, .1);
-        pidConfig.setDouble(PidKey.I, .00014);
+        pidConfig.setDouble(PidKey.P, .2);
+        pidConfig.setDouble(PidKey.I, .0001);
 
         CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
         pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));
@@ -87,7 +85,7 @@ public class MotorBallShooter implements BallShooter {
                 state = State.READY;
             } else if(rpmDifference > RECOVERY_DEADBAND){
                 if(state == State.READY){
-                    ballTracker.removeBallTop();
+                    ballTracker.onShootBall();
                     System.out.println("Ball shot");
                 }
                 state = State.RECOVERY;
@@ -97,7 +95,7 @@ public class MotorBallShooter implements BallShooter {
                 talon.set(ControlMode.PercentOutput, 0);
             }
 
-            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(rpm);
+            dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired RPM").getStrictSetter().setDouble(0.0);
             dashboardMap.getDebugTab().getRawDashboard().get("Shooter Desired Velocity").getStrictSetter().setDouble(0.0);
             state = State.SPIN_UP;
 

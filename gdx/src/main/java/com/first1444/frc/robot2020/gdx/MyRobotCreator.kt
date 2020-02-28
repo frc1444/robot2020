@@ -20,7 +20,6 @@ import com.first1444.frc.robot2020.packets.transfer.ZMQPacketSender
 import com.first1444.frc.robot2020.subsystems.Intake
 import com.first1444.frc.robot2020.subsystems.Turret
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker
-import com.first1444.frc.robot2020.subsystems.balltrack.SimpleBallTracker
 import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
@@ -221,7 +220,7 @@ class MyRobotCreator(
         val ballShooter = DummyBallShooter(reportMap)
         val intakeListener: IntakeListener
         val intake: Intake
-        val ballTracker: BallTracker = SimpleBallTracker()
+        val ballTracker: BallTracker = BallTracker(clock)
         val updateLast = mutableListOf<Updateable>()
         run {
             val gdxIntake = GdxIntake(data.driverStation, preciseClock, ballTracker) {
