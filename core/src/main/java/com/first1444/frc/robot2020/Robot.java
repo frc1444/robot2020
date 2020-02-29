@@ -248,6 +248,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 module.getEventHandler().handleEvent(SwerveModuleEvent.RECALIBRATE, null);
             }
         }
+        if(robotInput.getBallCountIncrement().isJustPressed()){
+            ballTracker.addBall();
+        }
+        if(robotInput.getBallCountDecrement().isJustPressed()){
+            ballTracker.removeBall();
+        }
 
         // update subsystems
         drive.run();

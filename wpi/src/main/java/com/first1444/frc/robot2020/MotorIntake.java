@@ -2,6 +2,9 @@ package com.first1444.frc.robot2020;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.first1444.dashboard.shuffleboard.PropertyComponent;
+import com.first1444.dashboard.value.BasicValue;
+import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.frc.robot2020.setpoint.PIDController;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.implementations.BaseIntake;
@@ -36,6 +39,9 @@ public class MotorIntake extends BaseIntake {
         indexerMotor = new CANSparkMax(RobotConstants.CAN.INDEXER, INDEXER_TYPE);
         feederMotor = new CANSparkMax(RobotConstants.CAN.FEEDER, FEEDER_TYPE);
         sensorArray = new SensorArray();
+        dashboardMap.getDevTab().add("Intake Sensor", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(sensorArray.isIntakeSensor()))));
+        dashboardMap.getDevTab().add("Transfer Sensor", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(sensorArray.isTransferSensor()))));
+        dashboardMap.getDevTab().add("Feeder Sensor", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(sensorArray.isFeederSensor()))));
 
         intakeMotor.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         intakeMotor.setInverted(InvertType.InvertMotorOutput);
@@ -113,7 +119,7 @@ public class MotorIntake extends BaseIntake {
 
     private void updateBallEnter(double speed) {
         double timestamp = clock.getTimeSeconds();
-        Double lastTimestamp = lastUpdate;
+        final Double lastTimestamp = lastUpdate;
         lastUpdate = timestamp;
         if(lastTimestamp != null){
             double delta = timestamp - lastTimestamp;
@@ -126,11 +132,13 @@ public class MotorIntake extends BaseIntake {
                 currentVelocity = speed;
             }
             this.currentVelocity = currentVelocity;
+            dashboardMap.getDebugTab().getRawDashboard().get("current indexer velocity").getStrictSetter().setDouble(currentVelocity);
 
             final boolean isIntake = sensorArray.isIntakeSensor();
             final boolean wasSensor = wasIntakeSensor;
             wasIntakeSensor = isIntake;
             if(isIntake && !wasSensor){
+                System.out.println("Intake sensor on");
                 if(currentVelocity >= 0){ // we're intaking
                     if(currentVelocity > .2 || ballTracker.getBallCount() < 5) {
                         ballTracker.addBall();
@@ -140,11 +148,25 @@ public class MotorIntake extends BaseIntake {
                     }
                 }
             } else if(!isIntake && wasSensor){
+                System.out.println("Intake sensor off");
                 if(currentVelocity <= 0){ // we're spitting out
                     ballTracker.removeBall();
                     System.out.println("Split out a ball");
                 }
             }
+        }
+        int count = 0;
+        if(sensorArray.isIntakeSensor()){
+            count++;
+        }
+        if(sensorArray.isTransferSensor()){
+            count++;
+        }
+        if(sensorArray.isFeederSensor()){
+            count++;
+        }
+        if(ballTracker.getBallCount() < count){
+            ballTracker.setBallCount(count);
         }
     }
 }

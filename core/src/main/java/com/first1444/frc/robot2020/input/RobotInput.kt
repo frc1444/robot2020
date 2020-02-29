@@ -101,6 +101,9 @@ class RobotInput(
         get() = dummyInput
     // endregion
 
+    val ballCountIncrement: InputPart = attackJoystick.centerRight
+    val ballCountDecrement: InputPart = attackJoystick.centerLeft
+
     init {
         partUpdater.addPartsAssertNonePresent(
                 controller,

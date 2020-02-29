@@ -13,6 +13,7 @@ import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
+import com.first1444.frc.robot2020.vision.offset.MapOffsetProvider;
 import com.first1444.frc.util.DummyOrientation;
 import com.first1444.frc.util.SystemType;
 import com.first1444.frc.util.pid.PidKey;
@@ -44,6 +45,7 @@ import me.retrodaredevil.controller.wpi.WpiInputCreator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = false;
@@ -125,8 +127,8 @@ public class WpiRunnableCreator implements RunnableCreator {
                 clock,
                 new VisionPacketParser(
                         new ObjectMapper(),
-//                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
-                        (cameraId) -> turret.getCurrentRotation() // we're putting the camera on the turret
+                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
+//                        (cameraId) -> turret.getCurrentRotation() // we're putting the camera on the turret
                 ),
                 "tcp://10.14.44.5:5801"
         );

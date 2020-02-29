@@ -9,6 +9,7 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.frc.robot2020.setpoint.PIDController;
+import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.frc.robot2020.subsystems.implementations.BaseTurret;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
@@ -77,16 +78,26 @@ public class MotorTurret extends BaseTurret {
                     talon.set(ControlMode.PercentOutput, 0.0);
                 } else {
                     double output = pidController.calculate(currentDegrees, desiredDegrees);
-                    talon.set(ControlMode.PercentOutput, output);
+                    setOutputSpeed(output, true);
                 }
             }
         } else {
             double speed = desiredState.getRawSpeedCounterClockwise() * .8;
-            talon.set(ControlMode.PercentOutput, speed);
+            setOutputSpeed(speed, encoderConnected);
             dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setDouble(speed);
         }
 //        dashboardMap.getDebugTab().getRawDashboard().get("Turret Selected Counts").getForceSetter().setDouble(talon.getSelectedSensorPosition());
 //        dashboardMap.getDebugTab().getRawDashboard().get("Turret Encoder Counts").getForceSetter().setDouble(talon.getSensorCollection().getPulseWidthPosition());
+    }
+    private void setOutputSpeed(double speed, boolean limit){
+        if(limit) {
+            double currentDegrees = getRotationDegrees();
+            if ((speed > 0 && currentDegrees > Turret.MAX_ROTATION.getDegrees()) || (speed < 0 && currentDegrees < Turret.MIN_ROTATION.getDegrees())) {
+                talon.set(ControlMode.PercentOutput, 0.0);
+                return;
+            }
+        }
+        talon.set(ControlMode.PercentOutput, speed);
     }
     private double getRotationDegreesRaw(){
         return encoder.getDistance();

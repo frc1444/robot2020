@@ -21,8 +21,8 @@ public interface Turret extends Runnable {
 
     Rotation2 getCurrentRotation();
 
-    Rotation2 MAX_ROTATION = Rotation2.DEG_90;
-    Rotation2 MIN_ROTATION = Rotation2.DEG_270;
+    Rotation2 MAX_ROTATION = Rotation2.fromDegrees(35);
+    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-80);
 
     class DesiredState {
         public static final DesiredState NEUTRAL = new DesiredState(null, 0.0);
