@@ -311,7 +311,7 @@ public class PIDController implements Sendable<ActiveComponent> {
     @Override
     public ActiveComponent init(@NotNull String title, @NotNull BasicDashboard dashboard) {
         new SendableHelper(dashboard)
-                .setActuator(true) // TODO I don't think this does anything with how this is set up
+                .setActuator(true) // I don't think this does anything with how this is set up, but that's fine, we can't fix it here
                 .setType("PIDController");
         return new ActiveComponentMultiplexer(title, Arrays.asList(
                 new PropertyActiveComponent("", dashboard.get("p"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(getP()))),

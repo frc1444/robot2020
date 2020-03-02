@@ -155,7 +155,6 @@ public final class Constants {
             return DriveType.FALCON;
         }
 
-        // TODO
         @Override public int getFRDriveCAN() { return 21; }
         @Override public int getFLDriveCAN() { return 22; }
         @Override public int getRLDriveCAN() { return 23; }
@@ -182,7 +181,6 @@ public final class Constants {
             return 1657;
         }
 
-        // TODO offsets
         @Override
         public MutableValueMap<ModuleConfig> setupFR(MutableValueMap<ModuleConfig> config) {
             return config.setDouble(ModuleConfig.ABS_ENCODER_OFFSET, 357);

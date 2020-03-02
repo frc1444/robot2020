@@ -84,7 +84,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                     .setDouble(PidKey.F, 1.0)
                     .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
         } else if(driveType == SwerveSetup.DriveType.FALCON){
-            // TODO tune PID constants for Falcon
+            // NOTE: We haven't really tuned PID for falcons, just scaled them to make them the same as CIMs with CIMCoders
             double ratio = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION / RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
             drivePid
                     .setDouble(PidKey.P, 1.5 * ratio)

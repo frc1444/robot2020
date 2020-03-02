@@ -186,7 +186,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
                 new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(clock, visionProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
+                new SurroundingPositionCorrectAction(clock, dashboardMap, visionProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
                 new PerspectiveLocationPacketAction(packetQueueCreator.create(), perspectiveHandler),
                 new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
@@ -363,6 +363,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public SoundMap getSoundMap(){ return soundMap; }
 
     public double getBestEstimatedTargetRpm(){
-        return BallShooter.MAX_RPM; // TODO use absolute distance accumulator to get distance from target and determine best rpm
+        return BallShooter.MAX_RPM; // Maybe in the future we will want to adjust this, but right now max rpm is fine
     }
 }

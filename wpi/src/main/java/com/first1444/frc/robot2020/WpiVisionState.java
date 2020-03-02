@@ -8,7 +8,7 @@ import com.first1444.sim.api.Clock;
 import edu.wpi.first.wpilibj.DigitalOutput;
 
 public class WpiVisionState implements VisionState {
-    private static final double DIM_TIME_AMOUNT = 1.0;
+    private static final double DIM_TIME = 1.0;
     private final Clock clock;
     private final DigitalOutput pwm;
 
@@ -33,7 +33,8 @@ public class WpiVisionState implements VisionState {
             pwm.updateDutyCycle(maxBrightness);
         } else {
             double elapsed = clock.getTimeSeconds() - dimStartTime;
-            double percent = Math.max(0, 1 - elapsed / DIM_TIME_AMOUNT);
+            double percent = Math.max(0, 1 - elapsed / DIM_TIME);
+            percent = Math.pow(percent, 2);
             pwm.updateDutyCycle(percent * maxBrightness);
         }
     }

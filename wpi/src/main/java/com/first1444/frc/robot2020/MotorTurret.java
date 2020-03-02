@@ -29,6 +29,8 @@ public class MotorTurret extends BaseTurret {
     private final DutyCycleEncoder encoder;
     private final PIDController pidController;
 
+    private double lastRotationDegrees;
+
     public MotorTurret(Clock clock, DashboardMap dashboardMap) {
         this.dashboardMap = dashboardMap;
         talon = new TalonSRX(RobotConstants.CAN.TURRET);
@@ -40,7 +42,6 @@ public class MotorTurret extends BaseTurret {
         talon.enableVoltageCompensation(true); // make sure to configure the saturation voltage before this
         encoder = new DutyCycleEncoder(RobotConstants.DIO.TURRET_ENCODER);
         encoder.setDistancePerRotation(-180);
-        // TODO allow encoder wrap around
 
         pidController = new PIDController(clock, 0, 0, 0);
 
@@ -54,7 +55,7 @@ public class MotorTurret extends BaseTurret {
         pidConfig.addListener(key -> pidController.applyFrom(pidConfig));
 
         dashboardMap.getDebugTab().add("Turret PID", new SendableComponent<>(sendable));
-        dashboardMap.getDebugTab().add("Turret Raw Degrees", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(getRotationDegreesRaw()))));
+        dashboardMap.getDebugTab().add("Turret Raw Degrees", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(encoder.getDistance()))));
         dashboardMap.getDebugTab().add("Turret Degrees", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(getRotationDegrees()))));
         dashboardMap.getUserTab().add(
                 "Turret Encoder",
@@ -65,13 +66,17 @@ public class MotorTurret extends BaseTurret {
     @Override
     protected void run(DesiredState desiredState) {
         Rotation2 rotation = desiredState.getDesiredRotation();
+
+        double currentDegrees = getRotationDegrees();
         boolean encoderConnected = encoder.isConnected();
+        if(encoderConnected) {
+            lastRotationDegrees = currentDegrees;
+        }
         if(rotation != null){
             if(!encoderConnected){
                 talon.set(ControlMode.PercentOutput, 0.0);
             } else {
                 double desiredDegrees = rotation.getDegrees();
-                double currentDegrees = getRotationDegrees();
                 if (abs(desiredDegrees - currentDegrees) < DEADZONE_DEGREES) {
                     talon.set(ControlMode.PercentOutput, 0.0);
                 } else {
@@ -96,17 +101,19 @@ public class MotorTurret extends BaseTurret {
         }
         talon.set(ControlMode.PercentOutput, speed);
     }
-    private double getRotationDegreesRaw(){
-        return encoder.getDistance();
+    private double getRotationDegreesCorrectRaw(){
+        return Math.IEEEremainder(encoder.getDistance() - OFFSET_ENCODER_DEGREES, 180);
     }
     private double getRotationDegrees(){
-        return Math.IEEEremainder(getRotationDegreesRaw() - OFFSET_ENCODER_DEGREES, 360.0);
+        if(!encoder.isConnected()){
+            return 0.0;
+        }
+        double degrees = getRotationDegreesCorrectRaw();
+        double lastRotationDegrees = this.lastRotationDegrees;
+        return lastRotationDegrees + Math.IEEEremainder(degrees - lastRotationDegrees, 360);
     }
     @Override
     public Rotation2 getCurrentRotation() {
-        if(!encoder.isConnected()){
-            return Rotation2.ZERO;
-        }
         return Rotation2.fromDegrees(getRotationDegrees());
     }
 }

@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2020.actions.positioning;
 
+import com.first1444.frc.robot2020.DashboardMap;
 import com.first1444.frc.robot2020.vision.VisionInstant;
 import com.first1444.frc.robot2020.vision.VisionProvider;
 import com.first1444.sim.api.Clock;
@@ -25,17 +26,23 @@ import static java.util.Objects.requireNonNull;
 public class SurroundingPositionCorrectAction extends SimpleAction {
     private static final double VISION_DELAY_TIME_ALLOWED = .3;
     private final Clock clock;
+    private final DashboardMap dashboardMap;
     private final VisionProvider visionProvider;
     private final MutableOrientation orientation;
     private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
     private double lastTimestamp = 0;
-    public SurroundingPositionCorrectAction(Clock clock, VisionProvider visionProvider, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
+    public SurroundingPositionCorrectAction(Clock clock, DashboardMap dashboardMap, VisionProvider visionProvider, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
         super(true);
         this.clock = clock;
+        this.dashboardMap = dashboardMap;
         this.visionProvider = visionProvider;
         this.orientation = orientation;
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
+        /*
+        TODO: We need to have separate distance accumulators so during auto, when we use vision, our very precise position isn't thrown off with vision,
+        which is good for targeting, but may not help us much when we need to precisely pick up balls based on our position
+         */
     }
 
     @Override
@@ -51,6 +58,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             double timestamp = instant.getTimestamp();
             this.lastTimestamp = timestamp; // for this to work, we're just going to assume that all the surroundings we see have the same timestamp.
             if (timestamp + VISION_DELAY_TIME_ALLOWED < currentTimestamp) {
+                setVisionStatus("Too Old");
                 return; // this is too old!
             }
             if (timestamp <= lastTimestamp) {
@@ -58,6 +66,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             }
             List<Surrounding> surroundingList = instant.getSurroundings();
             if(surroundingList.isEmpty()){
+                setVisionStatus("Vision Connected, No Targets");
                 return;
             }
             Surrounding surrounding = surroundingList.get(0);
@@ -85,9 +94,15 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             if(distanceMoved < 2.5 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
                 absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
                 orientation.setOrientation(newTransform.getRotation());
+                setVisionStatus("Reset Position");
             } else {
-                System.out.println("We have vision, but it would have thrown our location way off!"); // TODO only send this message less frequently
+                setVisionStatus("Far Away");
             }
+        } else {
+            setVisionStatus("No Vision");
         }
+    }
+    private void setVisionStatus(String statusMessage){
+        dashboardMap.getDevTab().getRawDashboard().get("Vision Status").getStrictSetter().setString(statusMessage);
     }
 }
