@@ -24,6 +24,7 @@ import com.first1444.frc.robot2020.subsystems.implementations.DummyBallShooter
 import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner
 import com.first1444.frc.robot2020.vision.SimpleInstantVisionProvider
+import com.first1444.frc.robot2020.vision.SimpleVisionState
 import com.first1444.frc.robot2020.vision.VisionPacketListener
 import com.first1444.frc.robot2020.vision.VisionPacketParser
 import com.first1444.frc.robot2020.vision.offset.MapOffsetProvider
@@ -284,8 +285,9 @@ class MyRobotCreator(
                                     FovVisionFilter(entity, Rotation2.ZERO, Rotation2.fromDegrees(90.0))
                             )), entity, preciseClock),
                             preciseClock
-                    )
+                    ),
 //                    visionPacketListener
+                    SimpleVisionState()
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {

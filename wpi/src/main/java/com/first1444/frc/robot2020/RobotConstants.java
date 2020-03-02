@@ -31,8 +31,6 @@ public final class RobotConstants {
     public static final class CAN {
         private CAN() { throw new UnsupportedOperationException(); }
 
-//        public static final int TURRET = 21;
-//        public static final int SHOOTER = 23;
         public static final int TURRET = 30;
         public static final int SHOOTER = 31;
 
@@ -49,5 +47,6 @@ public final class RobotConstants {
         public static final int INTAKE_SENSOR = 1;
         public static final int TRANSFER_SENSOR = 2;
         public static final int FEEDER_SENSOR = 3;
+        public static final int VISION_LED = 4;
     }
 }

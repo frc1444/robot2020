@@ -30,6 +30,7 @@ import com.first1444.frc.robot2020.subsystems.*;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.frc.robot2020.vision.VisionProvider;
+import com.first1444.frc.robot2020.vision.VisionState;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
@@ -88,6 +89,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final Climber climber;
     private final BallTracker ballTracker;
     private final VisionProvider visionProvider;
+    private final VisionState visionState;
 
     private final PartUpdater partUpdater = new PartUpdater();
     private final RobotInput robotInput;
@@ -121,7 +123,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             FourWheelSwerveDriveData fourWheelSwerveData,
             Intake intake, Turret turret, BallShooter ballShooter, WheelSpinner wheelSpinner, Climber climber,
             BallTracker ballTracker,
-            VisionProvider visionProvider
+            VisionProvider visionProvider,
+            VisionState visionState
     ){
         this.driverStation = driverStation;
         this.logger = logger;
@@ -134,6 +137,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.climber = climber;
         this.ballTracker = ballTracker;
         this.visionProvider = visionProvider;
+        this.visionState = visionState;
         robotInput = new RobotInput(
                 controller,
                 extremeJoystick,
@@ -254,6 +258,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         if(robotInput.getBallCountDecrement().isJustPressed()){
             ballTracker.removeBall();
         }
+        if(robotInput.getVisionLEDToggle().isJustPressed()){
+            visionState.setEnabled(!visionState.isEnabled());
+        }
 
         // update subsystems
         drive.run();
@@ -262,6 +269,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         ballShooter.run();
         wheelSpinner.run();
         climber.run();
+        visionState.run();
 
         matchScheduler.run();
 

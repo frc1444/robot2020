@@ -21,8 +21,14 @@ public interface Turret extends Runnable {
 
     Rotation2 getCurrentRotation();
 
+    default boolean isClearToRaiseClimb(){
+        Rotation2 rotation = getCurrentRotation();
+        return rotation.getDegrees() > -25; // if we turn the turret more than 25 degrees clockwise, the falcon will hit the climb
+    }
+
     Rotation2 MAX_ROTATION = Rotation2.fromDegrees(35);
-    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-80);
+//    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-80);
+    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-70);
 
     class DesiredState {
         public static final DesiredState NEUTRAL = new DesiredState(null, 0.0);

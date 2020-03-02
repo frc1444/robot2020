@@ -38,7 +38,7 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
                         exitButtonUpdateableCreator
                 ))).create(changer))
             },
-            SupplementaryConfigScreenCreator(uiSkin, "localhost", listOf("localhost", "roboRIO-1444-FRC.local")) { _, config ->
+            SupplementaryConfigScreenCreator(uiSkin, "localhost", listOf("localhost", "10.14.44.2", "roboRIO-1444-FRC.local")) { _, config ->
                 val supplementaryCreator = MySupplementaryRobotCreator(bundle, config.hostAddress)
                 changer.change(FieldScreenCreator(uiSkin, UpdateableCreatorMultiplexer(listOf(
                         SupplementaryUpdateableCreator(supplementaryCreator, DashboardFrcDriverStation(bundle.rootDashboard.getSubDashboard("FMSInfo"))),

@@ -16,6 +16,7 @@ import me.retrodaredevil.action.SimpleAction;
 
 import java.util.List;
 
+import static java.lang.Math.abs;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -79,8 +80,14 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             Rotation2 visionOffset = transform.getRotation();
 
             Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);
-            absoluteDistanceAccumulator.setPosition(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)));
-            orientation.setOrientation(calculatedOrientation);
+            Transform2 newTransform = new Transform2(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)), calculatedOrientation);
+            double distanceMoved = newTransform.getPosition().distance(position);
+            if(distanceMoved < 2.5 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
+                absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
+                orientation.setOrientation(newTransform.getRotation());
+            } else {
+                System.out.println("We have vision, but it would have thrown our location way off!"); // TODO only send this message less frequently
+            }
         }
     }
 }

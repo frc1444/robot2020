@@ -104,6 +104,8 @@ class RobotInput(
     val ballCountIncrement: InputPart = attackJoystick.centerRight
     val ballCountDecrement: InputPart = attackJoystick.centerLeft
 
+    val visionLEDToggle: InputPart = attackJoystick.rightLower
+
     init {
         partUpdater.addPartsAssertNonePresent(
                 controller,

@@ -127,7 +127,8 @@ public class WpiRunnableCreator implements RunnableCreator {
                 clock,
                 new VisionPacketParser(
                         new ObjectMapper(),
-                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
+//                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
+                        (cameraId) -> Rotation2.ZERO
 //                        (cameraId) -> turret.getCurrentRotation() // we're putting the camera on the turret
                 ),
                 "tcp://10.14.44.5:5801"
@@ -159,8 +160,9 @@ public class WpiRunnableCreator implements RunnableCreator {
 //                new DummyBallShooter(reportMap),
                 new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
                 ballTracker,
-                visionPacketListener
+                visionPacketListener,
 //                VisionProvider.NOTHING
+                new WpiVisionState(clock, dashboardMap)
         );
         return new RobotRunnableMultiplexer(Arrays.asList(
                 new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),

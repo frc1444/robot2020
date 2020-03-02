@@ -22,7 +22,8 @@ public class SoundHandler {
         soundChooser = new SimpleMappedChooserProvider<>();
         soundChooser.addOption("Mute", null, true);
         soundChooser.addOption("test", "sound/test.chrp");
-        sound = new Orchestra(Arrays.asList(talons));
+//        sound = new Orchestra(Arrays.asList(talons));
+        sound = null;
 
         dashboardMap.getUserTab().add("Sound Chooser", new SendableComponent<>(new ChooserSendable(soundChooser)), (metadata) -> new ComponentMetadataHelper(metadata)
                 .setSize(2, 1)
@@ -38,6 +39,9 @@ public class SoundHandler {
     }
 
     public void update() {
+        if(sound == null){
+            return;
+        }
         String selectedSound = soundChooser.getSelected();
         if (selectedSound == null) {
             sound.stop();

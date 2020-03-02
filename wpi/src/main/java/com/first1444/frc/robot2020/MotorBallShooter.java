@@ -1,8 +1,6 @@
 package com.first1444.frc.robot2020;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.InvertType;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
@@ -47,6 +45,7 @@ public class MotorBallShooter implements BallShooter {
         talon.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         talon.setInverted(InvertType.InvertMotorOutput);
         talon.setSensorPhase(true);
+        talon.configPeakOutputReverse(0.0); // this can never go backwards
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
 
         soundHandler = new SoundHandler(clock, dashboardMap, talon);

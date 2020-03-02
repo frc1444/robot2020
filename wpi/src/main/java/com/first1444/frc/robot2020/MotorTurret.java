@@ -40,6 +40,7 @@ public class MotorTurret extends BaseTurret {
         talon.enableVoltageCompensation(true); // make sure to configure the saturation voltage before this
         encoder = new DutyCycleEncoder(RobotConstants.DIO.TURRET_ENCODER);
         encoder.setDistancePerRotation(-180);
+        // TODO allow encoder wrap around
 
         pidController = new PIDController(clock, 0, 0, 0);
 
@@ -65,9 +66,6 @@ public class MotorTurret extends BaseTurret {
     protected void run(DesiredState desiredState) {
         Rotation2 rotation = desiredState.getDesiredRotation();
         boolean encoderConnected = encoder.isConnected();
-//        if(!encoderConnected){
-//            System.out.println("Turret Encoder is not connected!");
-//        }
         if(rotation != null){
             if(!encoderConnected){
                 talon.set(ControlMode.PercentOutput, 0.0);
@@ -84,10 +82,9 @@ public class MotorTurret extends BaseTurret {
         } else {
             double speed = desiredState.getRawSpeedCounterClockwise() * .8;
             setOutputSpeed(speed, encoderConnected);
+            pidController.reset();
             dashboardMap.getDebugTab().getRawDashboard().get("Turret Desired").getForceSetter().setDouble(speed);
         }
-//        dashboardMap.getDebugTab().getRawDashboard().get("Turret Selected Counts").getForceSetter().setDouble(talon.getSelectedSensorPosition());
-//        dashboardMap.getDebugTab().getRawDashboard().get("Turret Encoder Counts").getForceSetter().setDouble(talon.getSensorCollection().getPulseWidthPosition());
     }
     private void setOutputSpeed(double speed, boolean limit){
         if(limit) {
@@ -107,6 +104,9 @@ public class MotorTurret extends BaseTurret {
     }
     @Override
     public Rotation2 getCurrentRotation() {
+        if(!encoder.isConnected()){
+            return Rotation2.ZERO;
+        }
         return Rotation2.fromDegrees(getRotationDegrees());
     }
 }
