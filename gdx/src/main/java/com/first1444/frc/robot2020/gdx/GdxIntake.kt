@@ -42,15 +42,22 @@ class GdxIntake(
 
     var previousIntakeSpeed: Double = 0.0
 
-    fun onIntakeBall(){
+    fun onIntakeBall(): Boolean {
+        if(mutableBalls.size >= 5){
+            return false // we can't physically store more than 5
+        }
         ballTracker.addBall()
         mutableBalls.add(IntakeBall())
+        return true
     }
     fun resetBalls(){
         ballTracker.ballCount = 0
         mutableBalls.clear()
     }
     fun addBall(){
+        if(mutableBalls.size >= 5){
+            return
+        }
         mutableBalls.add(IntakeBall())
         ballTracker.ballCount = mutableBalls.size
     }

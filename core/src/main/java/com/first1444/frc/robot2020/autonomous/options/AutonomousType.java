@@ -18,11 +18,11 @@ public enum AutonomousType {
     ),
     TURN_SHOOT_MOVE(
             "Turn Shoot Move", "Aligns, shoots, then moves",
-            EnumSet.allOf(BasicMovementType.class)
+            EnumSet.of(BasicMovementType.BACKWARD, BasicMovementType.STILL)
     ),
     MOVE_TURN_SHOOT(
             "Move Turn Shoot", "Moves, turn, then shoots",
-            EnumSet.allOf(BasicMovementType.class)
+            EnumSet.of(BasicMovementType.BACKWARD, BasicMovementType.STILL)
     ),
     SHOOT_IMMEDIATE(
             "Shoot Immediate", "Shoots, then moves",

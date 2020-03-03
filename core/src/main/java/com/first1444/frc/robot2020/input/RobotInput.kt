@@ -95,8 +95,8 @@ class RobotInput(
     // endregion
 
     // region Vision Controls
-    val visionOn: InputPart
-        get() = dummyInput
+    val visionToggle: InputPart = attackJoystick.rightLower
+    val visionOn: InputPart = controller.faceDown
     val visionOff: InputPart
         get() = dummyInput
     // endregion
@@ -104,7 +104,6 @@ class RobotInput(
     val ballCountIncrement: InputPart = attackJoystick.centerRight
     val ballCountDecrement: InputPart = attackJoystick.centerLeft
 
-    val visionLEDToggle: InputPart = attackJoystick.rightLower
 
     init {
         partUpdater.addPartsAssertNonePresent(

@@ -10,12 +10,12 @@ import me.retrodaredevil.action.SimpleAction;
  * <p>
  * This should be updated continuously
  */
-public class ColorWheelMonitorAction extends SimpleAction {
+public class FmsColorMonitorAction extends SimpleAction {
     private final FrcDriverStation driverStation;
     private final SoundMap soundMap;
 
     private WheelColor lastColor = null;
-    public ColorWheelMonitorAction(FrcDriverStation driverStation, SoundMap soundMap) {
+    public FmsColorMonitorAction(FrcDriverStation driverStation, SoundMap soundMap) {
         super(true);
         this.driverStation = driverStation;
         this.soundMap = soundMap;

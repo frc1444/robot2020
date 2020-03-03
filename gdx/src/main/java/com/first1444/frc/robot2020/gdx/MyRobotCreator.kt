@@ -259,6 +259,7 @@ class MyRobotCreator(
         val attackJoystick = InputUtil.createAttackJoystick(GdxControllerPartCreator(BestNameControllerProvider(listOf("attack"))))
 //        val buttonBoard = GdxControllerPartCreator(IndexedControllerProvider(3))
 
+        val visionState = SimpleVisionState()
         val robotCreator = RunnableCreator.wrap {
 
             val visionPacketListener = VisionPacketListener(
@@ -284,10 +285,11 @@ class MyRobotCreator(
                                     EntityRangeVisionFilter(entity, 8.0),
                                     FovVisionFilter(entity, Rotation2.ZERO, Rotation2.fromDegrees(90.0))
                             )), entity, preciseClock),
+                            visionState,
                             preciseClock
                     ),
 //                    visionPacketListener
-                    SimpleVisionState()
+                    visionState
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {

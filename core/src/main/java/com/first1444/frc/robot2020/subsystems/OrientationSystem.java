@@ -19,31 +19,21 @@ import static java.util.Objects.requireNonNull;
 public class OrientationSystem implements Runnable {
 
     private final OrientationHandler orientationHandler;
-    private final RobotInput robotInput;
     private final MyOrientation orientation;
 
     private Double lastRawOrientationDegrees = null;
     private Double lastOrientationDegrees = null;
     private boolean needsReinitialize = false;
-    public OrientationSystem(DashboardMap dashboardMap, OrientationHandler orientationHandler, RobotInput robotInput) {
-        requireNonNull(dashboardMap);
+    public OrientationSystem(OrientationHandler orientationHandler) {
         this.orientationHandler = requireNonNull(orientationHandler);
-        this.robotInput = requireNonNull(robotInput);
 
         orientation = new MyOrientation();
 
-        dashboardMap.getUserTab().add("Orientation",
-                new SendableComponent<>(new OrientationSendable(orientation)),
-                (metadata) -> {
-                    new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(2, 0);
-                    new GyroMetadataHelper(metadata).setMajorTickSpacing(90.0).setStartingAngle(90).setCounterClockwise(true);
-                }
-        );
+    }
+    public void setToReinitialize(){
+        needsReinitialize = true;
     }
     public Orientation getOrientation(){
-        return orientation;
-    }
-    public MutableOrientation getMutableOrientation(){
         return orientation;
     }
 
@@ -52,17 +42,6 @@ public class OrientationSystem implements Runnable {
         final double rawOrientationDegrees = orientationHandler.getOrientation().getOrientationDegrees();
         orientation.rawOrientationDegrees = rawOrientationDegrees;
 
-        // resetting the gyro code
-        if(robotInput.getMovementJoyResetGyroButton().isJustPressed()){
-            final double angle = robotInput.getMovementJoy().getAngle();
-            orientation.setOrientationDegrees(angle);
-        }
-
-        if(robotInput.getGyroReinitializeButton().isJustPressed()){
-            needsReinitialize = true;
-            orientation.setOrientationDegrees(lastOrientationDegrees);
-            System.out.println("Gyro reinitialize pressed. Will be reinitialized soon.");
-        }
 
         final Double lastRawOrientationDegrees = this.lastRawOrientationDegrees;
         if(lastRawOrientationDegrees != null){

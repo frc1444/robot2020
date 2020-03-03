@@ -110,7 +110,7 @@ public class MotorTurret extends BaseTurret {
         }
         double degrees = getRotationDegreesCorrectRaw();
         double lastRotationDegrees = this.lastRotationDegrees;
-        return lastRotationDegrees + Math.IEEEremainder(degrees - lastRotationDegrees, 360);
+        return lastRotationDegrees + Math.IEEEremainder(degrees - lastRotationDegrees, 180);
     }
     @Override
     public Rotation2 getCurrentRotation() {

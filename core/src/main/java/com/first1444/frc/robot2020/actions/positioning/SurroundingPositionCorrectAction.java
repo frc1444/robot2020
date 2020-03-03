@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020.actions.positioning;
 import com.first1444.frc.robot2020.DashboardMap;
 import com.first1444.frc.robot2020.vision.VisionInstant;
 import com.first1444.frc.robot2020.vision.VisionProvider;
+import com.first1444.frc.robot2020.vision.VisionState;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
@@ -28,15 +29,17 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
     private final Clock clock;
     private final DashboardMap dashboardMap;
     private final VisionProvider visionProvider;
+    private final VisionState visionState;
     private final MutableOrientation orientation;
     private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
     private double lastTimestamp = 0;
-    public SurroundingPositionCorrectAction(Clock clock, DashboardMap dashboardMap, VisionProvider visionProvider, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
+    public SurroundingPositionCorrectAction(Clock clock, DashboardMap dashboardMap, VisionProvider visionProvider, VisionState visionState, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
         super(true);
         this.clock = clock;
         this.dashboardMap = dashboardMap;
         this.visionProvider = visionProvider;
+        this.visionState = visionState;
         this.orientation = orientation;
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
         /*
@@ -48,6 +51,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
+        boolean isEnabled = visionState.isEnabled();
         double currentTimestamp = clock.getTimeSeconds();
         Rotation2 rotation = this.orientation.getOrientation();
         Vector2 position = absoluteDistanceAccumulator.getPosition();
@@ -92,9 +96,13 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             Transform2 newTransform = new Transform2(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)), calculatedOrientation);
             double distanceMoved = newTransform.getPosition().distance(position);
             if(distanceMoved < 2.5 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
-                absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
-                orientation.setOrientation(newTransform.getRotation());
-                setVisionStatus("Reset Position");
+                if(isEnabled){
+                    absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
+                    orientation.setOrientation(newTransform.getRotation());
+                    setVisionStatus("Reset Position");
+                } else {
+                    setVisionStatus("Could Reset Position (Disabled)");
+                }
             } else {
                 setVisionStatus("Far Away");
             }

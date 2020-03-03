@@ -29,6 +29,9 @@ public class BallTracker {
         if(ballCount < 0){
             throw new IllegalArgumentException("ballCount is < 0. ballCount=" + ballCount);
         }
+        if(ballCount > 5){
+            throw new IllegalArgumentException("ballCount > 5. ballCount=" + ballCount);
+        }
         this.ballCount = ballCount;
     }
 

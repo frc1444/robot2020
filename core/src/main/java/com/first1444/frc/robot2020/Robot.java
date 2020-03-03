@@ -1,20 +1,13 @@
 package com.first1444.frc.robot2020;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.first1444.dashboard.ActiveComponent;
-import com.first1444.dashboard.ActiveComponentMultiplexer;
 import com.first1444.dashboard.BasicDashboard;
-import com.first1444.dashboard.advanced.Sendable;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
-import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
-import com.first1444.frc.robot2020.actions.ColorWheelMonitorAction;
-import com.first1444.frc.robot2020.actions.OperatorAction;
-import com.first1444.frc.robot2020.actions.SwerveDriveAction;
-import com.first1444.frc.robot2020.actions.TimedAction;
+import com.first1444.frc.robot2020.actions.*;
 import com.first1444.frc.robot2020.actions.positioning.*;
 import com.first1444.frc.robot2020.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2020.autonomous.AutonomousModeCreator;
@@ -34,7 +27,7 @@ import com.first1444.frc.robot2020.vision.VisionState;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
-import com.first1444.sim.api.distance.*;
+import com.first1444.sim.api.distance.DistanceAccumulator;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
@@ -80,7 +73,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final DashboardMap dashboardMap;
     private final PacketSender packetSender;
     private final PacketQueueCreator packetQueueCreator;
-    private final OrientationSystem orientationSystem;
+    private final Odometry odometry;
     private final SwerveDrive drive;
     private final Intake intake;
     private final Turret turret;
@@ -93,10 +86,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     private final PartUpdater partUpdater = new PartUpdater();
     private final RobotInput robotInput;
-    /** The distance accumulator where the position will never jump. This should be updated using {@link DistanceAccumulator#run()} */
-    private final DistanceAccumulator relativeDistanceAccumulator;
-    /** The distance accumulator representing the absolute position of the robot. This may jump around as we correct the position over time. This does not have to be updated. */
-    private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
     private final MatchSchedulerRunnable matchScheduler;
 
@@ -158,25 +147,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         }
         soundMap = new SoundMap(new PacketSenderSoundCreator(packetSender, false));
 
-        orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
+        odometry = new Odometry(rawOrientationHandler, fourWheelSwerveData, robotInput, dashboardMap);
         matchScheduler = new DefaultMatchScheduler(driverStation, clock);
-
-        relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), getOrientation()));
-        absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);
-        dashboardMap.getUserTab().add(
-                "Position",
-                new SendableComponent<>((Sendable<ActiveComponent>) (title, dashboard) -> new ActiveComponentMultiplexer(title,
-                        Arrays.asList(
-                                new PropertyActiveComponent("", dashboard.get("x"), ValueProperty.createGetOnly(() -> BasicValue.makeString(Constants.DECIMAL_FORMAT.format(absoluteDistanceAccumulator.getPosition().getX())))),
-                                new PropertyActiveComponent("", dashboard.get("y"), ValueProperty.createGetOnly(() -> BasicValue.makeString(Constants.DECIMAL_FORMAT.format(absoluteDistanceAccumulator.getPosition().getY()))))
-                        )
-                )),
-                metadata -> new ComponentMetadataHelper(metadata).setSize(2, 2).setPosition(4, 0)
-        );
 
         PerspectiveHandler perspectiveHandler = new PerspectiveHandler(dashboardMap);
         SwerveDriveAction swerveDriveAction = new SwerveDriveAction(
-                clock, drive, getOrientation(), absoluteDistanceAccumulator, robotInput,
+                clock, drive, odometry.getAbsoluteAndVisionOrientation(), odometry.getAbsoluteAndVisionDistanceAccumulator(), robotInput,
                 new PerspectiveProviderMultiplexer(Arrays.asList(
                         new FirstPersonPerspectiveOverride(robotInput),
                         perspectiveHandler
@@ -185,12 +161,14 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         perspectiveHandler.setPerspectiveLocation(Constants.DRIVER_STATION_2_DRIVER_LOCATION);
 
         periodicAction = new Actions.ActionMultiplexerBuilder(
-                new ColorWheelMonitorAction(driverStation, soundMap),
-                new SurroundingPositionCorrectAction(clock, dashboardMap, visionProvider, orientationSystem.getMutableOrientation(), absoluteDistanceAccumulator),
-                new AbsolutePositionPacketAction(packetQueueCreator.create(), absoluteDistanceAccumulator),
+                new FmsColorMonitorAction(driverStation, soundMap),
+                new SurroundingPositionCorrectAction(clock, dashboardMap, visionProvider, visionState, odometry.getAbsoluteAndVisionOrientation(), odometry.getAbsoluteAndVisionDistanceAccumulator()),
+                new AbsolutePositionPacketAction(packetQueueCreator.create(), odometry.getAbsoluteAndVisionDistanceAccumulator()),
                 new PerspectiveLocationPacketAction(packetQueueCreator.create(), perspectiveHandler),
-                new OutOfBoundsPositionCorrectAction(absoluteDistanceAccumulator),
-                new SurroundingDashboardLoggerAction(clock, visionProvider, dashboardMap) // TODO only update this every .1 seconds
+                new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteDistanceAccumulator()),
+                new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteAndVisionDistanceAccumulator()),
+                new SurroundingDashboardLoggerAction(clock, visionProvider, dashboardMap), // maybe only update this every .1 seconds if we get around to it
+                new VisionEnablerAction(clock, robotInput, visionState)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -233,8 +211,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void robotPeriodic() {
         partUpdater.updateParts(controlConfig); // handles updating controller logic
-        orientationSystem.run(); // we want to make sure the orientation is correct when we use it
-        relativeDistanceAccumulator.run(); // we want to make sure the absolute and relative positions are correct when we use them
+        odometry.run(); // we want to make sure our odometry is correct when we use it
         periodicAction.update(); // does stuff to orientation and absolute position
         actionChooser.update(); // update Actions that control the subsystems
 
@@ -258,9 +235,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         if(robotInput.getBallCountDecrement().isJustPressed()){
             ballTracker.removeBall();
         }
-        if(robotInput.getVisionLEDToggle().isJustPressed()){
-            visionState.setEnabled(!visionState.isEnabled());
-        }
 
         // update subsystems
         drive.run();
@@ -275,10 +249,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         // Publish absolute position data to network tables
         BasicDashboard dashboard = dashboardMap.getRawBundle().getRootDashboard().getSubDashboard("Absolute Position");
-        Vector2 position = absoluteDistanceAccumulator.getPosition();
+        Vector2 position = odometry.getAbsoluteAndVisionDistanceAccumulator().getPosition();
         dashboard.get("x").getStrictSetter().setDouble(position.getX());
         dashboard.get("y").getStrictSetter().setDouble(position.getY());
-        dashboard.get("orientationRadians").getStrictSetter().setDouble(getOrientation().getOrientationRadians());
+        dashboard.get("orientationRadians").getStrictSetter().setDouble(odometry.getAbsoluteAndVisionOrientation().getOrientationRadians());
 
         dynamicAction.update(); // unimportant stuff
     }
@@ -304,6 +278,15 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     }
 
     @Override
+    public void disabledPeriodic() {
+        /*
+        While the robot is disabled, the "absolute only" position/orientation gets synced to the "absolute and vision" variant
+         */
+        odometry.getAbsoluteDistanceAccumulator().setPosition(odometry.getAbsoluteAndVisionDistanceAccumulator().getPosition());
+        odometry.getAbsoluteOrientation().setOrientation(odometry.getAbsoluteAndVisionOrientation().getOrientation());
+    }
+
+    @Override
     public void teleopInit() {
         actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
                 teleopAction
@@ -321,9 +304,15 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void autonomousInit() {
-        actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(new Transform2(absoluteDistanceAccumulator.getPosition(), getOrientation().getOrientation())));
+        System.out.println("Autonomous init! match time: " + driverStation.getMatchTime());
+        /*
+        We use the "absolute and vision" variant because we assume that vision will be disabled when auto starts, so we assume that the
+        drive team will reset the position correctly while vision is not overriding the position/orientation because it's turned off
+        */
+        Transform2 startingTransform = new Transform2(odometry.getAbsoluteAndVisionDistanceAccumulator().getPosition(), odometry.getAbsoluteAndVisionOrientation().getOrientation());
+        actionChooser.setNextAction(autonomousChooserState.createAutonomousAction(startingTransform));
         soundMap.getAutonomousEnable().play();
-        climber.storedPosition();
+//        climber.storedPosition(); TODO not as simple as setting climber to stored position
     }
     @Override
     public void autonomousPeriodic() {
@@ -347,18 +336,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public BallShooter getBallShooter(){ return ballShooter; }
     public BallTracker getBallTracker(){ return ballTracker; }
     public Turret getTurret(){ return turret; }
-    public Orientation getOrientation(){
-        return orientationSystem.getOrientation();
-    }
-    public DistanceAccumulator getRelativeDistanceAccumulator(){
-        return relativeDistanceAccumulator;
-    }
-    public DistanceAccumulator getAbsoluteDistanceAccumulator(){
-        return absoluteDistanceAccumulator;
-    }
+    public Odometry getOdometry(){ return odometry; }
     public VisionProvider getVisionProvider(){
         return visionProvider;
     }
+    public VisionState getVisionState(){ return visionState; }
 
     public SoundMap getSoundMap(){ return soundMap; }
 

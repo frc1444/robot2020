@@ -57,8 +57,8 @@ public class OperatorAction extends SimpleAction {
             if(!rawSpeedPart.isDeadzone()){
                 robot.getTurret().setDesiredState(Turret.DesiredState.createRawSpeedClockwise(rawSpeedPart.getPosition()));
             } else if(autoDown) {
-                Vector2 position = robot.getAbsoluteDistanceAccumulator().getPosition();
-                Rotation2 rotation = robot.getOrientation().getOrientation();
+                Vector2 position = robot.getOdometry().getAbsoluteAndVisionDistanceAccumulator().getPosition();
+                Rotation2 rotation = robot.getOdometry().getAbsoluteAndVisionOrientation().getOrientation();
                 Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
 
                 Rotation2 desired = angle.minus(rotation);

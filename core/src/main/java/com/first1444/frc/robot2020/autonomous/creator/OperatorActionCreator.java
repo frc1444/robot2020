@@ -23,6 +23,12 @@ public class OperatorActionCreator {
     public Action createRequireVision(double timeoutSeconds, Action successAction, Action failAction){
         return new RequireVisionAction(timeoutSeconds, successAction, failAction);
     }
+    public Action createTurnOnVision(){
+        return Actions.createRunOnce(() -> robot.getVisionState().setEnabled(true));
+    }
+    public Action createTurnOffVision(){
+        return Actions.createRunOnce(() -> robot.getVisionState().setEnabled(false));
+    }
 
     public Action createIntakeRunForever() {
         Intake intake = robot.getIntake();
@@ -32,7 +38,7 @@ public class OperatorActionCreator {
     public Action createTurretAlign() {
         return new TimedDoneEndAction(
                 true, robot.getClock(), .5,
-                new TurretAlign(robot.getTurret(), robot.getOrientation(), robot.getAbsoluteDistanceAccumulator())
+                new TurretAlign(robot.getTurret(), robot.getOdometry().getAbsoluteAndVisionOrientation(), robot.getOdometry().getAbsoluteAndVisionDistanceAccumulator())
         );
     }
 
@@ -80,7 +86,7 @@ public class OperatorActionCreator {
             super.onUpdate();
             timeoutAction.update();
             VisionInstant instant = robot.getVisionProvider().getVisionInstant();
-            if(instant != null && instant.getTimestamp() + 1.0 > robot.getClock().getTimeSeconds()) { // vision is recent (within 1 second
+            if(robot.getVisionState().isEnabled() && instant != null && !instant.getSurroundings().isEmpty() && instant.getTimestamp() + 1.0 > robot.getClock().getTimeSeconds()) { // vision is recent (within 1 second
                 nextAction = successAction;
                 setDone(true);
             } else if(timeoutAction.isDone()){
