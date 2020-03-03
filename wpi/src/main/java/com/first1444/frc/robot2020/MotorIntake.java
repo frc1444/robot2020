@@ -27,6 +27,9 @@ public class MotorIntake extends BaseIntake {
 
     private final SensorArray sensorArray;
 
+    private boolean transferring = false;
+    private Double lastTransferSensorDetect = null;
+
     private double currentVelocity = 0;
     private boolean wasIntakeSensor = false;
     private Double lastUpdate = null;
@@ -56,6 +59,15 @@ public class MotorIntake extends BaseIntake {
         feederMotor.setOpenLoopRampRate(.1);
         feederMotor.setInverted(true);
     }
+    private double getAntiJamIndexerSpeed(double timestamp){
+        double result = (timestamp % ANTI_JAM_PERIOD) / ANTI_JAM_PERIOD;
+        if (result < .25) {
+            return -1.0;
+        } else if (result > .3 && result < .95) {
+            return 1.0;
+        }
+        return 0.0;
+    }
 
     @Override
     protected void run(Control control, Double intakeSpeed, Double indexerSpeed, Double feederSpeed) {
@@ -65,44 +77,53 @@ public class MotorIntake extends BaseIntake {
                 intakeSpeed = 1.0;
             }
         }
+        if(control == Control.ACTIVE_STORE || control == Control.STORE || control == Control.INTAKE_AND_ACTIVE_STORE){
+            int ballCount = ballTracker.getBallCount();
+            if(ballCount >= 1){
+                if(!sensorArray.isFeederSensor()){
+                    if(transferring){
+                        if(feederSpeed == null) {
+                            feederSpeed = 1.0;
+                        }
+                    } else {
+                        if(sensorArray.isTransferSensor()){
+                            transferring = true;
+                        }
+                        if(indexerSpeed == null) {
+                            indexerSpeed = 1.0;
+                        }
+                    }
+                } else {
+                    transferring = false;
+                    if (ballCount >= 2) {
+                        if (!sensorArray.isTransferSensor()) {
+                            if (indexerSpeed == null) {
+                                indexerSpeed = 1.0;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            transferring = false;
+        }
+        if(sensorArray.isTransferSensor()){
+            lastTransferSensorDetect = clock.getTimeSeconds();
+        }
         if(indexerSpeed == null) {
             if (control == Control.FEED_ALL_AND_INTAKE) {
                 feederSpeed = 1.0;
                 double timestamp = clock.getTimeSeconds();
                 Double lastShootTime = ballTracker.getLastShootTimestamp();
-                if (ballTracker.getBallCount() >= 3 && sensorArray.isTransferSensor() && (lastShootTime == null || timestamp - lastShootTime > 2.0)) { // more than two balls and we haven't shot recently
-                    double result = (timestamp % ANTI_JAM_PERIOD) / ANTI_JAM_PERIOD;
-                    if (result < .25) {
-                        indexerSpeed = -1.0;
-                    } else if (result > .3 && result < .95) {
-                        indexerSpeed = 1.0;
-                    } else {
-                        indexerSpeed = 0.0;
-                    }
+                int ballCount = ballTracker.getBallCount();
+                Double lastTransferSensorDetect = this.lastTransferSensorDetect;
+                if ((lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastShootTime == null || timestamp - lastShootTime > 2.0)))) { // more than two balls and we haven't shot recently
+                    indexerSpeed = getAntiJamIndexerSpeed(timestamp);
                 } else {
                     indexerSpeed = 1.0;
                 }
             } else if(intake){
                 indexerSpeed = 1.0;
-            }
-        }
-        if(control == Control.ACTIVE_STORE || control == Control.STORE){
-            int ballCount = ballTracker.getBallCount();
-            if(ballCount >= 1){
-                if(!sensorArray.isFeederSensor()){
-                    if(feederSpeed == null) {
-                        feederSpeed = 1.0;
-                    }
-                    if(indexerSpeed == null) {
-                        indexerSpeed = 1.0;
-                    }
-                } else if(ballCount >= 2){
-                    if(!sensorArray.isTransferSensor()){
-                        if(indexerSpeed == null) {
-                            indexerSpeed = 1.0;
-                        }
-                    }
-                }
             }
         }
         if(control == Control.ACTIVE_STORE || control == Control.INTAKE_AND_ACTIVE_STORE){

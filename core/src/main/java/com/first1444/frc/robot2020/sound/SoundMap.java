@@ -28,4 +28,6 @@ public class SoundMap {
     public Sound getColorWheelGreen() { return get("sounds/color_wheel/green"); }
     public Sound getColorWheelRed() { return get("sounds/color_wheel/red"); }
     public Sound getColorWheelYellow() { return get("sounds/color_wheel/yellow"); }
+
+    // TODO add sounds for ball received
 }
