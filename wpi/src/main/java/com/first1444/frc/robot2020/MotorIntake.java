@@ -34,6 +34,8 @@ public class MotorIntake extends BaseIntake {
     private boolean wasIntakeSensor = false;
     private Double lastUpdate = null;
 
+    private Double lastActiveTime = null;
+
     public MotorIntake(Clock clock, BallTracker ballTracker, DashboardMap dashboardMap) {
         this.clock = clock;
         this.ballTracker = ballTracker;
@@ -85,6 +87,11 @@ public class MotorIntake extends BaseIntake {
                         if(feederSpeed == null) {
                             feederSpeed = 1.0;
                         }
+                        if(sensorArray.isTransferSensor()){
+                            if(indexerSpeed == null) {
+                                indexerSpeed = 1.0;
+                            }
+                        }
                     } else {
                         if(sensorArray.isTransferSensor()){
                             transferring = true;
@@ -131,11 +138,25 @@ public class MotorIntake extends BaseIntake {
                 indexerSpeed = 1.0;
             }
         }
-        intakeMotor.set((intakeSpeed == null ? 0 : intakeSpeed) * 1.0);
-        indexerMotor.set((indexerSpeed == null ? 0 : indexerSpeed) * .5);
-        feederMotor.set((feederSpeed == null ? 0 : feederSpeed) * 1.0);
+        if(intakeSpeed == null){
+            intakeSpeed = 0.0;
+        }
+        if(indexerSpeed == null){
+            indexerSpeed = 0.0;
+        }
+        if(feederSpeed == null){
+            feederSpeed = 0.0;
+        }
+        intakeMotor.set(intakeSpeed * 1.0);
+        indexerMotor.set(indexerSpeed * .5);
+        feederMotor.set(feederSpeed * 1.0);
 
-        updateBallEnter(indexerSpeed == null ? 0 : indexerSpeed);
+        boolean idle = intakeSpeed == 0.0 && indexerSpeed == 0.0 && feederSpeed == 0.0;
+        if(!idle){
+            lastActiveTime = clock.getTimeSeconds();
+        }
+
+        updateBallEnter(indexerSpeed);
     }
 
     private void updateBallEnter(double speed) {
@@ -176,18 +197,22 @@ public class MotorIntake extends BaseIntake {
                 }
             }
         }
-        int count = 0;
-        if(sensorArray.isIntakeSensor()){
-            count++;
-        }
-        if(sensorArray.isTransferSensor()){
-            count++;
-        }
-        if(sensorArray.isFeederSensor()){
-            count++;
-        }
-        if(ballTracker.getBallCount() < count){
-            ballTracker.setBallCount(count);
+        Double lastActiveTime = this.lastActiveTime;
+        if(lastActiveTime == null || clock.getTimeSeconds() - lastActiveTime > 3.0) {
+            int count = 0;
+            if (sensorArray.isIntakeSensor()) {
+                count++;
+            }
+            if (sensorArray.isTransferSensor()) {
+                count++;
+            }
+            if (sensorArray.isFeederSensor()) {
+                count++;
+            }
+            if (ballTracker.getBallCount() < count) {
+                System.out.println("Setting ball count to " + count);
+                ballTracker.setBallCount(count);
+            }
         }
     }
 }
