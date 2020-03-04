@@ -45,7 +45,6 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
         this.visionState = visionState;
         this.orientation = orientation;
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
-        // TODO update logic to use past vision data to determine if accurate rather than current odometry
     }
 
     @Override
@@ -113,7 +112,9 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);
             Transform2 newTransform = new Transform2(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)), calculatedOrientation);
             double distanceMoved = newTransform.getPosition().distance(position);
-            if(distanceMoved < 5.0 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
+            if(!OutOfBoundsPositionCorrectAction.isInBounds(newTransform.getPosition())){
+                setVisionStatus("Out of Bounds");
+            } else if(distanceMoved < 5.0 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
                 if(isEnabled){
                     absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
                     orientation.setOrientation(newTransform.getRotation());

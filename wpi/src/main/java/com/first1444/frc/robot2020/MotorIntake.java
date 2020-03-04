@@ -11,10 +11,17 @@ import com.first1444.sim.api.Clock;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
+import static java.util.Objects.requireNonNull;
+
 public class MotorIntake extends BaseIntake {
     private static final double ANTI_JAM_PERIOD = 1.2;
     private static final CANSparkMaxLowLevel.MotorType INDEXER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
     private static final CANSparkMaxLowLevel.MotorType FEEDER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
+    private enum TransferState {
+        IDLE,
+        RUN_BOTH,
+        FEEDER_ONLY
+    }
 
     private final Clock clock;
     private final BallTracker ballTracker;
@@ -26,14 +33,15 @@ public class MotorIntake extends BaseIntake {
 
     private final SensorArray sensorArray;
 
-    private boolean transferring = false;
+    private TransferState transferState = TransferState.IDLE;
     private Double lastTransferSensorDetect = null;
 
     private double currentVelocity = 0;
     private boolean wasIntakeSensor = false;
     private Double lastUpdate = null;
 
-    private Double lastActiveTime = null;
+    private Integer desiredCount = null;
+    private Double desiredCountStartTime = null;
 
     public MotorIntake(Clock clock, BallTracker ballTracker, DashboardMap dashboardMap) {
         this.clock = clock;
@@ -76,36 +84,45 @@ public class MotorIntake extends BaseIntake {
             int ballCount = ballTracker.getBallCount();
             if(ballCount >= 1){
                 if(!sensorArray.isFeederSensor()){
-                    if(transferring){
+                    TransferState currentTransferState = transferState;
+                    if(currentTransferState == TransferState.FEEDER_ONLY){
+                        if(indexerSpeed == null){
+                            indexerSpeed = 0.0; // we don't want to run the indexer while we're transferring the ball up
+                        }
                         if(feederSpeed == null) {
                             feederSpeed = 1.0;
                         }
-                        if(sensorArray.isTransferSensor()){
-                            if(indexerSpeed == null) {
-                                indexerSpeed = 1.0;
-                            }
-                        }
-                    } else {
-                        if(sensorArray.isTransferSensor()){
-                            transferring = true;
-                        }
+                    } else if(currentTransferState == TransferState.RUN_BOTH){
                         if(indexerSpeed == null) {
                             indexerSpeed = 1.0;
                         }
+                        if(feederSpeed == null) {
+                            feederSpeed = 1.0;
+                        }
+                        if(!sensorArray.isTransferSensor()){
+                            transferState = TransferState.FEEDER_ONLY;
+                        }
+                    } else {
+                        assert currentTransferState == TransferState.IDLE;
+                        if(sensorArray.isTransferSensor()){
+                            transferState = TransferState.RUN_BOTH;
+                        }
+                        // next iteration it will do what we want, we don't care right now
                     }
                 } else {
-                    transferring = false;
-                    if (ballCount >= 2) {
-                        if (!sensorArray.isTransferSensor()) {
-                            if (indexerSpeed == null) {
-                                indexerSpeed = 1.0;
-                            }
-                        }
-                    }
+                    transferState = TransferState.IDLE;
+                    // for Aaron's idea of how this should work, we don't need this code below
+//                    if (ballCount >= 2) {
+//                        if (!sensorArray.isTransferSensor()) {
+//                            if (indexerSpeed == null) {
+//                                indexerSpeed = 1.0;
+//                            }
+//                        }
+//                    }
                 }
             }
         } else {
-            transferring = false;
+            transferState = TransferState.IDLE;
         }
         if(sensorArray.isTransferSensor()){
             lastTransferSensorDetect = clock.getTimeSeconds();
@@ -117,7 +134,7 @@ public class MotorIntake extends BaseIntake {
             int ballCount = ballTracker.getBallCount();
             Double lastTransferSensorDetect = this.lastTransferSensorDetect;
             if ((lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastShootTime == null || timestamp - lastShootTime > 2.0)))) { // more than two balls and we haven't shot recently
-                double speed =  getAntiJamIndexerSpeed(timestamp);
+                double speed = getAntiJamIndexerSpeed(timestamp);
                 if(intakeSpeed == null){
                     intakeSpeed = speed;
                 }
@@ -158,15 +175,11 @@ public class MotorIntake extends BaseIntake {
         indexerMotor.set(indexerSpeed * .5);
         feederMotor.set(feederSpeed * 1.0);
 
-        boolean idle = intakeSpeed == 0.0 && indexerSpeed == 0.0 && feederSpeed == 0.0;
-        if(!idle){
-            lastActiveTime = clock.getTimeSeconds();
-        }
-
         updateBallEnter(indexerSpeed);
     }
 
     private void updateBallEnter(double speed) {
+        // TODO update this function with new sensor placement
         double timestamp = clock.getTimeSeconds();
         final Double lastTimestamp = lastUpdate;
         lastUpdate = timestamp;
@@ -204,8 +217,7 @@ public class MotorIntake extends BaseIntake {
                 }
             }
         }
-        Double lastActiveTime = this.lastActiveTime;
-        if(lastActiveTime == null || clock.getTimeSeconds() - lastActiveTime > 3.0) {
+        {
             int count = 0;
             if (sensorArray.isIntakeSensor()) {
                 count++;
@@ -217,8 +229,21 @@ public class MotorIntake extends BaseIntake {
                 count++;
             }
             if (ballTracker.getBallCount() < count) {
-                System.out.println("Setting ball count to " + count);
-                ballTracker.setBallCount(count);
+                Integer lastDesiredCount = this.desiredCount;
+                if(lastDesiredCount == null || lastDesiredCount != count){
+                    this.desiredCount = count;
+                    this.desiredCountStartTime = clock.getTimeSeconds();
+                } else {
+                    Double desiredCountStartTime = this.desiredCountStartTime;
+                    requireNonNull(desiredCountStartTime, "This shouldn't be null");
+                    if(clock.getTimeSeconds() - desiredCountStartTime > 1.0){
+                        System.out.println("Setting ball count to " + count);
+                        ballTracker.setBallCount(count);
+                    }
+                }
+            } else {
+                this.desiredCount = null;
+                this.desiredCountStartTime = null;
             }
         }
     }

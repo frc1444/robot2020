@@ -168,7 +168,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteDistanceAccumulator()),
                 new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteAndVisionDistanceAccumulator()),
                 new SurroundingDashboardLoggerAction(clock, visionProvider, dashboardMap), // maybe only update this every .1 seconds if we get around to it
-                new VisionEnablerAction(clock, robotInput, visionState)
+                new VisionEnablerAction(clock, robotInput, visionState),
+                new BallCountMonitorAction(ballTracker, soundMap)
         ).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -336,6 +337,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public BallShooter getBallShooter(){ return ballShooter; }
     public BallTracker getBallTracker(){ return ballTracker; }
     public Turret getTurret(){ return turret; }
+    public Climber getClimber(){ return climber; }
     public Odometry getOdometry(){ return odometry; }
     public VisionProvider getVisionProvider(){
         return visionProvider;

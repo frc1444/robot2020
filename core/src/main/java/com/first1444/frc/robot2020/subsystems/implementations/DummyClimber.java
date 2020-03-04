@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2020.subsystems.implementations;
 
 import com.first1444.frc.util.reportmap.ReportMap;
+import com.first1444.sim.api.Clock;
 
 import java.text.DecimalFormat;
 
@@ -8,11 +9,8 @@ public class DummyClimber extends BaseClimber {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
 
-    private double speed = 0.0;
-    private boolean startingPosition = false;
-    private boolean storedPosition = false;
-
-    public DummyClimber(ReportMap reportMap) {
+    public DummyClimber(Clock clock, ReportMap reportMap) {
+        super(clock);
         this.reportMap = reportMap;
     }
 
@@ -32,5 +30,10 @@ public class DummyClimber extends BaseClimber {
     }
     private void report(String movementString){
         reportMap.report("Climber Movement", movementString);
+    }
+
+    @Override
+    public boolean isStored() {
+        return storedPosition; // just immediately go to it because this is a dummy implementation
     }
 }

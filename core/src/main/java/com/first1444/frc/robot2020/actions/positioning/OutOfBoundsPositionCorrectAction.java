@@ -17,6 +17,11 @@ public class OutOfBoundsPositionCorrectAction extends SimpleAction {
         super(true);
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
     }
+    public static boolean isInBounds(Vector2 position){
+        double x = position.getX();
+        double y = position.getY();
+        return x >= MIN_X && x <= MAX_X && y >= MIN_Y && y <= MAX_Y;
+    }
 
     @Override
     protected void onUpdate() {

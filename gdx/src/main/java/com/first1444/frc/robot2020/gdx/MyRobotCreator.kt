@@ -221,7 +221,7 @@ class MyRobotCreator(
         val ballShooter = DummyBallShooter(reportMap)
         val intakeListener: IntakeListener
         val intake: Intake
-        val ballTracker: BallTracker = BallTracker(updateableData.clock)
+        val ballTracker: BallTracker = BallTracker(preciseClock)
         val updateLast = mutableListOf<Updateable>()
         run {
             val gdxIntake = GdxIntake(data.driverStation, preciseClock, ballTracker) {
@@ -277,7 +277,7 @@ class MyRobotCreator(
                     controller, extremeJoystick, attackJoystick, DisconnectedRumble.getInstance(),
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
-                    intake, turret, ballShooter, DummyWheelSpinner(reportMap), DummyClimber(reportMap),
+                    intake, turret, ballShooter, DummyWheelSpinner(reportMap), DummyClimber(preciseClock, reportMap),
                     ballTracker,
                     SimpleInstantVisionProvider(
                             VisionProvider2020(VisionFilterMultiplexer(listOf(

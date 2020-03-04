@@ -7,13 +7,11 @@ import com.first1444.dashboard.bundle.DefaultDashboardBundle;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
-import com.first1444.frc.robot2020.subsystems.implementations.DummyClimber;
 import com.first1444.frc.robot2020.subsystems.implementations.DummyWheelSpinner;
 import com.first1444.frc.robot2020.subsystems.swerve.DummySwerveModule;
 import com.first1444.frc.robot2020.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2020.vision.VisionPacketListener;
 import com.first1444.frc.robot2020.vision.VisionPacketParser;
-import com.first1444.frc.robot2020.vision.offset.MapOffsetProvider;
 import com.first1444.frc.util.DummyOrientation;
 import com.first1444.frc.util.SystemType;
 import com.first1444.frc.util.pid.PidKey;
@@ -45,7 +43,6 @@ import me.retrodaredevil.controller.wpi.WpiInputCreator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public class WpiRunnableCreator implements RunnableCreator {
     private static final boolean DUMMY_SWERVE = false;
@@ -127,9 +124,7 @@ public class WpiRunnableCreator implements RunnableCreator {
                 clock,
                 new VisionPacketParser(
                         new ObjectMapper(),
-//                        new MapOffsetProvider(Map.of(1, Rotation2.ZERO))
                         (cameraId) -> Rotation2.ZERO
-//                        (cameraId) -> turret.getCurrentRotation() // we're putting the camera on the turret
                 ),
                 "tcp://10.14.44.5:5801"
         );
@@ -158,7 +153,9 @@ public class WpiRunnableCreator implements RunnableCreator {
                 turret,
                 new MotorBallShooter(ballTracker, clock, dashboardMap),
 //                new DummyBallShooter(reportMap),
-                new DummyWheelSpinner(reportMap), new DummyClimber(reportMap),
+                new DummyWheelSpinner(reportMap),
+                new MotorClimber(clock, dashboardMap),
+//                new DummyClimber(reportMap),
                 ballTracker,
                 visionPacketListener,
 //                VisionProvider.NOTHING

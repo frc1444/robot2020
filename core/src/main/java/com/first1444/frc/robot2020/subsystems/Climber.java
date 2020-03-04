@@ -6,7 +6,8 @@ public interface Climber extends Runnable {
      */
     void setRawSpeed(double speed);
 
-    void storedPosition();
-    void startingPosition();
+    void storedPosition(double timeoutSeconds);
+    void startingPosition(double timeoutSeconds);
 
+    boolean isStored();
 }

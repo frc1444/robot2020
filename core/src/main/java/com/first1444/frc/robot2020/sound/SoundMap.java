@@ -29,5 +29,10 @@ public class SoundMap {
     public Sound getColorWheelRed() { return get("sounds/color_wheel/red"); }
     public Sound getColorWheelYellow() { return get("sounds/color_wheel/yellow"); }
 
-    // TODO add sounds for ball received
+    public Sound getBallCount0(){ return get("sounds/ball_count/0"); }
+    public Sound getBallCount1(){ return get("sounds/ball_count/1"); }
+    public Sound getBallCount2(){ return get("sounds/ball_count/2"); }
+    public Sound getBallCount3(){ return get("sounds/ball_count/3"); }
+    public Sound getBallCount4(){ return get("sounds/ball_count/4"); }
+    public Sound getBallCount5(){ return get("sounds/ball_count/5"); }
 }

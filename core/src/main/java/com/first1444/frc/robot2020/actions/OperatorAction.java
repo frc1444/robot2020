@@ -120,5 +120,20 @@ public class OperatorAction extends SimpleAction {
                 intake.setIntakeSpeed(-1.0);
             }
         }
+        {
+            final double speed;
+            if(input.getClimbRawControl().isDeadzone()){
+                speed = 0.0;
+            } else {
+                speed = input.getClimbRawControl().getPosition();
+            }
+            robot.getClimber().setRawSpeed(speed);
+            if(input.getClimbStored().isDown()){
+                robot.getClimber().storedPosition(3.0);
+            }
+            if(input.getClimbStarting().isDown()){
+                robot.getClimber().startingPosition(3.0);
+            }
+        }
     }
 }
