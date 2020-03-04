@@ -34,6 +34,9 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
     private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
     private double lastTimestamp = 0;
+
+    private int similarCount = 0;
+    private Transform2 lastSurroundingTransform;
     public SurroundingPositionCorrectAction(Clock clock, DashboardMap dashboardMap, VisionProvider visionProvider, VisionState visionState, MutableOrientation orientation, MutableDistanceAccumulator absoluteDistanceAccumulator) {
         super(true);
         this.clock = clock;
@@ -42,10 +45,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
         this.visionState = visionState;
         this.orientation = orientation;
         this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
-        /*
-        TODO: We need to have separate distance accumulators so during auto, when we use vision, our very precise position isn't thrown off with vision,
-        which is good for targeting, but may not help us much when we need to precisely pick up balls based on our position
-         */
+        // TODO update logic to use past vision data to determine if accurate rather than current odometry
     }
 
     @Override
@@ -73,10 +73,28 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
                 setVisionStatus("Vision Connected, No Targets");
                 return;
             }
+            if(surroundingList.size() > 1){
+                setVisionStatus("Vision Connected, too many targets (" + surroundingList.size() + ")");
+                return;
+            }
             Surrounding surrounding = surroundingList.get(0);
             Object extraData = surrounding.getExtraData();
             final Extra2020 extra = extraData instanceof Extra2020 ? (Extra2020) extraData : null;
             Transform2 transform = surrounding.getTransform();
+            Transform2 lastSurroundingTransform = this.lastSurroundingTransform;
+            this.lastSurroundingTransform = transform;
+            if(lastSurroundingTransform == null){
+                return;
+            }
+            if(lastSurroundingTransform.getPosition().distance(transform.getPosition()) < .2 && abs(lastSurroundingTransform.getRotation().minus(transform.getRotation()).getDegrees()) < 5.0){
+                similarCount++;
+            } else {
+                similarCount = 0;
+            }
+            if(similarCount < 3){
+                setVisionStatus("Jumpy Vision Data");
+                return;
+            }
             Transform2 visionTransform = transform.rotate(rotation).plus(position);
             VisionTarget2020 best = null;
             double closest2 = Double.MAX_VALUE;
@@ -95,7 +113,7 @@ public class SurroundingPositionCorrectAction extends SimpleAction {
             Rotation2 calculatedOrientation = best.getTransform().getRotation().minus(visionOffset);
             Transform2 newTransform = new Transform2(best.getTransform().getPosition().minus(transform.getPosition().rotate(calculatedOrientation)), calculatedOrientation);
             double distanceMoved = newTransform.getPosition().distance(position);
-            if(distanceMoved < 2.5 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
+            if(distanceMoved < 5.0 && abs(newTransform.getRotation().minus(rotation).getDegrees()) < 45){ // only update location if it doesn't turn the robot
                 if(isEnabled){
                     absoluteDistanceAccumulator.setPosition(newTransform.getPosition());
                     orientation.setOrientation(newTransform.getRotation());

@@ -5,7 +5,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.value.BasicValue;
 import com.first1444.dashboard.value.ValueProperty;
-import com.first1444.frc.robot2020.setpoint.PIDController;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
 import com.first1444.frc.robot2020.subsystems.implementations.BaseIntake;
 import com.first1444.sim.api.Clock;
@@ -73,13 +72,7 @@ public class MotorIntake extends BaseIntake {
 
     @Override
     protected void run(Control control, Double intakeSpeed, Double indexerSpeed, Double feederSpeed) {
-        boolean intake = control == Control.INTAKE_AND_ACTIVE_STORE || control == Control.FEED_ALL_AND_INTAKE;
-        if(intake){
-            if(intakeSpeed == null) {
-                intakeSpeed = 1.0;
-            }
-        }
-        if(control == Control.ACTIVE_STORE || control == Control.STORE || control == Control.INTAKE_AND_ACTIVE_STORE){
+        if(control == Control.INTAKE || control == Control.STORE){
             int ballCount = ballTracker.getBallCount();
             if(ballCount >= 1){
                 if(!sensorArray.isFeederSensor()){
@@ -117,24 +110,38 @@ public class MotorIntake extends BaseIntake {
         if(sensorArray.isTransferSensor()){
             lastTransferSensorDetect = clock.getTimeSeconds();
         }
-        if(indexerSpeed == null) {
-            if (control == Control.FEED_ALL_AND_INTAKE) {
-                feederSpeed = 1.0;
-                double timestamp = clock.getTimeSeconds();
-                Double lastShootTime = ballTracker.getLastShootTimestamp();
-                int ballCount = ballTracker.getBallCount();
-                Double lastTransferSensorDetect = this.lastTransferSensorDetect;
-                if ((lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastShootTime == null || timestamp - lastShootTime > 2.0)))) { // more than two balls and we haven't shot recently
-                    indexerSpeed = getAntiJamIndexerSpeed(timestamp);
-                } else {
+        if (control == Control.FEED_ALL_AND_INTAKE) {
+            feederSpeed = 1.0;
+            double timestamp = clock.getTimeSeconds();
+            Double lastShootTime = ballTracker.getLastShootTimestamp();
+            int ballCount = ballTracker.getBallCount();
+            Double lastTransferSensorDetect = this.lastTransferSensorDetect;
+            if ((lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastShootTime == null || timestamp - lastShootTime > 2.0)))) { // more than two balls and we haven't shot recently
+                double speed =  getAntiJamIndexerSpeed(timestamp);
+                if(intakeSpeed == null){
+                    intakeSpeed = speed;
+                }
+                if(indexerSpeed == null) {
+                    indexerSpeed = speed;
+                }
+            } else {
+                if(intakeSpeed == null) {
+                    intakeSpeed = 1.0;
+                }
+                if(indexerSpeed == null) {
                     indexerSpeed = 1.0;
                 }
-            } else if(intake){
-                indexerSpeed = 1.0;
+            }
+        } else if(control == Control.INTAKE){
+            if(intakeSpeed == null) {
+                intakeSpeed = 1.0;
             }
         }
-        if(control == Control.ACTIVE_STORE || control == Control.INTAKE_AND_ACTIVE_STORE){
-            if(indexerSpeed == null){
+        if(sensorArray.isIntakeSensor()) {
+            if(intakeSpeed == null) {
+                intakeSpeed = 1.0;
+            }
+            if(indexerSpeed == null) {
                 indexerSpeed = 1.0;
             }
         }

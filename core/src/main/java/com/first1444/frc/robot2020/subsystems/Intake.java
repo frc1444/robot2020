@@ -32,11 +32,8 @@ public interface Intake extends Runnable {
         /** Feeds balls into shooter. Runs indexer and feeder*/
         FEED_ALL_AND_INTAKE(true, true, true),
         /** Intakes balls and stores them*/
-        INTAKE_AND_ACTIVE_STORE(true, true, false),
-        /** Stores balls without running intake*/
-        ACTIVE_STORE(false, true, true),
-        /** Stores balls if sensors detect no ball and the robot has balls*/
-        STORE(false, true, true),
+        INTAKE(true, true, false),
+        STORE(true, true, true)
         ;
         private final boolean automaticIntake;
         private final boolean automaticIndexer;

@@ -97,7 +97,7 @@ public class OperatorAction extends SimpleAction {
             if(feedBalls){
                 intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
             } else if(intakePosition < 0){ // suck in
-                intake.setControl(Intake.Control.INTAKE_AND_ACTIVE_STORE);
+                intake.setControl(Intake.Control.INTAKE);
             } else if(intakePosition > 0){ // spit out
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
