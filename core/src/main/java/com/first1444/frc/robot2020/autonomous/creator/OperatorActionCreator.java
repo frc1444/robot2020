@@ -8,10 +8,7 @@ import com.first1444.frc.robot2020.autonomous.actions.ShootAllRpmAction;
 import com.first1444.frc.robot2020.autonomous.actions.TurretAlign;
 import com.first1444.frc.robot2020.subsystems.Intake;
 import com.first1444.frc.robot2020.vision.VisionInstant;
-import me.retrodaredevil.action.Action;
-import me.retrodaredevil.action.Actions;
-import me.retrodaredevil.action.LinkedAction;
-import me.retrodaredevil.action.SimpleAction;
+import me.retrodaredevil.action.*;
 
 public class OperatorActionCreator {
     private final Robot robot;
@@ -21,7 +18,7 @@ public class OperatorActionCreator {
     }
 
     public Action createRequireVision(double timeoutSeconds, Action successAction, Action failAction){
-        return new RequireVisionAction(timeoutSeconds, successAction, failAction);
+        return Actions.createLinkedActionRunner(new RequireVisionAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
     }
     public Action createTurnOnVision(){
         return Actions.createRunOnce(() -> robot.getVisionState().setEnabled(true));

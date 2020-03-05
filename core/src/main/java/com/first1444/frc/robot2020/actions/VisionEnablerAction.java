@@ -23,19 +23,19 @@ public class VisionEnablerAction extends SimpleAction {
     protected void onUpdate() {
         super.onUpdate();
         double now = clock.getTimeSeconds();
-        if(now - lastChange < 1.0){
-            return;
-        }
-        if(input.getVisionToggle().isJustPressed()){
-            visionState.setEnabled(!visionState.isEnabled());
-            lastChange = now;
-        }
         if(input.getVisionOn().isDown()){
             visionState.setEnabled(true);
             lastChange = now;
         }
         if(input.getVisionOff().isDown()){
             visionState.setEnabled(false);
+            lastChange = now;
+        }
+        if(now - lastChange < 1.0){
+            return;
+        }
+        if(input.getVisionToggle().isJustPressed()){
+            visionState.setEnabled(!visionState.isEnabled());
             lastChange = now;
         }
     }

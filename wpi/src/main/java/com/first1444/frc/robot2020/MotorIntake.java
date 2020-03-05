@@ -175,7 +175,7 @@ public class MotorIntake extends BaseIntake {
         indexerMotor.set(indexerSpeed * .5);
         feederMotor.set(feederSpeed * 1.0);
 
-        updateBallEnter(indexerSpeed);
+        updateBallEnter(intakeSpeed);
     }
 
     private void updateBallEnter(double speed) {

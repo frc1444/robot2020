@@ -49,6 +49,7 @@ public abstract class BaseClimber implements Climber {
     @Override
     public final void run() {
         final double speed = this.speed;
+        this.speed = 0.0;
         if(clock.getTimeSeconds() > timeoutTime){
             startingPosition = false;
             storedPosition = false;

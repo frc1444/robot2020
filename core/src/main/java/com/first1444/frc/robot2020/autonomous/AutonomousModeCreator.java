@@ -36,32 +36,29 @@ public class AutonomousModeCreator {
 
         AutonomousType autonomousType = autonomousSettings.getAutonomousType();
         switch (autonomousType) {
+            case TEST_MODE: // this is used for whatever we currently happen to be testing
+                return creator.getDriveCreator().createTurnToOrientation(startingTransform.getRotation().plusDegrees(180));
             case DO_NOTHING:
                 return creator.getLogCreator().createLogMessageAction("Doing nothing for autonomous!");
             case MOVE:
                 return createBasicMove(autonomousSettings.getBasicMovementType());
-            case TURN_SHOOT_MOVE:
+            case MOVE_AND_SPIN:
                 return new Actions.ActionQueueBuilder(
-                        createSimpleTurnShoot(startingTransform),
-                        createBasicMove(autonomousSettings.getBasicMovementType())
+                        createBasicMove(autonomousSettings.getBasicMovementType()),
+                        creator.getDriveCreator().createSpinAction()
                 ).build();
             case MOVE_TURN_SHOOT:
                 return new Actions.ActionQueueBuilder(
                         createBasicMove(autonomousSettings.getBasicMovementType()),
                         createSimpleTurnShoot(startingTransform)
                 ).build();
-            case SHOOT_IMMEDIATE:
+            case TRENCH_AUTO:
                 break;
             case CENTER_RV:
                 if(!onInitLine){
                     return notOnInitLineLogAction;
                 }
                 return createCenterRVAuto(startingTransform);
-            case GUARD_TRENCH:
-                if(!onInitLine){
-                    return notOnInitLineLogAction;
-                }
-                return createGuardTrench(startingTransform);
         }
         return creator.getLogCreator().createLogWarningAction("Unable to create action for autonomousType=" + autonomousType);
     }
@@ -80,7 +77,7 @@ public class AutonomousModeCreator {
     private Action createSimpleTurnShoot(Transform2 startingTransform){
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(startingTransform.getPosition()).getAngle();
         Action alignAndShootAll = creator.getOperatorCreator().createTurretAlignAndShootAll();
-        if(abs(angle.getDegrees() - startingTransform.getRotationDegrees()) > 45.0){
+        if(abs(angle.minus(startingTransform.getRotation()).getDegrees()) > 45.0){
             return new Actions.ActionQueueBuilder(
                     creator.getDriveCreator().createTurnToOrientation(angle),
                     alignAndShootAll
@@ -89,14 +86,8 @@ public class AutonomousModeCreator {
         return alignAndShootAll;
     }
     // endregion
-
-    private Action createGuardTrench(Transform2 startingTransform){
-        if(startingTransform.getX() < 2.4){
-            return creator.getLogCreator().createLogWarningAction("If you run trench guard, you'll run into something! startingTransform: " + startingTransform);
-        }
-        return new Actions.ActionQueueBuilder(
-                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.5, -2.2), 1.0, startingTransform.getRotation())
-        ).build();
+    private Action createTrenchAuto(Transform2 startingTransform){
+        throw new UnsupportedOperationException();
     }
     private Action createCenterRVAuto(Transform2 startingTransform){
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
@@ -105,6 +96,7 @@ public class AutonomousModeCreator {
         Rotation2 shootRotation = Rotation2.DEG_90;
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 3.3), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createSpinAction(), // get intake down
                 creator.getDriveCreator().createTurnToOrientation(pickupRotation),
                 Actions.createSupplementaryAction(
                         new Actions.ActionQueueBuilder(
@@ -114,11 +106,16 @@ public class AutonomousModeCreator {
                         intakeForever
                 ),
                 Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(0.4), intakeForever),
+                creator.getOperatorCreator().createTurnOnVision(),
                 creator.getDriveCreator().createMoveToAbsolute(
                         shootPosition, new ConstantSpeedProvider(.5),
                         new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)
                 ),
-                creator.getOperatorCreator().createTurretAlignAndShootAll()
+                creator.getOperatorCreator().createRequireVision(
+                        1.0,
+                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                        creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                )
         ).build();
     }
 

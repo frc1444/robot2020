@@ -19,11 +19,12 @@ public class MotorClimber extends BaseClimber {
         motor = new CANSparkMax(RobotConstants.CAN.CLIMBER, CANSparkMaxLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
         motor.setMotorType(CANSparkMaxLowLevel.MotorType.kBrushless);
-//        motor.setSmartCurrentLimit(20);
+        motor.setSmartCurrentLimit(200); // default is 80
+//        motor.setSecondaryCurrentLimit(200); untested
 
         encoder = motor.getEncoder();
-        motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
-        motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 100000); // TODO get correct value
+//        motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+//        motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 100000); // TODO get correct value
         dashboardMap.getDebugTab().add("Climb Encoder", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(encoder.getPosition()))));
     }
 

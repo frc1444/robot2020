@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface SwerveDriveActionCreator {
     Action createTurnToOrientation(Rotation2 desiredOrientation);
+    Action createSpinAction();
 
     Action createMoveToAbsolute(Vector2 position, SpeedProvider speedProvider, @Nullable DesiredRotationProvider desiredRotationProvider);
     default Action createMoveToAbsolute(Vector2 position, double speed, @Nullable Rotation2 faceDirection) {

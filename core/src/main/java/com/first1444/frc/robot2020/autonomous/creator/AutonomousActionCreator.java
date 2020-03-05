@@ -14,7 +14,7 @@ public class AutonomousActionCreator {
 
     public AutonomousActionCreator(Robot robot) {
         logActionCreator = new FrcLogActionCreator(System.out, robot.getLogger());
-        driveCreator = new DefaultSwerveDriveActionCreator(robot.getDrive(), robot.getOdometry().getAbsoluteOrientation(), robot.getOdometry().getRelativeDistanceAccumulator(), robot.getOdometry().getAbsoluteDistanceAccumulator());
+        driveCreator = new DefaultSwerveDriveActionCreator(robot.getClock(), robot.getDrive(), robot.getOdometry().getAbsoluteOrientation(), robot.getOdometry().getRelativeDistanceAccumulator(), robot.getOdometry().getAbsoluteDistanceAccumulator());
         operatorCreator = new OperatorActionCreator(robot);
         basicActionCreator = new BasicActionCreator(robot);
     }
