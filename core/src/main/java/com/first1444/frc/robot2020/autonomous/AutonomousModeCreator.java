@@ -13,6 +13,7 @@ import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.WhenDone;
 
 import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
@@ -53,7 +54,10 @@ public class AutonomousModeCreator {
                         createSimpleTurnShoot(startingTransform)
                 ).build();
             case TRENCH_AUTO:
-                break;
+                if(!onInitLine){
+                    return notOnInitLineLogAction;
+                }
+                return createTrenchAuto(startingTransform);
             case CENTER_RV:
                 if(!onInitLine){
                     return notOnInitLineLogAction;
@@ -87,7 +91,24 @@ public class AutonomousModeCreator {
     }
     // endregion
     private Action createTrenchAuto(Transform2 startingTransform){
-        throw new UnsupportedOperationException();
+        Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
+        return new Actions.ActionQueueBuilder(
+                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.3), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createSpinAction(), // get intake down
+                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+                Actions.createSupplementaryAction(
+                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.9), .7, Rotation2.DEG_270),
+                        intakeForever
+                ),
+                creator.getOperatorCreator().createTurnOnVision(),
+                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_90),
+                creator.getOperatorCreator().createRequireVision(
+                        1.0,
+                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                        creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                ),
+                creator.getOperatorCreator().createTurnOffVision()
+        ).build();
     }
     private Action createCenterRVAuto(Transform2 startingTransform){
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
@@ -101,6 +122,7 @@ public class AutonomousModeCreator {
                 Actions.createSupplementaryAction(
                         new Actions.ActionQueueBuilder(
                                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 2.4), .3, pickupRotation),
+                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.3, 2.6), .2, pickupRotation),
                                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.4, 2.23), .2, pickupRotation)
                         ).build(),
                         intakeForever

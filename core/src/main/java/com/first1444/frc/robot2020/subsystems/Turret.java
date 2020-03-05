@@ -1,12 +1,17 @@
 package com.first1444.frc.robot2020.subsystems;
 
 import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Vector2;
 
+import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 
 public interface Turret extends Runnable {
+    Vector2 TURRET_OFFSET = new Vector2(inchesToMeters(-4.0), 0.0);
+    Rotation2 MAX_ROTATION = Rotation2.fromDegrees(80);
+    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-80);
 
     /**
      * @param trim The trim to use when the desired state is set to use desired rotation control
@@ -26,10 +31,6 @@ public interface Turret extends Runnable {
         return rotation.getDegrees() > -25; // if we turn the turret more than 25 degrees clockwise, the falcon will hit the climb
     }
 
-//    Rotation2 MAX_ROTATION = Rotation2.fromDegrees(35); use this when we add wheel spinner
-    Rotation2 MAX_ROTATION = Rotation2.fromDegrees(80);
-    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-80);
-//    Rotation2 MIN_ROTATION = Rotation2.fromDegrees(-70);
 
     class DesiredState {
         public static final DesiredState NEUTRAL = new DesiredState(null, 0.0);

@@ -24,7 +24,7 @@ public class TurretAlign extends SimpleAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        Vector2 position = distanceAccumulator.getPosition();
+        Vector2 position = distanceAccumulator.getPosition().plus(Turret.TURRET_OFFSET);
         Rotation2 rotation = orientation.getOrientation();
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
 

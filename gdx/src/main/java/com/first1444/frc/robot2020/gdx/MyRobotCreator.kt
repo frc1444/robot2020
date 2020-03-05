@@ -94,6 +94,11 @@ private fun createEntity(data: RobotCreator.Data, updateableData: UpdateableCrea
         shape = EdgeShape().apply {
             set(0f, 0f, .3f, 0f)
         }
+    }, FixtureDef().apply {
+        shape = EdgeShape().apply { set((WHEEL_BASE / 2).toFloat(), (TRACK_WIDTH / 2).toFloat(), (WHEEL_BASE / 2).toFloat() + INTAKE_EXTEND, (TRACK_WIDTH / 2).toFloat()) }
+
+    }, FixtureDef().apply {
+        shape = EdgeShape().apply { set((WHEEL_BASE / 2).toFloat(), -(TRACK_WIDTH / 2).toFloat(), (WHEEL_BASE / 2).toFloat() + INTAKE_EXTEND, -(TRACK_WIDTH / 2).toFloat()) }
     }
     )).also { entity ->
         @Suppress("ConstantConditionIf")
