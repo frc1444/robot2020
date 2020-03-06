@@ -92,6 +92,7 @@ public class AutonomousModeCreator {
     // endregion
     private Action createTrenchAuto(Transform2 startingTransform){
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
+        Vector2 secondIntakePosition = new Vector2(2.2, 1.9);
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
@@ -104,7 +105,20 @@ public class AutonomousModeCreator {
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_90),
                 creator.getOperatorCreator().createRequireVision(
                         1.0,
-                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                        new Actions.ActionQueueBuilder(
+                                creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                creator.getOperatorCreator().createTurnOffVision(),
+                                creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
+                                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+                                Actions.createSupplementaryAction(
+                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.0), .3, Rotation2.DEG_270),
+                                        intakeForever
+                                ),
+                                creator.getDriveCreator().createMoveToAbsolute(
+                                        secondIntakePosition, new ConstantSpeedProvider(.5),
+                                        new LinearDistanceRotationProvider(Rotation2.DEG_270, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
+                                )
+                        ).build(),
                         creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
                 ),
                 creator.getOperatorCreator().createTurnOffVision()
@@ -135,9 +149,14 @@ public class AutonomousModeCreator {
                 ),
                 creator.getOperatorCreator().createRequireVision(
                         1.0,
-                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                        new Actions.ActionQueueBuilder(
+                                creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                creator.getOperatorCreator().createTurnOffVision()
+                                // maybe add some stuff here
+                        ).build(),
                         creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
-                )
+                ),
+                creator.getOperatorCreator().createTurnOffVision()
         ).build();
     }
 

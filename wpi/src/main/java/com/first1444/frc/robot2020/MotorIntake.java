@@ -179,7 +179,7 @@ public class MotorIntake extends BaseIntake {
     }
 
     private void updateBallEnter(double speed) {
-        // TODO update this function with new sensor placement
+        // TODO test this function with new sensor placement
         double timestamp = clock.getTimeSeconds();
         final Double lastTimestamp = lastUpdate;
         lastUpdate = timestamp;

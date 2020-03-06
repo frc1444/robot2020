@@ -35,6 +35,7 @@ public class TalonSwerveModule implements SwerveModule {
     private static final int CLOSED_LOOP_TIME = 4;
     private static final double WHEEL_CIRCUMFERENCE_INCHES = 4 * Math.PI;
     private static final boolean VELOCITY_CONTROL = true;
+    private static final double SMART_QUICK_REVERSE_RPM_THRESHOLD = RobotConstants.MAX_CIM_RPM / 2.0;
 
     private final String name;
     private final double quadCountsPerRevolution;
@@ -104,6 +105,13 @@ public class TalonSwerveModule implements SwerveModule {
                 RobotConstants.PID_INDEX, RobotConstants.LOOP_TIMEOUT
         );
     }
+    private double getDriveCountsPerRevolution(){
+        if(driveType == SwerveSetup.DriveType.CIM){
+            return RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION;
+        } else if(driveType == SwerveSetup.DriveType.FALCON){
+            return RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
+        } else throw new UnsupportedOperationException("Unknown drive type: " + driveType);
+    }
 
     @Override
     public void run() {
@@ -112,19 +120,53 @@ public class TalonSwerveModule implements SwerveModule {
             drive.set(ControlMode.Disabled, 0);
             return;
         }
-        final double speedMultiplier;
+        final double speed;
+        final double targetPositionDegrees;
+        {
+            final double rawSpeed = this.speed;
+            this.speed = 0;
+            final double rawTargetPositionDegrees = this.targetPositionDegrees;
+            if (quickReverseAllowed) {
+                /*
+                if rawSpeed is negative, we want to make it positive if we are using quick reverse because the algorithm below expects speed to be positive
+                 */
+                if(rawSpeed < 0){
+                    speed = -rawSpeed;
+                    targetPositionDegrees = rawTargetPositionDegrees + 180;
+                } else {
+                    speed = rawSpeed;
+                    targetPositionDegrees = rawTargetPositionDegrees;
+                }
+            } else {
+                speed = rawSpeed;
+                targetPositionDegrees = rawTargetPositionDegrees;
+            }
+        }
 
+        final double speedMultiplier;
+        final double driveCountsPerRevolution = getDriveCountsPerRevolution();
         { // steer code
+
             final double wrap = getCountsPerRevolution(); // in encoder counts
             final int current = steer.getSelectedSensorPosition(RobotConstants.PID_INDEX);
             final double desired = Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
             if(quickReverseAllowed){
-                final double newPosition = MathUtil.minChange(desired, current, wrap / 2.0) + current;
-                if(MathUtil.minDistance(newPosition, desired, wrap) < .001){ // check if equal
-                    speedMultiplier = 1;
-                } else {
+                final double velocityRpm = drive.getSelectedSensorVelocity(RobotConstants.PID_INDEX) * RobotConstants.CTRE_UNIT_CONVERSION / driveCountsPerRevolution;
+                final double newPosition;
+                if(velocityRpm < -SMART_QUICK_REVERSE_RPM_THRESHOLD){ // wheel is going backwards, keep going backwards
+                    newPosition = MathUtil.minChange(desired + wrap / 2.0, current, wrap) + current;
                     speedMultiplier = -1;
+                } else if(velocityRpm > SMART_QUICK_REVERSE_RPM_THRESHOLD){ // wheel is going forwards, keep going forwards
+                    newPosition = MathUtil.minChange(desired, current, wrap) + current;
+                    speedMultiplier = 1;
+                } else { // we don't care which way wheel goes
+                    newPosition = MathUtil.minChange(desired, current, wrap / 2.0) + current;
+                    if (MathUtil.minDistance(newPosition, desired, wrap) < .001) { // check if equal
+                        speedMultiplier = 1;
+                    } else {
+                        speedMultiplier = -1;
+                    }
                 }
                 steer.set(ControlMode.Position, newPosition);
             } else {
@@ -136,20 +178,13 @@ public class TalonSwerveModule implements SwerveModule {
 
         { // speed code
             if(VELOCITY_CONTROL){
-                final double countsPerRevolution;
-                if(driveType == SwerveSetup.DriveType.CIM){
-                    countsPerRevolution = RobotConstants.CIMCODER_COUNTS_PER_REVOLUTION;
-                } else if(driveType == SwerveSetup.DriveType.FALCON){
-                    countsPerRevolution = RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION;
-                } else throw new UnsupportedOperationException("Unknown drive type: " + driveType);
 
-                final double velocity = speed * speedMultiplier * countsPerRevolution
-                        * RobotConstants.MAX_CIM_RPM / RobotConstants.CTRE_UNIT_CONVERSION; // TODO we might want to make falcons faster
+                final double velocity = speed * speedMultiplier * driveCountsPerRevolution
+                        * RobotConstants.MAX_CIM_RPM / RobotConstants.CTRE_UNIT_CONVERSION; // maybe we might want to make falcons faster (they can go faster)
                 drive.set(ControlMode.Velocity, velocity);
             } else {
                 drive.set(ControlMode.PercentOutput, speed * speedMultiplier);
             }
-            speed = 0;
         }
     }
 
