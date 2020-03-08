@@ -80,14 +80,11 @@ public class AutonomousModeCreator {
     }
     private Action createSimpleTurnShoot(Transform2 startingTransform){
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(startingTransform.getPosition()).getAngle();
-        Action alignAndShootAll = creator.getOperatorCreator().createTurretAlignAndShootAll();
-        if(abs(angle.minus(startingTransform.getRotation()).getDegrees()) > 45.0){
-            return new Actions.ActionQueueBuilder(
-                    creator.getDriveCreator().createTurnToOrientation(angle),
-                    alignAndShootAll
-            ).build();
-        }
-        return alignAndShootAll;
+        return new Actions.ActionQueueBuilder(
+                creator.getDriveCreator().createSpinAction(),
+                creator.getDriveCreator().createTurnToOrientation(angle),
+                creator.getOperatorCreator().createTurretAlignAndShootAll()
+        ).build();
     }
     // endregion
     private Action createTrenchAuto(Transform2 startingTransform){
@@ -96,6 +93,7 @@ public class AutonomousModeCreator {
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
+                creator.getOperatorCreator().createStoreClimb(), // store climb after getting intake down
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
                 Actions.createSupplementaryAction(
                         creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.9), .7, Rotation2.DEG_270),
@@ -103,23 +101,27 @@ public class AutonomousModeCreator {
                 ),
                 creator.getOperatorCreator().createTurnOnVision(),
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_90),
-                creator.getOperatorCreator().createRequireVision(
-                        1.0,
-                        new Actions.ActionQueueBuilder(
-                                creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                                creator.getOperatorCreator().createTurnOffVision(),
-                                creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
-                                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
-                                Actions.createSupplementaryAction(
-                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.0), .3, Rotation2.DEG_270),
-                                        intakeForever
-                                ),
-                                creator.getDriveCreator().createMoveToAbsolute(
-                                        secondIntakePosition, new ConstantSpeedProvider(.5),
-                                        new LinearDistanceRotationProvider(Rotation2.DEG_270, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
-                                )
-                        ).build(),
-                        creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                creator.getOperatorCreator().createRequireClimbStored(
+                        0.0,
+                        creator.getOperatorCreator().createRequireVision(
+                                1.0,
+                                new Actions.ActionQueueBuilder(
+                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                        creator.getOperatorCreator().createTurnOffVision(),
+                                        creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
+                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+                                        Actions.createSupplementaryAction(
+                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.0), .3, Rotation2.DEG_270),
+                                                intakeForever
+                                        ),
+                                        creator.getDriveCreator().createMoveToAbsolute(
+                                                secondIntakePosition, new ConstantSpeedProvider(.5),
+                                                new LinearDistanceRotationProvider(Rotation2.DEG_270, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
+                                        )
+                                ).build(),
+                                creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                        ),
+                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
                 ),
                 creator.getOperatorCreator().createTurnOffVision()
         ).build();
@@ -132,6 +134,7 @@ public class AutonomousModeCreator {
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 3.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
+                creator.getOperatorCreator().createStoreClimb(),
                 creator.getDriveCreator().createTurnToOrientation(pickupRotation),
                 Actions.createSupplementaryAction(
                         new Actions.ActionQueueBuilder(
@@ -147,14 +150,18 @@ public class AutonomousModeCreator {
                         shootPosition, new ConstantSpeedProvider(.5),
                         new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)
                 ),
-                creator.getOperatorCreator().createRequireVision(
-                        1.0,
-                        new Actions.ActionQueueBuilder(
-                                creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                                creator.getOperatorCreator().createTurnOffVision()
-                                // maybe add some stuff here
-                        ).build(),
-                        creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                creator.getOperatorCreator().createRequireClimbStored(
+                        0.0,
+                        creator.getOperatorCreator().createRequireVision(
+                                1.0,
+                                new Actions.ActionQueueBuilder(
+                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                        creator.getOperatorCreator().createTurnOffVision()
+                                        // maybe add some stuff here
+                                ).build(),
+                                creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                        ),
+                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
                 ),
                 creator.getOperatorCreator().createTurnOffVision()
         ).build();

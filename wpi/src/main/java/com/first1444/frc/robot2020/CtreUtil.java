@@ -26,8 +26,10 @@ public final class CtreUtil {
         errorCodeReport.accept(motor.config_kI(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.I), timeoutMs), 1);
         errorCodeReport.accept(motor.config_kD(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.D), timeoutMs), 2);
         errorCodeReport.accept(motor.config_kF(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.F), timeoutMs), 3);
-        errorCodeReport.accept(motor.configMaxIntegralAccumulator(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.MAX_I), timeoutMs), 4);
-        errorCodeReport.accept(motor.configClosedloopRamp(pid.getDouble(PidKey.CLOSED_RAMP_RATE), timeoutMs), 5);
+//        errorCodeReport.accept(motor.configMaxIntegralAccumulator(RobotConstants.SLOT_INDEX, pid.getDouble(PidKey.MAX_I), timeoutMs), 4);
+        errorCodeReport.accept(motor.configNominalOutputForward(pid.getDouble(PidKey.NOMINAL_OUTPUT), timeoutMs), 4);
+        errorCodeReport.accept(motor.configNominalOutputReverse(-pid.getDouble(PidKey.NOMINAL_OUTPUT), timeoutMs), 5);
+        errorCodeReport.accept(motor.configClosedloopRamp(pid.getDouble(PidKey.CLOSED_RAMP_RATE), timeoutMs), 6);
     }
     @SafeVarargs
     public static void reportError(BiConsumer<ErrorCode, Integer> errorCodeReport, Supplier<ErrorCode>... errorCodeSuppliers){

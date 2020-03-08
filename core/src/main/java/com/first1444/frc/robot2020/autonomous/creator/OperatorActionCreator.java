@@ -38,6 +38,12 @@ public class OperatorActionCreator {
                 new TurretAlign(robot.getTurret(), robot.getOdometry().getAbsoluteAndVisionOrientation(), robot.getOdometry().getAbsoluteAndVisionDistanceAccumulator())
         );
     }
+    public Action createStoreClimb() {
+        return Actions.createRunOnce(() -> robot.getClimber().storedPosition(5.0));
+    }
+    public Action createRequireClimbStored(double timeoutSeconds, Action successAction, Action failAction) {
+        return Actions.createLinkedActionRunner(new RequireClimbStoredAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
+    }
 
     public Action createTurretAlignAndShootAll() {
         Action turretAlign = createTurretAlign(); // can be recycled
@@ -84,6 +90,44 @@ public class OperatorActionCreator {
             timeoutAction.update();
             VisionInstant instant = robot.getVisionProvider().getVisionInstant();
             if(robot.getVisionState().isEnabled() && instant != null && !instant.getSurroundings().isEmpty() && instant.getTimestamp() + 1.0 > robot.getClock().getTimeSeconds()) { // vision is recent (within 1 second
+                nextAction = successAction;
+                setDone(true);
+            } else if(timeoutAction.isDone()){
+                nextAction = failAction;
+                setDone(true);
+            }
+        }
+
+        @Override
+        protected void onEnd(boolean peacefullyEnded) {
+            super.onEnd(peacefullyEnded);
+            timeoutAction.end();
+        }
+
+        @Override
+        public Action getNextAction() {
+            return nextAction;
+        }
+    }
+    private class RequireClimbStoredAction extends SimpleAction implements LinkedAction {
+
+        private final Action successAction;
+        private final Action failAction;
+        private final Action timeoutAction;
+
+        private Action nextAction;
+        public RequireClimbStoredAction(double timeoutSeconds, Action successAction, Action failAction) {
+            super(true);
+            this.successAction = successAction;
+            this.failAction = failAction;
+            timeoutAction = new TimedAction(true, robot.getClock(), timeoutSeconds);
+        }
+
+        @Override
+        protected void onUpdate() {
+            super.onUpdate();
+            timeoutAction.update();
+            if(robot.getClimber().isStored()) {
                 nextAction = successAction;
                 setDone(true);
             } else if(timeoutAction.isDone()){

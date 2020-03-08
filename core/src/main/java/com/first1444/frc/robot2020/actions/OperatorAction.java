@@ -102,7 +102,11 @@ public class OperatorAction extends SimpleAction {
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
             } else {
-                intake.setControl(Intake.Control.STORE);
+                if(input.getManualOnly().isDown()){
+                    intake.setControl(Intake.Control.MANUAL);
+                } else {
+                    intake.setControl(Intake.Control.STORE);
+                }
             }
             if(input.getFeederManualInButton().isDown()){
                 intake.setFeederSpeed(1.0);

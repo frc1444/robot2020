@@ -48,5 +48,6 @@ public final class RobotConstants {
         public static final int TRANSFER_SENSOR = 2;
         public static final int FEEDER_SENSOR = 3;
         public static final int VISION_LED = 4;
+        public static final int CLIMB_REVERSE_LIMIT_SWITCH_NORMALLY_OPEN = 5;
     }
 }

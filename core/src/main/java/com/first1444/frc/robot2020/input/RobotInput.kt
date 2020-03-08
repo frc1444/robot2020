@@ -104,6 +104,8 @@ class RobotInput(
     val ballCountIncrement: InputPart = attackJoystick.centerRight
     val ballCountDecrement: InputPart = attackJoystick.centerLeft
 
+    val manualOnly: InputPart = extremeJoystick.thumbButton
+
 
     init {
         partUpdater.addPartsAssertNonePresent(

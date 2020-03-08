@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 public class DummyClimber extends BaseClimber {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
+    private boolean stored = false;
 
     public DummyClimber(Clock clock, ReportMap reportMap) {
         super(clock);
@@ -17,16 +18,21 @@ public class DummyClimber extends BaseClimber {
     @Override
     protected void useSpeed(double speed) {
         report("Speed " + FORMAT.format(speed));
+        if(speed > 0){
+            stored = false;
+        }
     }
 
     @Override
     protected void goToStartingPosition() {
         report("Starting position");
+        stored = false;
     }
 
     @Override
     protected void goToStoredPosition() {
         report("Stored position");
+        stored = true;
     }
     private void report(String movementString){
         reportMap.report("Climber Movement", movementString);
@@ -34,6 +40,6 @@ public class DummyClimber extends BaseClimber {
 
     @Override
     public boolean isStored() {
-        return storedPosition; // just immediately go to it because this is a dummy implementation
+        return stored;
     }
 }

@@ -14,7 +14,7 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import static java.util.Objects.requireNonNull;
 
 public class MotorIntake extends BaseIntake {
-    private static final double ANTI_JAM_PERIOD = 1.2;
+    private static final double ANTI_JAM_PERIOD = 1.7;
     private static final CANSparkMaxLowLevel.MotorType INDEXER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
     private static final CANSparkMaxLowLevel.MotorType FEEDER_TYPE = CANSparkMaxLowLevel.MotorType.kBrushless;
     private enum TransferState {
@@ -35,6 +35,7 @@ public class MotorIntake extends BaseIntake {
 
     private TransferState transferState = TransferState.IDLE;
     private Double lastTransferSensorDetect = null;
+    private Double lastFeederSensorDetect = null;
 
     private double currentVelocity = 0;
     private boolean wasIntakeSensor = false;
@@ -68,14 +69,28 @@ public class MotorIntake extends BaseIntake {
         feederMotor.setOpenLoopRampRate(.1);
         feederMotor.setInverted(true);
     }
-    private double getAntiJamIndexerSpeed(double timestamp){
-        double result = (timestamp % ANTI_JAM_PERIOD) / ANTI_JAM_PERIOD;
+    private double getAntiJamIndexerSpeed(){
+        double result = (clock.getTimeSeconds() % ANTI_JAM_PERIOD) / ANTI_JAM_PERIOD;
         if (result < .25) {
             return -1.0;
         } else if (result > .3 && result < .95) {
             return 1.0;
         }
         return 0.0;
+    }
+
+    private boolean shouldRunAntiJam(){
+        if(sensorArray.isTransferSensor()){
+            lastTransferSensorDetect = clock.getTimeSeconds();
+        }
+        if(sensorArray.isFeederSensor()){
+            lastFeederSensorDetect = clock.getTimeSeconds();
+        }
+        double timestamp = clock.getTimeSeconds();
+        int ballCount = ballTracker.getBallCount();
+        Double lastTransferSensorDetect = this.lastTransferSensorDetect;
+        Double lastFeederSensorDetect = this.lastFeederSensorDetect;
+        return (lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastFeederSensorDetect == null || timestamp - lastFeederSensorDetect > 2.0)));
     }
 
     @Override
@@ -93,11 +108,17 @@ public class MotorIntake extends BaseIntake {
                             feederSpeed = 1.0;
                         }
                     } else if(currentTransferState == TransferState.RUN_BOTH){
+                        final double speed = 1.0;
+//                        if(shouldRunAntiJam()){
+//                            speed = getAntiJamIndexerSpeed();
+//                        } else {
+//                            speed = 1.0;
+//                        }
                         if(indexerSpeed == null) {
-                            indexerSpeed = 1.0;
+                            indexerSpeed = speed;
                         }
                         if(feederSpeed == null) {
-                            feederSpeed = 1.0;
+                            feederSpeed = speed;
                         }
                         if(!sensorArray.isTransferSensor()){
                             transferState = TransferState.FEEDER_ONLY;
@@ -111,30 +132,18 @@ public class MotorIntake extends BaseIntake {
                     }
                 } else {
                     transferState = TransferState.IDLE;
-                    // for Aaron's idea of how this should work, we don't need this code below
-//                    if (ballCount >= 2) {
-//                        if (!sensorArray.isTransferSensor()) {
-//                            if (indexerSpeed == null) {
-//                                indexerSpeed = 1.0;
-//                            }
-//                        }
-//                    }
                 }
             }
         } else {
             transferState = TransferState.IDLE;
         }
-        if(sensorArray.isTransferSensor()){
-            lastTransferSensorDetect = clock.getTimeSeconds();
-        }
         if (control == Control.FEED_ALL_AND_INTAKE) {
-            feederSpeed = 1.0;
-            double timestamp = clock.getTimeSeconds();
-            Double lastShootTime = ballTracker.getLastShootTimestamp();
-            int ballCount = ballTracker.getBallCount();
-            Double lastTransferSensorDetect = this.lastTransferSensorDetect;
-            if ((lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastShootTime == null || timestamp - lastShootTime > 2.0)))) { // more than two balls and we haven't shot recently
-                double speed = getAntiJamIndexerSpeed(timestamp);
+            if(feederSpeed == null) {
+                feederSpeed = 1.0;
+            }
+            boolean shouldRunAntiJam = shouldRunAntiJam();
+            if (shouldRunAntiJam) { // more than two balls and we haven't got one in feeder recently
+                double speed = getAntiJamIndexerSpeed();
                 if(intakeSpeed == null){
                     intakeSpeed = speed;
                 }
@@ -179,7 +188,6 @@ public class MotorIntake extends BaseIntake {
     }
 
     private void updateBallEnter(double speed) {
-        // TODO test this function with new sensor placement
         double timestamp = clock.getTimeSeconds();
         final Double lastTimestamp = lastUpdate;
         lastUpdate = timestamp;

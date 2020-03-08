@@ -11,7 +11,7 @@ public abstract class BaseClimber implements Climber {
 
     private double speed = 0.0;
     private boolean startingPosition = false;
-    protected boolean storedPosition = false;
+    private boolean storedPosition = false;
     private double timeoutTime = 0.0;
 
     protected BaseClimber(Clock clock) {
@@ -47,7 +47,7 @@ public abstract class BaseClimber implements Climber {
     }
 
     @Override
-    public final void run() {
+    public void run() {
         final double speed = this.speed;
         this.speed = 0.0;
         if(clock.getTimeSeconds() > timeoutTime){

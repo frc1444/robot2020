@@ -65,3 +65,5 @@ Why do most of the classes implement Runnable? Runnable is a nice interface to u
 It probably isn't necessary to have most classes inherit Runnable, but it does make the code have some consistency.
 
 # TODO
+* Calculate velocity and offset turret based on velocity
+* Program climb lift coming down in auto
