@@ -305,6 +305,7 @@ public class PIDController implements Sendable<ActiveComponent> {
     public void reset() {
         previousError = 0;
         totalError = 0;
+        lastTimeSeconds = null;
     }
 
     @NotNull

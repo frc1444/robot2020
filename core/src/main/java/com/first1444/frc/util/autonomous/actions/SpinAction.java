@@ -15,6 +15,8 @@ public class SpinAction extends TimedAction {
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        drive.setControl(Vector2.ZERO, .8, 1.0);
+//        drive.setControl(Vector2.ZERO, 0.825, 1.0);
+        // 80 doesn't work
+        drive.setControl(Vector2.ZERO, 0.87, 1.0);
     }
 }

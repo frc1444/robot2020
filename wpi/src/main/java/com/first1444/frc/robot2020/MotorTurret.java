@@ -20,10 +20,11 @@ import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.signum;
 
 public class MotorTurret extends BaseTurret {
     private static final double OFFSET_ENCODER_DEGREES = -104;
-    private static final double DEADZONE_DEGREES = 0.0;
+    private static final double DEADZONE_DEGREES = 1.0;
 
     private final Clock clock;
     private final DashboardMap dashboardMap;
@@ -55,9 +56,9 @@ public class MotorTurret extends BaseTurret {
 
         final var sendable = new MutableValueMapSendable<>(PidKey.class);
         pidConfig = sendable.getMutableValueMap();
-        pidConfig.setDouble(PidKey.P, 0.36);
-        pidConfig.setDouble(PidKey.I, 0.02);
-        pidConfig.setDouble(PidKey.D, 0.04);
+        pidConfig.setDouble(PidKey.P, 0.17);
+        pidConfig.setDouble(PidKey.I, 0.12);
+        pidConfig.setDouble(PidKey.NOMINAL_OUTPUT, 0.2);
 
         pidController.applyFrom(pidConfig);
         pidConfig.addListener(key -> pidController.applyFrom(pidConfig));
@@ -86,15 +87,17 @@ public class MotorTurret extends BaseTurret {
                 deadzoneStartTime = null;
             } else {
                 double desiredDegrees = rotation.getDegrees();
+                double errorDegrees = desiredDegrees - currentDegrees;
+                dashboardMap.getDebugTab().getRawDashboard().get("error").getStrictSetter().setDouble(errorDegrees);
                 final boolean shouldStop;
-                if (abs(desiredDegrees - currentDegrees) < DEADZONE_DEGREES) {
+                if (abs(errorDegrees) < DEADZONE_DEGREES) {
                     double now = clock.getTimeSeconds();
                     Double deadzoneStartTime = this.deadzoneStartTime;
                     if(deadzoneStartTime == null){
                         this.deadzoneStartTime = now;
                         deadzoneStartTime = now;
                     }
-                    shouldStop = clock.getTimeSeconds() - deadzoneStartTime > 1.0;
+                    shouldStop = clock.getTimeSeconds() - deadzoneStartTime > 0.1;
                 } else {
                     deadzoneStartTime = null;
                     shouldStop = false;
@@ -104,7 +107,16 @@ public class MotorTurret extends BaseTurret {
                     talon.set(ControlMode.PercentOutput, 0.0);
                     pidController.reset();
                 } else {
-                    double output = pidController.calculate(currentDegrees, desiredDegrees);
+                    double output;
+                    if(abs(errorDegrees) > 45){
+                        output = signum(errorDegrees);
+                        pidController.reset();
+                    } else if(abs(errorDegrees) > 25){
+                        output = signum(errorDegrees) * .5;
+                        pidController.reset();
+                    } else {
+                        output = pidController.calculate(currentDegrees, desiredDegrees);
+                    }
                     double nominalOutput = pidConfig.getDouble(PidKey.NOMINAL_OUTPUT);
                     dashboardMap.getDebugTab().getRawDashboard().get("output turret").getStrictSetter().setDouble(output);
                     if(abs(output) < nominalOutput){

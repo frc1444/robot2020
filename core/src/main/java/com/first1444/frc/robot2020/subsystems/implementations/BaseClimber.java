@@ -7,7 +7,7 @@ import static java.lang.Math.abs;
 
 public abstract class BaseClimber implements Climber {
 
-    private final Clock clock;
+    protected final Clock clock;
 
     private double speed = 0.0;
     private boolean startingPosition = false;

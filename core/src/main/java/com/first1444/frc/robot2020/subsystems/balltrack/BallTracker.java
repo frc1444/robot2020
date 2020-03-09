@@ -36,7 +36,9 @@ public class BallTracker {
     }
 
     public void addBall() {
-        ballCount++;
+        if(ballCount < 5){
+            ballCount++;
+        }
     }
 
     public void removeBall() {

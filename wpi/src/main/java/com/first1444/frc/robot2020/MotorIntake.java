@@ -34,6 +34,7 @@ public class MotorIntake extends BaseIntake {
     private final SensorArray sensorArray;
 
     private TransferState transferState = TransferState.IDLE;
+    private Double transferStateChangeTime = null;
     private Double lastTransferSensorDetect = null;
     private Double lastFeederSensorDetect = null;
 
@@ -101,19 +102,33 @@ public class MotorIntake extends BaseIntake {
                 if(!sensorArray.isFeederSensor()){
                     TransferState currentTransferState = transferState;
                     if(currentTransferState == TransferState.FEEDER_ONLY){
-                        if(indexerSpeed == null){
-                            indexerSpeed = 0.0; // we don't want to run the indexer while we're transferring the ball up
+                        Double startTime = transferStateChangeTime;
+                        requireNonNull(startTime, "transferStateChangeTime is null! We should have set this!");
+                        if(clock.getTimeSeconds() - startTime > 2.0){ // we must be jammed
+                            double speed = getAntiJamIndexerSpeed();
+                            if(intakeSpeed == null){
+                                intakeSpeed = speed;
+                            }
+                            if(indexerSpeed == null){
+                                indexerSpeed = speed;
+                            }
+                        } else {
+                            if(indexerSpeed == null){
+                                indexerSpeed = 0.0; // we don't want to run the indexer while we're transferring the ball up
+                            }
                         }
                         if(feederSpeed == null) {
                             feederSpeed = 1.0;
                         }
                     } else if(currentTransferState == TransferState.RUN_BOTH){
-                        final double speed = 1.0;
-//                        if(shouldRunAntiJam()){
-//                            speed = getAntiJamIndexerSpeed();
-//                        } else {
-//                            speed = 1.0;
-//                        }
+                        final double speed;
+                        Double startTime = transferStateChangeTime;
+                        requireNonNull(startTime, "transferStateChangeTime is null! We should have set this!");
+                        if(clock.getTimeSeconds() - startTime > 2.0){ // we must be jammed
+                            speed = getAntiJamIndexerSpeed();
+                        } else {
+                            speed = 1.0;
+                        }
                         if(indexerSpeed == null) {
                             indexerSpeed = speed;
                         }
@@ -122,20 +137,24 @@ public class MotorIntake extends BaseIntake {
                         }
                         if(!sensorArray.isTransferSensor()){
                             transferState = TransferState.FEEDER_ONLY;
+                            transferStateChangeTime = clock.getTimeSeconds();
                         }
                     } else {
                         assert currentTransferState == TransferState.IDLE;
                         if(sensorArray.isTransferSensor()){
                             transferState = TransferState.RUN_BOTH;
+                            transferStateChangeTime = clock.getTimeSeconds();
+                            // next iteration it will do what we want, we don't care right now
                         }
-                        // next iteration it will do what we want, we don't care right now
                     }
                 } else {
                     transferState = TransferState.IDLE;
+                    transferStateChangeTime = null;
                 }
             }
         } else {
             transferState = TransferState.IDLE;
+            transferStateChangeTime = null;
         }
         if (control == Control.FEED_ALL_AND_INTAKE) {
             if(feederSpeed == null) {
@@ -220,7 +239,7 @@ public class MotorIntake extends BaseIntake {
             } else if(!isIntake && wasSensor){
                 System.out.println("Intake sensor off");
                 if(currentVelocity <= 0){ // we're spitting out
-                    ballTracker.removeBall();
+                    ballTracker.onSpitOutBall();
                     System.out.println("Split out a ball");
                 }
             }

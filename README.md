@@ -3,6 +3,8 @@ Our robot code for Infinite Recharge.
 
 This project uses robo-sim and is not a standard WPILib project.
 
+Robot Name: "Thunder Falcon"
+
 ### Setup
 You will need **Java 11** installed. Not 10, not 12, **11**.
 

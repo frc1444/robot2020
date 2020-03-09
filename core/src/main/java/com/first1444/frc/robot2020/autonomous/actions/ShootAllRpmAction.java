@@ -3,6 +3,7 @@ package com.first1444.frc.robot2020.autonomous.actions;
 import com.first1444.frc.robot2020.subsystems.BallShooter;
 import com.first1444.frc.robot2020.subsystems.Intake;
 import com.first1444.frc.robot2020.subsystems.balltrack.BallTracker;
+import com.first1444.sim.api.Clock;
 import me.retrodaredevil.action.SimpleAction;
 
 import static java.lang.Math.abs;
@@ -11,12 +12,15 @@ import static java.lang.Math.abs;
  * Shoots all of the balls at a certain RPM
  */
 public class ShootAllRpmAction extends SimpleAction {
+    private final Clock clock;
     private final Intake intake;
     private final BallShooter ballShooter;
     private final BallTracker ballTracker;
     private final double rpm;
-    public ShootAllRpmAction(Intake intake, BallShooter ballShooter, BallTracker ballTracker, double rpm) {
+    private Double setpointStartTime = null;
+    public ShootAllRpmAction(Clock clock, Intake intake, BallShooter ballShooter, BallTracker ballTracker, double rpm) {
         super(true);
+        this.clock = clock;
         this.intake = intake;
         this.ballShooter = ballShooter;
         this.ballTracker = ballTracker;
@@ -31,7 +35,19 @@ public class ShootAllRpmAction extends SimpleAction {
         }
         ballShooter.setDesiredRpm(rpm);
         if(ballShooter.atSetpoint()){
-            intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
+            Double setpointStartTime = this.setpointStartTime;
+            if(setpointStartTime == null){
+                setpointStartTime = clock.getTimeSeconds();
+                this.setpointStartTime = setpointStartTime;
+            }
+            if(clock.getTimeSeconds() - setpointStartTime > .2) {
+                intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
+            } else {
+                intake.setControl(Intake.Control.STORE);
+            }
+        } else {
+            setpointStartTime = null;
+            intake.setControl(Intake.Control.STORE);
         }
     }
 }

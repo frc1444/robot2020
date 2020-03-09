@@ -62,8 +62,10 @@ public class OperatorAction extends SimpleAction {
                 Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(position).getAngle();
 
                 Rotation2 desired = angle.minus(rotation);
-                if (desired.getRadians() <= Turret.MAX_ROTATION.getRadians() && desired.getRadians() >= Turret.MIN_ROTATION.getRadians()) {
+                if (desired.getDegrees() <= 135 && desired.getDegrees() >= -135) {
                     robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(desired));
+                } else {
+                    robot.getTurret().setDesiredState(Turret.DesiredState.createDesiredRotation(Rotation2.ZERO));
                 }
             }
         }
@@ -125,19 +127,15 @@ public class OperatorAction extends SimpleAction {
             }
         }
         {
-            final double speed;
-            if(input.getClimbRawControl().isDeadzone()){
-                speed = 0.0;
-            } else {
-                speed = input.getClimbRawControl().getPosition();
+            if (!input.getClimbRawControl().isDeadzone()) {
+                robot.getClimber().setRawSpeed(input.getClimbRawControl().getPosition());
             }
-            robot.getClimber().setRawSpeed(speed);
             if(input.getClimbStored().isDown()){
-                robot.getClimber().storedPosition(3.0);
+                robot.getClimber().storedPosition(5.0);
             }
-            if(input.getClimbStarting().isDown()){
-                robot.getClimber().startingPosition(3.0);
-            }
+//            if(input.getClimbStarting().isDown()){
+//                robot.getClimber().startingPosition(3.0);
+//            }
         }
     }
 }

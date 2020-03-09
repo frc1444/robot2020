@@ -24,8 +24,8 @@ public class MotorBallShooter implements BallShooter {
         RECOVERY,
         READY
     }
-    public static final double AT_SETPOINT_DEADBAND = 500;
-    public static final double RECOVERY_DEADBAND = 800;
+    public static final double AT_SETPOINT_DEADBAND = 300;
+    public static final double RECOVERY_DEADBAND = 500;
     private final BallTracker ballTracker;
     private final Clock clock;
     private final DashboardMap dashboardMap;
@@ -46,6 +46,7 @@ public class MotorBallShooter implements BallShooter {
         talon.setInverted(InvertType.InvertMotorOutput);
         talon.setSensorPhase(true);
         talon.configPeakOutputReverse(0.0); // this can never go backwards
+        talon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed); // hack to make never go backwards
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, RobotConstants.PID_INDEX, RobotConstants.INIT_TIMEOUT);
 
         soundHandler = new SoundHandler(clock, dashboardMap, talon);
@@ -54,7 +55,7 @@ public class MotorBallShooter implements BallShooter {
         var pidConfig = sendable.getMutableValueMap();
         pidConfig.setDouble(PidKey.CLOSED_RAMP_RATE, .25);
         pidConfig.setDouble(PidKey.P, .2);
-        pidConfig.setDouble(PidKey.I, .0001);
+        pidConfig.setDouble(PidKey.I, .00009);
 
         CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
         pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));

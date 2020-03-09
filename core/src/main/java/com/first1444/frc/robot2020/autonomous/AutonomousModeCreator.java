@@ -38,7 +38,10 @@ public class AutonomousModeCreator {
         AutonomousType autonomousType = autonomousSettings.getAutonomousType();
         switch (autonomousType) {
             case TEST_MODE: // this is used for whatever we currently happen to be testing
-                return creator.getDriveCreator().createTurnToOrientation(startingTransform.getRotation().plusDegrees(180));
+                return new Actions.ActionQueueBuilder(
+                        creator.getOperatorCreator().createStoreClimb(),
+                        creator.getOperatorCreator().createRequireClimbStored(5.0, creator.getLogCreator().createLogMessageAction("success"), creator.getLogCreator().createLogWarningAction("failure"))
+                ).build();
             case DO_NOTHING:
                 return creator.getLogCreator().createLogMessageAction("Doing nothing for autonomous!");
             case MOVE:
@@ -82,16 +85,24 @@ public class AutonomousModeCreator {
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(startingTransform.getPosition()).getAngle();
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createSpinAction(),
+                creator.getOperatorCreator().createStoreClimb(),
+                creator.getOperatorCreator().createTurnOnVision(),
                 creator.getDriveCreator().createTurnToOrientation(angle),
-                creator.getOperatorCreator().createTurretAlignAndShootAll()
+                creator.getOperatorCreator().createRequireClimbStored(
+                        3.0,
+                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                        creator.getLogCreator().createLogMessageAction("Climb wasn't lowered!")
+                ),
+                creator.getOperatorCreator().createTurnOffVision()
         ).build();
     }
     // endregion
     private Action createTrenchAuto(Transform2 startingTransform){
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
         Vector2 secondIntakePosition = new Vector2(2.2, 1.9);
+
         return new Actions.ActionQueueBuilder(
-                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.3), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(3.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
                 creator.getOperatorCreator().createStoreClimb(), // store climb after getting intake down
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
@@ -100,12 +111,15 @@ public class AutonomousModeCreator {
                         intakeForever
                 ),
                 creator.getOperatorCreator().createTurnOnVision(),
+                creator.getLogCreator().createLogMessageAction("Going to turn to 90 degrees"),
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_90),
+                creator.getLogCreator().createLogMessageAction("turned to 90 degrees"),
                 creator.getOperatorCreator().createRequireClimbStored(
                         0.0,
                         creator.getOperatorCreator().createRequireVision(
                                 1.0,
                                 new Actions.ActionQueueBuilder(
+                                        creator.getLogCreator().createLogMessageAction("Going to shoot now"),
                                         creator.getOperatorCreator().createTurretAlignAndShootAll(),
                                         creator.getOperatorCreator().createTurnOffVision(),
                                         creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),

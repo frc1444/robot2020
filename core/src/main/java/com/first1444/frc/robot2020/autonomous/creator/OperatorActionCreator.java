@@ -54,8 +54,8 @@ public class OperatorActionCreator {
                     return Actions.createSupplementaryAction(
                             FirstActionDone.create(
                                     new TimedDoneEndAction( // keep running the shooter even if we think we've shot all of our balls
-                                            false, robot.getClock(), .4,
-                                            new ShootAllRpmAction(robot.getIntake(), robot.getBallShooter(), robot.getBallTracker(), rpm)
+                                            false, robot.getClock(), 1.4,
+                                            new ShootAllRpmAction(robot.getClock(), robot.getIntake(), robot.getBallShooter(), robot.getBallTracker(), rpm)
                                     ),
                                     new Actions.ActionQueueBuilder(
                                             new TimedAction(false, robot.getClock(), 5.0),
