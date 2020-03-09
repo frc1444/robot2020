@@ -221,7 +221,7 @@ public class MotorIntake extends BaseIntake {
                 currentVelocity = speed;
             }
             this.currentVelocity = currentVelocity;
-            dashboardMap.getDebugTab().getRawDashboard().get("current indexer velocity").getStrictSetter().setDouble(currentVelocity);
+//            dashboardMap.getDebugTab().getRawDashboard().get("current indexer velocity").getStrictSetter().setDouble(currentVelocity);
 
             final boolean isIntake = sensorArray.isIntakeSensor();
             final boolean wasSensor = wasIntakeSensor;

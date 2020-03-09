@@ -14,7 +14,6 @@ import com.first1444.frc.robot2020.subsystems.Turret;
 import com.first1444.frc.robot2020.subsystems.implementations.BaseTurret;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
-import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
@@ -52,7 +51,7 @@ public class MotorTurret extends BaseTurret {
         encoder = new DutyCycleEncoder(RobotConstants.DIO.TURRET_ENCODER);
         encoder.setDistancePerRotation(-180);
 
-        pidController = new PIDController(clock, 0, 0, 0);
+        pidController = new PIDController(clock, 0.02, .04, 0, 0, 0);
 
         final var sendable = new MutableValueMapSendable<>(PidKey.class);
         pidConfig = sendable.getMutableValueMap();

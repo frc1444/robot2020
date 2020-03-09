@@ -29,6 +29,8 @@ import static java.lang.Math.max;
  */
 public class PIDController implements Sendable<ActiveComponent> {
     private final Clock clock;
+    private final double defaultPeriod;
+    private final double maxPeriod;
     private Double lastTimeSeconds = null;
 
     // Factor for "proportional" control
@@ -73,11 +75,15 @@ public class PIDController implements Sendable<ActiveComponent> {
     /**
      * Allocates a PIDController with the given constants for p, i, and d.
      * @param clock
+     * @param defaultPeriod
+     * @param maxPeriod
      * @param p     The proportional coefficient.
      * @param i     The integral coefficient.
      * @param d     The derivative coefficient.
      */
-    public PIDController(Clock clock, double p, double i, double d) {
+    public PIDController(Clock clock, double defaultPeriod, double maxPeriod, double p, double i, double d) {
+        this.defaultPeriod = defaultPeriod;
+        this.maxPeriod = maxPeriod;
         this.p = p;
         this.i = i;
         this.d = d;
@@ -281,19 +287,22 @@ public class PIDController implements Sendable<ActiveComponent> {
      * @param measurement The current measurement of the process variable.
      */
     public double calculate(double measurement) {
+        final double delta;
         final double timeSeconds = clock.getTimeSeconds();
         final Double lastTimeSeconds = this.lastTimeSeconds;
         this.lastTimeSeconds = timeSeconds;
         if(lastTimeSeconds == null){
-            return 0;
+            delta = defaultPeriod;
+        } else {
+            double newDelta = timeSeconds - lastTimeSeconds;
+            delta = Math.min(newDelta, maxPeriod);
         }
-        double period = timeSeconds - lastTimeSeconds;
         previousError = positionError;
         positionError = getContinuousError(setpoint - measurement);
-        velocityError = (positionError - previousError) / period;
+        velocityError = (positionError - previousError) / delta;
 
         if (i != 0) {
-            totalError = max(minimumIntegral / i, min(maximumIntegral / i, totalError + positionError * period));
+            totalError = max(minimumIntegral / i, min(maximumIntegral / i, totalError + positionError * delta));
         }
 
         return p * positionError + i * totalError + d * velocityError;

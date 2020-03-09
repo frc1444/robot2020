@@ -48,7 +48,7 @@ public class SwerveDriveAction extends SimpleAction {
         this.input = requireNonNull(input);
         this.perspectiveProvider = requireNonNull(perspectiveProvider);
 
-        visionYawController = new PIDController(clock, 0.04, 0, 0);
+        visionYawController = new PIDController(clock, 0.02, .04, 0.04, 0, 0);
         visionYawController.enableContinuousInput(0.0, 360.0);
     }
 

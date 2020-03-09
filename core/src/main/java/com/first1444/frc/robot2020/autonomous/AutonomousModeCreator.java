@@ -102,10 +102,11 @@ public class AutonomousModeCreator {
         Vector2 secondIntakePosition = new Vector2(2.2, 1.9);
 
         return new Actions.ActionQueueBuilder(
-                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(3.3), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(3.9), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
                 creator.getOperatorCreator().createStoreClimb(), // store climb after getting intake down
                 creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.1), .7, Rotation2.DEG_270),
                 Actions.createSupplementaryAction(
                         creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.9), .7, Rotation2.DEG_270),
                         intakeForever
