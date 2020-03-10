@@ -15,26 +15,32 @@ public class MotorClimber extends BaseClimber {
     private final CANEncoder encoder;
     private final DigitalInput reverseLimitSwitch;
 
+    private final DigitalInput intakeLimitSwitch;
+
     public MotorClimber(Clock clock, DashboardMap dashboardMap) {
         super(clock);
         motor = new CANSparkMax(RobotConstants.CAN.CLIMBER, CANSparkMaxLowLevel.MotorType.kBrushless);
         reverseLimitSwitch = new DigitalInput(RobotConstants.DIO.CLIMB_REVERSE_LIMIT_SWITCH_NORMALLY_OPEN);
+        intakeLimitSwitch = new DigitalInput(RobotConstants.DIO.INTAKE_DOWN_LIMIT_SWITCH_NORMALLY_OPEN);
         motor.restoreFactoryDefaults();
         motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         motor.setMotorType(CANSparkMaxLowLevel.MotorType.kBrushless);
         motor.setSmartCurrentLimit(200); // default is 80
-//        motor.setSecondaryCurrentLimit(200); untested
 
         encoder = motor.getEncoder();
-//        reverseLimitSwitch = motor.getReverseLimitSwitch(CANDigitalInput.LimitSwitchPolarity.kNormallyOpen);
-//        reverseLimitSwitch.enableLimitSwitch(true);
 //        motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 //        motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 100000); // TODO get correct value
         dashboardMap.getDebugTab().add("Climb Encoder", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(encoder.getPosition()))));
+        dashboardMap.getDevTab().add("Intake Down Limit", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(isIntakeDown()))));
     }
     private boolean isReverseLimitSwitchPressed(){
         //noinspection UnnecessaryLocalVariable
         boolean closed = !reverseLimitSwitch.get();
+        return closed; // normally open
+    }
+    private boolean isIntakeLimitSwitchPressed(){
+        //noinspection UnnecessaryLocalVariable
+        boolean closed = !intakeLimitSwitch.get();
         return closed; // normally open
     }
 
@@ -57,7 +63,7 @@ public class MotorClimber extends BaseClimber {
 
     @Override
     protected void goToStoredPosition() {
-        if(!isReverseLimitSwitchPressed()){
+        if(!isReverseLimitSwitchPressed() && isIntakeLimitSwitchPressed()){
             motor.set(-1.0);
         } else {
             motor.set(0.0);
@@ -72,5 +78,10 @@ public class MotorClimber extends BaseClimber {
     @Override
     public boolean isStored() {
         return isReverseLimitSwitchPressed();
+    }
+
+    @Override
+    public boolean isIntakeDown() {
+        return isIntakeLimitSwitchPressed();
     }
 }

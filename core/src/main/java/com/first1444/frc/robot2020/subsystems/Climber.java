@@ -10,4 +10,6 @@ public interface Climber extends Runnable {
     void startingPosition(double timeoutSeconds);
 
     boolean isStored();
+
+    boolean isIntakeDown();
 }

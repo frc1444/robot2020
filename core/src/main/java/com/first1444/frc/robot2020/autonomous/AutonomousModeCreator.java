@@ -85,15 +85,21 @@ public class AutonomousModeCreator {
         Rotation2 angle = Field2020.ALLIANCE_POWER_PORT.getTransform().getPosition().minus(startingTransform.getPosition()).getAngle();
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createSpinAction(),
-                creator.getOperatorCreator().createStoreClimb(),
-                creator.getOperatorCreator().createTurnOnVision(),
-                creator.getDriveCreator().createTurnToOrientation(angle),
-                creator.getOperatorCreator().createRequireClimbStored(
-                        3.0,
-                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                        creator.getLogCreator().createLogMessageAction("Climb wasn't lowered!")
-                ),
-                creator.getOperatorCreator().createTurnOffVision()
+                creator.getOperatorCreator().createRequireIntakeDownAction(
+                        1.0,
+                        new Actions.ActionQueueBuilder(
+                                creator.getOperatorCreator().createStoreClimb(),
+                                creator.getOperatorCreator().createTurnOnVision(),
+                                creator.getDriveCreator().createTurnToOrientation(angle),
+                                creator.getOperatorCreator().createRequireClimbStored(
+                                        3.0,
+                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                        creator.getLogCreator().createLogMessageAction("Climb wasn't lowered!")
+                                ),
+                                creator.getOperatorCreator().createTurnOffVision()
+                        ).build(),
+                        creator.getLogCreator().createLogWarningAction("Intake is not down!")
+                )
         ).build();
     }
     // endregion
@@ -101,42 +107,60 @@ public class AutonomousModeCreator {
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
         Vector2 secondIntakePosition = new Vector2(2.2, 1.9);
 
+        Rotation2 mainRotation = Rotation2.fromDegrees(100);
+
         return new Actions.ActionQueueBuilder(
-                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(3.9), .7, startingTransform.getRotation()),
+                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(4.0), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
-                creator.getOperatorCreator().createStoreClimb(), // store climb after getting intake down
-                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
-                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.1), .7, Rotation2.DEG_270),
-                Actions.createSupplementaryAction(
-                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.9), .7, Rotation2.DEG_270),
-                        intakeForever
-                ),
-                creator.getOperatorCreator().createTurnOnVision(),
-                creator.getLogCreator().createLogMessageAction("Going to turn to 90 degrees"),
-                creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_90),
-                creator.getLogCreator().createLogMessageAction("turned to 90 degrees"),
-                creator.getOperatorCreator().createRequireClimbStored(
-                        0.0,
-                        creator.getOperatorCreator().createRequireVision(
-                                1.0,
-                                new Actions.ActionQueueBuilder(
-                                        creator.getLogCreator().createLogMessageAction("Going to shoot now"),
-                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                                        creator.getOperatorCreator().createTurnOffVision(),
-                                        creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
-                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
-                                        Actions.createSupplementaryAction(
-                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.0), .3, Rotation2.DEG_270),
-                                                intakeForever
+                creator.getOperatorCreator().createRequireIntakeDownAction(
+                        1.0,
+                        new Actions.ActionQueueBuilder(
+                                creator.getOperatorCreator().createStoreClimb(), // store climb after getting intake down
+                                creator.getDriveCreator().createTurnToOrientation(mainRotation),
+                                creator.getOperatorCreator().createTurnOnVision(),
+                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 3.6), .7, mainRotation),
+                                creator.getBasicActionCreator().createTimedAction(.2),
+                                creator.getOperatorCreator().createRequireClimbStored(
+                                        0.0,
+                                        creator.getOperatorCreator().createRequireVision(
+                                                .5,
+                                                new Actions.ActionQueueBuilder(
+                                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                                        creator.getOperatorCreator().createTurnOffVision(),
+                                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+                                                        Actions.createSupplementaryAction(
+                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.3, 0.0), .5, Rotation2.DEG_270),
+                                                                intakeForever
+                                                        ),
+                                                        creator.getOperatorCreator().createTurnOnVision(),
+                                                        creator.getLogCreator().createLogMessageAction("Going to turn to face(ish) target"),
+                                                        creator.getDriveCreator().createTurnToOrientation(mainRotation),
+                                                        creator.getLogCreator().createLogMessageAction("turned to face(ish) target"),
+                                                        creator.getOperatorCreator().createRequireClimbStored( // just make sure the climb is stored again
+                                                                0.0,
+                                                                creator.getOperatorCreator().createRequireVision(
+                                                                        1.0,
+                                                                        new Actions.ActionQueueBuilder(
+                                                                                creator.getLogCreator().createLogMessageAction("Going to shoot now"),
+                                                                                creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                                                                creator.getOperatorCreator().createTurnOffVision(),
+                                                                                creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
+                                                                                creator.getDriveCreator().createMoveToAbsolute(
+                                                                                        secondIntakePosition, new ConstantSpeedProvider(.5),
+                                                                                        new LinearDistanceRotationProvider(mainRotation, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
+                                                                                )
+                                                                        ).build(),
+                                                                        creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                                                                ),
+                                                                creator.getLogCreator().createLogWarningAction("Climb not stored (but it was before?)")
+                                                        )
+                                                ).build(),
+                                                creator.getLogCreator().createLogWarningAction("No vision for auto!")
                                         ),
-                                        creator.getDriveCreator().createMoveToAbsolute(
-                                                secondIntakePosition, new ConstantSpeedProvider(.5),
-                                                new LinearDistanceRotationProvider(Rotation2.DEG_270, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
-                                        )
-                                ).build(),
-                                creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
-                        ),
-                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
+                                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
+                                )
+                        ).build(),
+                        creator.getLogCreator().createLogWarningAction("Intake didn't come down!")
                 ),
                 creator.getOperatorCreator().createTurnOffVision()
         ).build();
@@ -149,36 +173,42 @@ public class AutonomousModeCreator {
         return new Actions.ActionQueueBuilder(
                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 3.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
-                creator.getOperatorCreator().createStoreClimb(),
-                creator.getDriveCreator().createTurnToOrientation(pickupRotation),
-                Actions.createSupplementaryAction(
+                creator.getOperatorCreator().createRequireIntakeDownAction(
+                        1.0,
                         new Actions.ActionQueueBuilder(
-                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 2.4), .3, pickupRotation),
-                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.3, 2.6), .2, pickupRotation),
-                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.4, 2.23), .2, pickupRotation)
+                                creator.getOperatorCreator().createStoreClimb(),
+                                creator.getDriveCreator().createTurnToOrientation(pickupRotation),
+                                Actions.createSupplementaryAction(
+                                        new Actions.ActionQueueBuilder(
+                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(0.0, 2.4), .3, pickupRotation),
+                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.3, 2.6), .2, pickupRotation),
+                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(-0.4, 2.23), .2, pickupRotation)
+                                        ).build(),
+                                        intakeForever
+                                ),
+                                Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(0.4), intakeForever),
+                                creator.getOperatorCreator().createTurnOnVision(),
+                                creator.getDriveCreator().createMoveToAbsolute(
+                                        shootPosition, new ConstantSpeedProvider(.5),
+                                        new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)
+                                ),
+                                creator.getOperatorCreator().createRequireClimbStored(
+                                        0.0,
+                                        creator.getOperatorCreator().createRequireVision(
+                                                1.0,
+                                                new Actions.ActionQueueBuilder(
+                                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
+                                                        creator.getOperatorCreator().createTurnOffVision()
+                                                        // maybe add some stuff here
+                                                ).build(),
+                                                creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
+                                        ),
+                                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
+                                ),
+                                creator.getOperatorCreator().createTurnOffVision()
                         ).build(),
-                        intakeForever
-                ),
-                Actions.createSupplementaryAction(creator.getBasicActionCreator().createTimedAction(0.4), intakeForever),
-                creator.getOperatorCreator().createTurnOnVision(),
-                creator.getDriveCreator().createMoveToAbsolute(
-                        shootPosition, new ConstantSpeedProvider(.5),
-                        new LinearDistanceRotationProvider(pickupRotation, shootRotation, shootPosition, 1.8, .6)
-                ),
-                creator.getOperatorCreator().createRequireClimbStored(
-                        0.0,
-                        creator.getOperatorCreator().createRequireVision(
-                                1.0,
-                                new Actions.ActionQueueBuilder(
-                                        creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                                        creator.getOperatorCreator().createTurnOffVision()
-                                        // maybe add some stuff here
-                                ).build(),
-                                creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
-                        ),
-                        creator.getLogCreator().createLogWarningAction("Climb not stored!")
-                ),
-                creator.getOperatorCreator().createTurnOffVision()
+                        creator.getLogCreator().createLogWarningAction("Intake didn't come down!")
+                )
         ).build();
     }
 

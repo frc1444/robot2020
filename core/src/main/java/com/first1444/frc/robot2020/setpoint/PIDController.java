@@ -287,22 +287,29 @@ public class PIDController implements Sendable<ActiveComponent> {
      * @param measurement The current measurement of the process variable.
      */
     public double calculate(double measurement) {
-        final double delta;
+//        final double delta;
+//        final double timeSeconds = clock.getTimeSeconds();
+//        final Double lastTimeSeconds = this.lastTimeSeconds;
+//        this.lastTimeSeconds = timeSeconds;
+//        if(lastTimeSeconds == null){
+//            delta = defaultPeriod;
+//        } else {
+//            double newDelta = timeSeconds - lastTimeSeconds;
+//            delta = Math.min(newDelta, maxPeriod);
+//        }
         final double timeSeconds = clock.getTimeSeconds();
         final Double lastTimeSeconds = this.lastTimeSeconds;
         this.lastTimeSeconds = timeSeconds;
         if(lastTimeSeconds == null){
-            delta = defaultPeriod;
-        } else {
-            double newDelta = timeSeconds - lastTimeSeconds;
-            delta = Math.min(newDelta, maxPeriod);
+            return 0;
         }
+        double period = timeSeconds - lastTimeSeconds;
         previousError = positionError;
         positionError = getContinuousError(setpoint - measurement);
-        velocityError = (positionError - previousError) / delta;
+        velocityError = (positionError - previousError) / period;
 
         if (i != 0) {
-            totalError = max(minimumIntegral / i, min(maximumIntegral / i, totalError + positionError * delta));
+            totalError = max(minimumIntegral / i, min(maximumIntegral / i, totalError + positionError * period));
         }
 
         return p * positionError + i * totalError + d * velocityError;

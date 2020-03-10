@@ -42,4 +42,9 @@ public class DummyClimber extends BaseClimber {
     public boolean isStored() {
         return stored;
     }
+
+    @Override
+    public boolean isIntakeDown() {
+        return true;
+    }
 }

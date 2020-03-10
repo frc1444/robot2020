@@ -287,7 +287,7 @@ class MyRobotCreator(
                     SimpleInstantVisionProvider(
                             VisionProvider2020(VisionFilterMultiplexer(listOf(
                                     VisionTypeFilter(VisionType2020.POWER_PORT),
-                                    EntityRangeVisionFilter(entity, 8.0),
+                                    EntityRangeVisionFilter(entity, 10.0),
                                     FovVisionFilter(entity, Rotation2.ZERO, Rotation2.fromDegrees(90.0))
                             )), entity, preciseClock),
                             visionState,

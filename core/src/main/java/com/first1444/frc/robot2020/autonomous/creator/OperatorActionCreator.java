@@ -38,11 +38,18 @@ public class OperatorActionCreator {
                 new TurretAlign(robot.getTurret(), robot.getOdometry().getAbsoluteAndVisionOrientation(), robot.getOdometry().getAbsoluteAndVisionDistanceAccumulator())
         );
     }
+
+    /**
+     * @return An action that ends instantly, but sets the climb to store itself with a timeout of 5 seconds
+     */
     public Action createStoreClimb() {
         return Actions.createRunOnce(() -> robot.getClimber().storedPosition(5.0));
     }
     public Action createRequireClimbStored(double timeoutSeconds, Action successAction, Action failAction) {
         return Actions.createLinkedActionRunner(new RequireClimbStoredAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
+    }
+    public Action createRequireIntakeDownAction(double timeoutSeconds, Action successAction, Action failAction) {
+        return Actions.createLinkedActionRunner(new RequireIntakeDownAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
     }
 
     public Action createTurretAlignAndShootAll() {
@@ -128,6 +135,44 @@ public class OperatorActionCreator {
             super.onUpdate();
             timeoutAction.update();
             if(robot.getClimber().isStored()) {
+                nextAction = successAction;
+                setDone(true);
+            } else if(timeoutAction.isDone()){
+                nextAction = failAction;
+                setDone(true);
+            }
+        }
+
+        @Override
+        protected void onEnd(boolean peacefullyEnded) {
+            super.onEnd(peacefullyEnded);
+            timeoutAction.end();
+        }
+
+        @Override
+        public Action getNextAction() {
+            return nextAction;
+        }
+    }
+    private class RequireIntakeDownAction extends SimpleAction implements LinkedAction {
+
+        private final Action successAction;
+        private final Action failAction;
+        private final Action timeoutAction;
+
+        private Action nextAction;
+        public RequireIntakeDownAction(double timeoutSeconds, Action successAction, Action failAction) {
+            super(true);
+            this.successAction = successAction;
+            this.failAction = failAction;
+            timeoutAction = new TimedAction(true, robot.getClock(), timeoutSeconds);
+        }
+
+        @Override
+        protected void onUpdate() {
+            super.onUpdate();
+            timeoutAction.update();
+            if(robot.getClimber().isIntakeDown()) {
                 nextAction = successAction;
                 setDone(true);
             } else if(timeoutAction.isDone()){

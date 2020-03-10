@@ -55,8 +55,8 @@ public class MotorTurret extends BaseTurret {
 
         final var sendable = new MutableValueMapSendable<>(PidKey.class);
         pidConfig = sendable.getMutableValueMap();
-        pidConfig.setDouble(PidKey.P, 0.17);
-        pidConfig.setDouble(PidKey.I, 0.12);
+        pidConfig.setDouble(PidKey.P, 0.05);
+        pidConfig.setDouble(PidKey.I, 0.0017);
         pidConfig.setDouble(PidKey.NOMINAL_OUTPUT, 0.2);
 
         pidController.applyFrom(pidConfig);
