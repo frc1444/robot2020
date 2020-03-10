@@ -35,6 +35,7 @@ public class MotorIntake extends BaseIntake {
 
     private TransferState transferState = TransferState.IDLE;
     private Double transferStateChangeTime = null;
+    private Double lastIntakeSensorDetect = null;
     private Double lastTransferSensorDetect = null;
     private Double lastFeederSensorDetect = null;
 
@@ -79,14 +80,19 @@ public class MotorIntake extends BaseIntake {
         }
         return 0.0;
     }
-
-    private boolean shouldRunAntiJam(){
+    private void updateSensors(){
+        if(sensorArray.isIntakeSensor()){
+            lastIntakeSensorDetect = clock.getTimeSeconds();
+        }
         if(sensorArray.isTransferSensor()){
             lastTransferSensorDetect = clock.getTimeSeconds();
         }
         if(sensorArray.isFeederSensor()){
             lastFeederSensorDetect = clock.getTimeSeconds();
         }
+    }
+
+    private boolean shouldRunAntiJam(){
         double timestamp = clock.getTimeSeconds();
         int ballCount = ballTracker.getBallCount();
         Double lastTransferSensorDetect = this.lastTransferSensorDetect;
@@ -96,6 +102,7 @@ public class MotorIntake extends BaseIntake {
 
     @Override
     protected void run(Control control, Double intakeSpeed, Double indexerSpeed, Double feederSpeed) {
+        updateSensors();
         if(control == Control.INTAKE || control == Control.STORE){
             int ballCount = ballTracker.getBallCount();
             if(ballCount >= 1){
@@ -178,11 +185,15 @@ public class MotorIntake extends BaseIntake {
                 }
             }
         } else if(control == Control.INTAKE){
-            if(intakeSpeed == null) {
-                intakeSpeed = 1.0;
+            if(ballTracker.getBallCount() < 5) {
+                // TODO add rumble
+                if (intakeSpeed == null) {
+                    intakeSpeed = 1.0;
+                }
             }
         }
-        if(sensorArray.isIntakeSensor()) {
+        Double lastIntakeSensor = this.lastIntakeSensorDetect;
+        if((lastIntakeSensor != null && clock.getTimeSeconds() - lastIntakeSensor < .2) && ballTracker.getBallCount() < 5) {
             if(intakeSpeed == null) {
                 intakeSpeed = 1.0;
             }
