@@ -33,6 +33,7 @@ public interface Turret extends Runnable {
 
 
     class DesiredState {
+        // TODO add a timeout to desired state
         public static final DesiredState NEUTRAL = new DesiredState(null, 0.0);
 
         private final Rotation2 desiredRotation;

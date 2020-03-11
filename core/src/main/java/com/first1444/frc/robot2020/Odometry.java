@@ -11,6 +11,8 @@ import com.first1444.dashboard.value.ValueProperty;
 import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2020.input.RobotInput;
 import com.first1444.frc.robot2020.subsystems.OrientationSystem;
+import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDriveData;
 import com.first1444.sim.api.sensors.*;
@@ -74,6 +76,19 @@ public class Odometry implements Runnable {
             final double angle = robotInput.getMovementJoy().getAngle();
             absoluteOrientation.setOrientationDegrees(angle);
             absoluteAndVisionOrientation.setOrientationDegrees(angle);
+        }
+        if(robotInput.getResetGyroJoy().getXAxis().isJustPressed() || robotInput.getResetGyroJoy().getYAxis().isJustPressed()) {
+            final double angle = robotInput.getResetGyroJoy().getAngle();
+            absoluteOrientation.setOrientationDegrees(angle);
+            absoluteAndVisionOrientation.setOrientationDegrees(angle);
+        }
+        if(robotInput.getMovementJoyMoveOdometryButton().isJustPressed()){
+            Vector2 movement = new Vector2(robotInput.getMovementJoy().getX(), robotInput.getMovementJoy().getY());
+            Rotation2 angle = movement.getAngle();
+            double magnitude = movement.getMagnitude2();
+            movement = new Vector2(angle.getCos() * magnitude, angle.getSin() * magnitude);
+            absoluteDistanceAccumulator.setPosition(absoluteDistanceAccumulator.getPosition().plus(movement));
+            absoluteAndVisionDistanceAccumulator.setPosition(absoluteAndVisionDistanceAccumulator.getPosition().plus(movement));
         }
         relativeDistanceAccumulator.run();
         relativeVisionDistanceAccumulator.run();

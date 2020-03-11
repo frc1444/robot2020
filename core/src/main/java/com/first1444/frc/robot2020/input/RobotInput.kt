@@ -50,10 +50,12 @@ class RobotInput(
     val firstPersonHoldButton: InputPart = controller.leftBumper
     // endregion
     // region Gyro Controls
+    val resetGyroJoy: JoystickPart = controller.dPad
     val gyroReinitializeButton: InputPart = controller.faceUp
     /** When this button is pressed, [movementJoy]'s angle should be used to reset the gyro  */
     val movementJoyResetGyroButton: InputPart = controller.faceLeft
     // endregion
+    val movementJoyMoveOdometryButton: InputPart = controller.faceRight
     // region Swerve Recalibration
     val swerveQuickReverseCancel: InputPart = controller.select
     val swerveRecalibrate: InputPart = controller.start
