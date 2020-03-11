@@ -16,6 +16,7 @@ public class MotorClimber extends BaseClimber {
     private final DigitalInput reverseLimitSwitch;
 
     private final DigitalInput intakeLimitSwitch;
+    private Double lastIntakeLimitSwitchPress = null;
 
     public MotorClimber(Clock clock, DashboardMap dashboardMap) {
         super(clock);
@@ -50,6 +51,9 @@ public class MotorClimber extends BaseClimber {
         if(isReverseLimitSwitchPressed()){
             encoder.setPosition(0.0);
         }
+        if(isIntakeLimitSwitchPressed()){
+            lastIntakeLimitSwitchPress = clock.getTimeSeconds();
+        }
     }
 
     @Override
@@ -63,7 +67,7 @@ public class MotorClimber extends BaseClimber {
 
     @Override
     protected void goToStoredPosition() {
-        if(!isReverseLimitSwitchPressed() && isIntakeLimitSwitchPressed()){
+        if(!isReverseLimitSwitchPressed() && isStored()){
             motor.set(-1.0);
         } else {
             motor.set(0.0);
@@ -77,7 +81,8 @@ public class MotorClimber extends BaseClimber {
 
     @Override
     public boolean isStored() {
-        return isReverseLimitSwitchPressed();
+        Double lastIntakeLimitSwitchPress = this.lastIntakeLimitSwitchPress;
+        return lastIntakeLimitSwitchPress != null && clock.getTimeSeconds() - lastIntakeLimitSwitchPress < 3.0;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2020;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.first1444.dashboard.shuffleboard.PropertyComponent;
 import com.first1444.dashboard.value.BasicValue;
@@ -60,7 +61,8 @@ public class MotorIntake extends BaseIntake {
 
         intakeMotor.configFactoryDefault(RobotConstants.INIT_TIMEOUT);
         intakeMotor.setInverted(InvertType.InvertMotorOutput);
-        intakeMotor.configOpenloopRamp(.2);
+//        intakeMotor.configOpenloopRamp(.1);
+        intakeMotor.setNeutralMode(NeutralMode.Brake);
 
         indexerMotor.restoreFactoryDefaults();
         indexerMotor.setMotorType(INDEXER_TYPE);
@@ -68,7 +70,8 @@ public class MotorIntake extends BaseIntake {
 
         feederMotor.restoreFactoryDefaults();
         feederMotor.setMotorType(FEEDER_TYPE);
-        feederMotor.setOpenLoopRampRate(.1);
+//        feederMotor.setOpenLoopRampRate(.1);
+        feederMotor.setIdleMode(CANSparkMax.IdleMode.kBrake); // when we stop this motor, we want it to stop.
         feederMotor.setInverted(true);
     }
     private double getAntiJamIndexerSpeed(){
@@ -97,7 +100,7 @@ public class MotorIntake extends BaseIntake {
         int ballCount = ballTracker.getBallCount();
         Double lastTransferSensorDetect = this.lastTransferSensorDetect;
         Double lastFeederSensorDetect = this.lastFeederSensorDetect;
-        return (lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 2 && (lastFeederSensorDetect == null || timestamp - lastFeederSensorDetect > 2.0)));
+        return (lastTransferSensorDetect != null && clock.getTimeSeconds() - lastTransferSensorDetect < .3) && (ballCount >= 4 || (ballCount >= 3 && (lastFeederSensorDetect == null || timestamp - lastFeederSensorDetect > 3.0)));
     }
 
     @Override
@@ -114,7 +117,7 @@ public class MotorIntake extends BaseIntake {
                         if(clock.getTimeSeconds() - startTime > 2.0){ // we must be jammed
                             double speed = getAntiJamIndexerSpeed();
                             if(intakeSpeed == null){
-                                intakeSpeed = speed;
+                                intakeSpeed = speed * .5;
                             }
                             if(indexerSpeed == null){
                                 indexerSpeed = speed;
@@ -171,7 +174,7 @@ public class MotorIntake extends BaseIntake {
             if (shouldRunAntiJam) { // more than two balls and we haven't got one in feeder recently
                 double speed = getAntiJamIndexerSpeed();
                 if(intakeSpeed == null){
-                    intakeSpeed = speed;
+                    intakeSpeed = speed * .5;
                 }
                 if(indexerSpeed == null) {
                     indexerSpeed = speed;
@@ -186,7 +189,6 @@ public class MotorIntake extends BaseIntake {
             }
         } else if(control == Control.INTAKE){
             if(ballTracker.getBallCount() < 5) {
-                // TODO add rumble
                 if (intakeSpeed == null) {
                     intakeSpeed = 1.0;
                 }
@@ -211,7 +213,7 @@ public class MotorIntake extends BaseIntake {
             feederSpeed = 0.0;
         }
         intakeMotor.set(intakeSpeed * 1.0);
-        indexerMotor.set(indexerSpeed * .5);
+        indexerMotor.set(indexerSpeed * .65);
         feederMotor.set(feederSpeed * 1.0);
 
         updateBallEnter(intakeSpeed);

@@ -86,7 +86,7 @@ public class WpiRunnableCreator implements RunnableCreator {
             drivePid
                     .setDouble(PidKey.P, 1.5 * ratio)
                     .setDouble(PidKey.F, 1.0 * ratio)
-                    .setDouble(PidKey.CLOSED_RAMP_RATE, .25);
+                    .setDouble(PidKey.CLOSED_RAMP_RATE, .40);
         } else {
             throw new UnsupportedOperationException("Unknown drive type: " + driveType);
         }

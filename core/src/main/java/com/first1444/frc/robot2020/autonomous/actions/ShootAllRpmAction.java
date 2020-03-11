@@ -50,4 +50,10 @@ public class ShootAllRpmAction extends SimpleAction {
             intake.setControl(Intake.Control.STORE);
         }
     }
+
+    @Override
+    protected void onEnd(boolean peacefullyEnded) {
+        super.onEnd(peacefullyEnded);
+        ballShooter.setDesiredRpm(0.0);
+    }
 }

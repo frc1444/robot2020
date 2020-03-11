@@ -40,6 +40,9 @@ public class OperatorAction extends SimpleAction {
 
         final boolean autoDown = input.getEnableAuto().isDown();
         final boolean shootDown = input.getShootButton().isDown();
+        if(shootDown && robot.getBallTracker().getBallCount() == 0){
+            input.getDriverRumble().rumbleTimeout(200, .5);
+        }
         {
             final Rotation2 trim;
             if (input.getTurretTrim().isDeadzone()) {
@@ -77,19 +80,23 @@ public class OperatorAction extends SimpleAction {
         final Double desiredRpm;
         if(autoDown){
             if(isShooterOn){
-                desiredRpm = robot.getBestEstimatedTargetRpm();
-                robot.getBallShooter().setDesiredRpm(desiredRpm);
+                final double shootSpeed = input.getManualShootSpeed().getPosition() * .15 + .85;
+                desiredRpm = robot.getBestEstimatedTargetRpm() * shootSpeed;
             } else {
                 desiredRpm = null;
             }
         } else {
             if(isShooterOn){
-                final double shootSpeed = input.getManualShootSpeed().getPosition() * .55 + .45;
+                final double shootSpeed = input.getManualShootSpeed().getPosition() * .15 + .85;
                 desiredRpm = shootSpeed * BallShooter.MAX_RPM;
-                robot.getBallShooter().setDesiredRpm(desiredRpm);
             } else {
                 desiredRpm = null;
             }
+        }
+        if(desiredRpm != null) {
+            robot.getBallShooter().setDesiredRpm(desiredRpm);
+        } else {
+            robot.getBallShooter().setDesiredRpm(0);
         }
 
         { // intake stuff
@@ -100,6 +107,9 @@ public class OperatorAction extends SimpleAction {
                 intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
             } else if(intakePosition < 0){ // suck in
                 intake.setControl(Intake.Control.INTAKE);
+                if(robot.getBallTracker().getBallCount() >= 5){
+                    input.getDriverRumble().rumbleTimeout(100, .5);
+                }
             } else if(intakePosition > 0){ // spit out
                 intake.setIntakeSpeed(-1);
                 intake.setIndexerSpeed(-1);
@@ -127,15 +137,30 @@ public class OperatorAction extends SimpleAction {
             }
         }
         {
+            boolean wantsToClimb = false;
+            final boolean clearToClimb = robot.getTurret().isClearToRaiseClimb();
             if (!input.getClimbRawControl().isDeadzone()) {
                 robot.getClimber().setRawSpeed(input.getClimbRawControl().getPosition());
+                wantsToClimb = true;
             }
             if(input.getClimbStored().isDown()){
-                robot.getClimber().storedPosition(5.0);
+                if(clearToClimb) {
+                    robot.getClimber().storedPosition(5.0);
+                }
+                wantsToClimb = true;
             }
 //            if(input.getClimbStarting().isDown()){
 //                robot.getClimber().startingPosition(3.0);
 //            }
+            if (wantsToClimb && !clearToClimb) {
+                input.getDriverRumble().rumbleTimeout(500, 1.0);
+            }
         }
+    }
+
+    @Override
+    protected void onEnd(boolean peacefullyEnded) {
+        super.onEnd(peacefullyEnded);
+        robot.getBallShooter().setDesiredRpm(0.0);
     }
 }

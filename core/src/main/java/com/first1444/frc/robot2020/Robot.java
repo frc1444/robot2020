@@ -27,7 +27,6 @@ import com.first1444.frc.robot2020.vision.VisionState;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
-import com.first1444.sim.api.distance.DistanceAccumulator;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
@@ -40,7 +39,6 @@ import com.first1444.sim.api.frc.sim.DriverStationSendable;
 import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchSchedulerRunnable;
 import com.first1444.sim.api.scheduler.match.MatchTime;
-import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.sensors.OrientationHandler;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
@@ -165,7 +163,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 new SurroundingPositionCorrectAction(clock, dashboardMap, visionProvider, visionState, odometry.getAbsoluteAndVisionOrientation(), odometry.getAbsoluteAndVisionDistanceAccumulator()),
                 new AbsolutePositionPacketAction(packetQueueCreator.create(), odometry.getAbsoluteAndVisionDistanceAccumulator()),
                 new PerspectiveLocationPacketAction(packetQueueCreator.create(), perspectiveHandler),
-                new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteDistanceAccumulator()),
+                new OutOfBoundsPositionCorrectAction(odometry.getAutonomousMovementDistanceAccumulator()),
                 new OutOfBoundsPositionCorrectAction(odometry.getAbsoluteAndVisionDistanceAccumulator()),
                 new SurroundingDashboardLoggerAction(clock, visionProvider, dashboardMap), // maybe only update this every .1 seconds if we get around to it
                 new VisionEnablerAction(clock, robotInput, visionState),
@@ -283,7 +281,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         /*
         While the robot is disabled, the "absolute only" position/orientation gets synced to the "absolute and vision" variant
          */
-        odometry.getAbsoluteDistanceAccumulator().setPosition(odometry.getAbsoluteAndVisionDistanceAccumulator().getPosition());
+        odometry.getAutonomousMovementDistanceAccumulator().setPosition(odometry.getAbsoluteAndVisionDistanceAccumulator().getPosition());
         odometry.getAbsoluteOrientation().setOrientation(odometry.getAbsoluteAndVisionOrientation().getOrientation());
     }
 

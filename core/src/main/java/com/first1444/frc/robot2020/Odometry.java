@@ -80,7 +80,7 @@ public class Odometry implements Runnable {
     }
 
     public DistanceAccumulator getRelativeDistanceAccumulator() { return relativeDistanceAccumulator; }
-    public MutableDistanceAccumulator getAbsoluteDistanceAccumulator() { return absoluteDistanceAccumulator; }
+    public MutableDistanceAccumulator getAutonomousMovementDistanceAccumulator() { return absoluteDistanceAccumulator; }
     public MutableDistanceAccumulator getAbsoluteAndVisionDistanceAccumulator() { return absoluteAndVisionDistanceAccumulator; }
     public MutableOrientation getAbsoluteOrientation() { return absoluteOrientation; }
     public MutableOrientation getAbsoluteAndVisionOrientation() { return absoluteAndVisionOrientation; }

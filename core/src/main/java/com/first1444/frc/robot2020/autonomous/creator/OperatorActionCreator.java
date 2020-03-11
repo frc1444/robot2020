@@ -43,13 +43,16 @@ public class OperatorActionCreator {
      * @return An action that ends instantly, but sets the climb to store itself with a timeout of 5 seconds
      */
     public Action createStoreClimb() {
-        return Actions.createRunOnce(() -> robot.getClimber().storedPosition(5.0));
+        return Actions.createRunOnce(() -> robot.getClimber().storedPosition(7.0));
     }
     public Action createRequireClimbStored(double timeoutSeconds, Action successAction, Action failAction) {
         return Actions.createLinkedActionRunner(new RequireClimbStoredAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
     }
     public Action createRequireIntakeDownAction(double timeoutSeconds, Action successAction, Action failAction) {
         return Actions.createLinkedActionRunner(new RequireIntakeDownAction(timeoutSeconds, successAction, failAction), WhenDone.BE_DONE, false);
+    }
+    public Action createSetShooterRpm(double rpm){
+        return Actions.createRunOnceRecyclable(() -> robot.getBallShooter().setDesiredRpm(rpm));
     }
 
     public Action createTurretAlignAndShootAll() {

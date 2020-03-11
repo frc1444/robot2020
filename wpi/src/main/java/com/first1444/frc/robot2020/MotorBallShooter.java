@@ -24,8 +24,8 @@ public class MotorBallShooter implements BallShooter {
         RECOVERY,
         READY
     }
-    public static final double AT_SETPOINT_DEADBAND = 300;
-    public static final double RECOVERY_DEADBAND = 500;
+    public static final double AT_SETPOINT_DEADBAND = 600;
+    public static final double RECOVERY_DEADBAND = 800;
     private final BallTracker ballTracker;
     private final Clock clock;
     private final DashboardMap dashboardMap;
@@ -73,7 +73,6 @@ public class MotorBallShooter implements BallShooter {
     @Override
     public void run() {
         final double rpm = this.rpm;
-        this.rpm = 0;
         if(rpm != 0){
             double velocity = rpmToNative(rpm, RobotConstants.FALCON_ENCODER_COUNTS_PER_REVOLUTION);
             talon.set(ControlMode.Velocity, velocity);

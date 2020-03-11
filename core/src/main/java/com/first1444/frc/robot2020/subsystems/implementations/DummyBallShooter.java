@@ -18,8 +18,6 @@ public class DummyBallShooter implements BallShooter {
     @Override
     public void run() {
         double rpm = this.rpm;
-        this.rpm = 0;
-        lastRpm = rpm;
         reportMap.report("Ball Shooter RPM", FORMAT.format(rpm));
     }
 
