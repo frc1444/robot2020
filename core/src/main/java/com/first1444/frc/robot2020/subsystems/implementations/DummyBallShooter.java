@@ -9,7 +9,6 @@ public class DummyBallShooter implements BallShooter {
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
     private final ReportMap reportMap;
     private double rpm;
-    private double lastRpm;
 
     public DummyBallShooter(ReportMap reportMap) {
         this.reportMap = reportMap;
@@ -28,7 +27,7 @@ public class DummyBallShooter implements BallShooter {
 
     @Override
     public double getCurrentRpm() {
-        return lastRpm;
+        return rpm;
     }
 
     @Override
