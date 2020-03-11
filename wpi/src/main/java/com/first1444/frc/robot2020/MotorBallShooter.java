@@ -54,8 +54,10 @@ public class MotorBallShooter implements BallShooter {
         var sendable = new MutableValueMapSendable<>(PidKey.class);
         var pidConfig = sendable.getMutableValueMap();
         pidConfig.setDouble(PidKey.CLOSED_RAMP_RATE, .25);
-        pidConfig.setDouble(PidKey.P, .2);
-        pidConfig.setDouble(PidKey.I, .00009);
+//        pidConfig.setDouble(PidKey.P, .2);
+//        pidConfig.setDouble(PidKey.I, .00009);
+        pidConfig.setDouble(PidKey.P, .54);
+        pidConfig.setDouble(PidKey.F, .044);
 
         CtreUtil.applyPid(talon, pidConfig, RobotConstants.INIT_TIMEOUT);
         pidConfig.addListener(key -> CtreUtil.applyPid(talon, pidConfig, RobotConstants.LOOP_TIMEOUT));

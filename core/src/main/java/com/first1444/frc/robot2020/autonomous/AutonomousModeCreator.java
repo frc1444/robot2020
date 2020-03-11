@@ -106,7 +106,6 @@ public class AutonomousModeCreator {
     // endregion
     private Action createTrenchAuto(Transform2 startingTransform){
         Action intakeForever = creator.getOperatorCreator().createIntakeRunForever();
-        Vector2 secondIntakePosition = new Vector2(2.2, 1.9);
 
         Rotation2 mainRotation = Rotation2.fromDegrees(100);
 
@@ -129,10 +128,10 @@ public class AutonomousModeCreator {
                                                 .5,
                                                 new Actions.ActionQueueBuilder(
                                                         creator.getOperatorCreator().createTurretAlignAndShootAll(),
-                                                        creator.getOperatorCreator().createSetShooterRpm(BallShooter.MAX_RPM),
                                                         creator.getOperatorCreator().createTurnOffVision(),
-                                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
+//                                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
                                                         creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 3.6), .7, Rotation2.DEG_270),
+                                                        creator.getOperatorCreator().createSetShooterRpm(BallShooter.MAX_RPM),
                                                         Actions.createSupplementaryAction(
                                                                 creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.45), .7, Rotation2.DEG_270),
                                                                 intakeForever
@@ -141,31 +140,26 @@ public class AutonomousModeCreator {
 //                                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.6), .5, Rotation2.DEG_270),
                                                         creator.getLogCreator().createLogMessageAction("Going to turn to face(ish) target"),
                                                         Actions.createSupplementaryAction(
-                                                                creator.getDriveCreator().createTurnToOrientation(mainRotation),
+                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.7), 1.0, mainRotation),
                                                                 new Actions.ActionMultiplexerBuilder(
                                                                         intakeForever,
                                                                         creator.getOperatorCreator().createTurretAlign()
                                                                 ).build()
                                                         ),
+                                                        Actions.createSupplementaryAction(
+                                                                creator.getDriveCreator().createTurnToOrientation(mainRotation),
+                                                                creator.getOperatorCreator().createTurretAlign()
+                                                        ),
                                                         creator.getLogCreator().createLogMessageAction("turned to face(ish) target"),
-                                                        creator.getOperatorCreator().createRequireClimbStored( // just make sure the climb is stored again
-                                                                0.0,
                                                                 creator.getOperatorCreator().createRequireVision(
                                                                         1.0,
                                                                         new Actions.ActionQueueBuilder(
                                                                                 creator.getLogCreator().createLogMessageAction("Going to shoot now"),
                                                                                 creator.getOperatorCreator().createTurretAlignAndShootAll(),
                                                                                 creator.getOperatorCreator().createTurnOffVision()
-//                                                                                creator.getLogCreator().createLogMessageAction("We just finished the main part of our autonomous"),
-//                                                                                creator.getDriveCreator().createMoveToAbsolute(
-//                                                                                        secondIntakePosition, new ConstantSpeedProvider(.5),
-//                                                                                        new LinearDistanceRotationProvider(mainRotation, Rotation2.fromDegrees(-160), secondIntakePosition, 1.8, .6)
-//                                                                                )
                                                                         ).build(),
                                                                         creator.getLogCreator().createLogWarningAction("No vision for autonomous!")
-                                                                ),
-                                                                creator.getLogCreator().createLogWarningAction("Climb not stored (but it was before?)")
-                                                        )
+                                                                )
                                                 ).build(),
                                                 creator.getLogCreator().createLogWarningAction("No vision for auto!")
                                         ),

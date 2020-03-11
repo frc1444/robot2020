@@ -13,8 +13,8 @@ import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 public class TurnToOrientation extends SimpleAction {
-    private static final double MAX_SPEED = .5;
-    private static final double MIN_SPEED = .15;
+    private static final double MAX_SPEED = .6;
+    private static final double MIN_SPEED = .35;
 
     private final Rotation2 desiredOrientation;
     private final DoubleConsumer turnAmountConsumer;
@@ -22,7 +22,7 @@ public class TurnToOrientation extends SimpleAction {
 
     public TurnToOrientation(Rotation2 desiredOrientation, DoubleConsumer turnAmountConsumer, Orientation orientation) {
         super(true);
-        this.desiredOrientation = desiredOrientation;
+        this.desiredOrientation = requireNonNull(desiredOrientation);
         this.turnAmountConsumer = requireNonNull(turnAmountConsumer);
         this.orientation = requireNonNull(orientation);
     }

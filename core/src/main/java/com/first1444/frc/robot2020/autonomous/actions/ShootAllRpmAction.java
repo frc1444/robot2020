@@ -40,7 +40,7 @@ public class ShootAllRpmAction extends SimpleAction {
                 setpointStartTime = clock.getTimeSeconds();
                 this.setpointStartTime = setpointStartTime;
             }
-            if(clock.getTimeSeconds() - setpointStartTime > .2) {
+            if(clock.getTimeSeconds() - setpointStartTime > .1) {
                 intake.setControl(Intake.Control.FEED_ALL_AND_INTAKE);
             } else {
                 intake.setControl(Intake.Control.STORE);
