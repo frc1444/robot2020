@@ -87,10 +87,9 @@ class RobotInput(
     // region Climb Controls
     val climbStored: InputPart
         get() = attackJoystick.leftLower
-
     /** If pressed, should make the climber go to the starting position */
-    val climbStarting: InputPart
-        get() = attackJoystick.rightUpper
+    val climbClimbingPosition: InputPart
+        get() = attackJoystick.thumbLower
 
     /** An input part that makes the climber move up and down manually. */
     val climbRawControl: InputPart

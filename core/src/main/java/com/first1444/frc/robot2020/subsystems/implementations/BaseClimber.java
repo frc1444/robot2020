@@ -7,11 +7,16 @@ import static java.lang.Math.abs;
 
 public abstract class BaseClimber implements Climber {
 
+    private enum Mode {
+        MANUAL,
+        STORED_POSITION,
+        CLIMBING_POSITION
+    }
+
     protected final Clock clock;
 
     private double speed = 0.0;
-    private boolean startingPosition = false;
-    private boolean storedPosition = false;
+    private Mode mode = Mode.MANUAL;
     private double timeoutTime = 0.0;
 
     protected BaseClimber(Clock clock) {
@@ -19,7 +24,7 @@ public abstract class BaseClimber implements Climber {
     }
 
     protected abstract void useSpeed(double speed);
-    protected abstract void goToStartingPosition();
+    protected abstract void goToClimbingPosition();
     protected abstract void goToStoredPosition();
 
     @Override
@@ -28,38 +33,35 @@ public abstract class BaseClimber implements Climber {
             throw new IllegalArgumentException("speed is out of range! speed=" + speed);
         }
         this.speed = speed;
-        startingPosition = false;
-        storedPosition = false;
+        mode = Mode.MANUAL;
     }
 
     @Override
-    public final void startingPosition(double timeoutSeconds) {
-        startingPosition = true;
-        storedPosition = false;
-        timeoutTime = clock.getTimeSeconds() + timeoutSeconds;
+    public final void climbingPosition() {
+        mode = Mode.CLIMBING_POSITION;
     }
 
     @Override
     public final void storedPosition(double timeoutSeconds) {
-        startingPosition = false;
-        storedPosition = true;
+        mode = Mode.STORED_POSITION;
         timeoutTime = clock.getTimeSeconds() + timeoutSeconds;
     }
 
     @Override
     public void run() {
+        final Mode mode = this.mode;
         final double speed = this.speed;
         this.speed = 0.0;
-        if(clock.getTimeSeconds() > timeoutTime){
-            startingPosition = false;
-            storedPosition = false;
-        }
-        if(startingPosition){
-            goToStartingPosition();;
-        } else if(storedPosition){
+        if(mode == Mode.MANUAL){
+            useSpeed(speed);
+        } else if(mode == Mode.STORED_POSITION){
+            if(clock.getTimeSeconds() > timeoutTime){
+                this.mode = Mode.MANUAL;
+            }
             goToStoredPosition();
         } else {
-            useSpeed(speed);
+            assert mode == Mode.CLIMBING_POSITION;
+            goToClimbingPosition();
         }
     }
 }

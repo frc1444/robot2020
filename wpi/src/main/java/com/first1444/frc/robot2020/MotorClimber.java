@@ -10,13 +10,24 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.DigitalInput;
 
+import static java.util.Objects.requireNonNull;
+
 public class MotorClimber extends BaseClimber {
+    private static final double LOCK_ENCODER_COUNTS = 205.0;
+    private static final double UNLATCH_STAGE_2_COUNTS = 190.0; // TODO get encoder value
+    private static final double RESET_TO_LOW_STATE_COUNTS = 170.0;
+    private enum State {
+        LOW,
+        UNLATCHING,
+        FREE_TO_CLIMB
+    }
     private final CANSparkMax motor;
     private final CANEncoder encoder;
     private final DigitalInput reverseLimitSwitch;
 
     private final DigitalInput intakeLimitSwitch;
     private Double lastIntakeLimitSwitchPress = null;
+    private State state = State.LOW;
 
     public MotorClimber(Clock clock, DashboardMap dashboardMap) {
         super(clock);
@@ -29,8 +40,6 @@ public class MotorClimber extends BaseClimber {
         motor.setSmartCurrentLimit(200); // default is 80
 
         encoder = motor.getEncoder();
-//        motor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
-//        motor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 100000); // TODO get correct value
         dashboardMap.getDebugTab().add("Climb Encoder", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeDouble(encoder.getPosition()))));
         dashboardMap.getDevTab().add("Intake Down Limit", new PropertyComponent(ValueProperty.createGetOnly(() -> BasicValue.makeBoolean(isIntakeDown()))));
     }
@@ -47,13 +56,28 @@ public class MotorClimber extends BaseClimber {
 
     @Override
     public void run() {
-        super.run();
         if(isReverseLimitSwitchPressed()){
             encoder.setPosition(0.0);
         }
         if(isIntakeLimitSwitchPressed()){
             lastIntakeLimitSwitchPress = clock.getTimeSeconds();
         }
+        double counts = encoder.getPosition();
+        if(counts <= RESET_TO_LOW_STATE_COUNTS){
+            state = State.LOW;
+        } else {
+            final State state = requireNonNull(this.state);
+            if(state == State.LOW){
+                if(counts >= LOCK_ENCODER_COUNTS){
+                    this.state = State.UNLATCHING;
+                }
+            } else if(state == State.UNLATCHING){
+                if(counts <= UNLATCH_STAGE_2_COUNTS){
+                    this.state = State.FREE_TO_CLIMB;
+                }
+            }
+        }
+        super.run();
     }
 
     @Override
@@ -75,8 +99,16 @@ public class MotorClimber extends BaseClimber {
     }
 
     @Override
-    protected void goToStartingPosition() {
-        motor.set(0.0);
+    protected void goToClimbingPosition() {
+        State state = requireNonNull(this.state);
+        if(state == State.LOW){
+            motor.set(1.0);
+        } else if(state == State.UNLATCHING){
+            motor.set(-1.0);
+        } else {
+            assert state == State.FREE_TO_CLIMB;
+            motor.set(1.0);
+        }
     }
 
     @Override

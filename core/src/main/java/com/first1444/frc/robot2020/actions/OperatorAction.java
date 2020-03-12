@@ -149,9 +149,12 @@ public class OperatorAction extends SimpleAction {
                 }
                 wantsToClimb = true;
             }
-//            if(input.getClimbStarting().isDown()){
-//                robot.getClimber().startingPosition(3.0);
-//            }
+            if(input.getClimbClimbingPosition().isDown()){
+                if(clearToClimb){
+                    robot.getClimber().climbingPosition();
+                }
+                wantsToClimb = true;
+            }
             if (wantsToClimb && (!clearToClimb || autoDown)) { // if it's not clear to climb or auto targeting is enabled
                 input.getDriverRumble().rumbleTimeout(500, 1.0);
             }

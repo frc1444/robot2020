@@ -24,8 +24,8 @@ public class DummyClimber extends BaseClimber {
     }
 
     @Override
-    protected void goToStartingPosition() {
-        report("Starting position");
+    protected void goToClimbingPosition() {
+        report("Climbing Position");
         stored = false;
     }
 
