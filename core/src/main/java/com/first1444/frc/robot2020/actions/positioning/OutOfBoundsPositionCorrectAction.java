@@ -6,7 +6,7 @@ import com.first1444.sim.api.frc.implementations.infiniterecharge.Field2020;
 import me.retrodaredevil.action.SimpleAction;
 
 public class OutOfBoundsPositionCorrectAction extends SimpleAction {
-    private static final double MAX_X = Field2020.WIDTH / 2.0;
+    private static final double MAX_X = Field2020.WIDTH / 2.0 + 1.0;
     private static final double MIN_X = -MAX_X;
     private static final double MAX_Y = Field2020.LENGTH / 2.0;
     private static final double MIN_Y = -MAX_Y;

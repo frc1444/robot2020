@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 public class AutonomousModeCreator {
 
     /** The amount to move for a basic move in meters */
-    private static final double BASIC_MOVE_DISTANCE = 1.3;
+    private static final double BASIC_MOVE_DISTANCE = .7;
     private final AutonomousActionCreator creator;
 
     public AutonomousModeCreator(AutonomousActionCreator creator) {
@@ -110,7 +110,7 @@ public class AutonomousModeCreator {
         Rotation2 mainRotation = Rotation2.fromDegrees(100);
 
         return new Actions.ActionQueueBuilder(
-                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(4.25), 1.0, startingTransform.getRotation()),
+                creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withY(4.3), .7, startingTransform.getRotation()),
                 creator.getDriveCreator().createSpinAction(), // get intake down
                 creator.getOperatorCreator().createSetShooterRpm(BallShooter.MAX_RPM),
                 creator.getOperatorCreator().createRequireIntakeDownAction(
@@ -127,20 +127,22 @@ public class AutonomousModeCreator {
                                         creator.getOperatorCreator().createRequireVision(
                                                 .5,
                                                 new Actions.ActionQueueBuilder(
+                                                        creator.getBasicActionCreator().createTimedAction(.3),
                                                         creator.getOperatorCreator().createTurretAlignAndShootAll(),
                                                         creator.getOperatorCreator().createTurnOffVision(),
-//                                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
-                                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 3.6), .7, Rotation2.DEG_270),
+                                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.43, 3.6), .7, Rotation2.DEG_270),
+                                                        creator.getDriveCreator().createTurnToOrientation(Rotation2.DEG_270),
                                                         creator.getOperatorCreator().createSetShooterRpm(BallShooter.MAX_RPM),
+                                                        creator.getBasicActionCreator().createTimedAction(.3),
                                                         Actions.createSupplementaryAction(
-                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.45), .7, Rotation2.DEG_270),
+                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.40, 0.45), .7, Rotation2.DEG_270),
                                                                 intakeForever
                                                         ),
                                                         creator.getOperatorCreator().createTurnOnVision(),
 //                                                        creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.6), .5, Rotation2.DEG_270),
                                                         creator.getLogCreator().createLogMessageAction("Going to turn to face(ish) target"),
                                                         Actions.createSupplementaryAction(
-                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.7), 1.0, mainRotation),
+                                                                creator.getDriveCreator().createMoveToAbsolute(new Vector2(3.35, 0.9), 1.0, mainRotation),
                                                                 new Actions.ActionMultiplexerBuilder(
                                                                         intakeForever,
                                                                         creator.getOperatorCreator().createTurretAlign()
@@ -148,7 +150,10 @@ public class AutonomousModeCreator {
                                                         ),
                                                         Actions.createSupplementaryAction(
                                                                 creator.getDriveCreator().createTurnToOrientation(mainRotation),
-                                                                creator.getOperatorCreator().createTurretAlign()
+                                                                new Actions.ActionMultiplexerBuilder(
+                                                                        intakeForever,
+                                                                        creator.getOperatorCreator().createTurretAlign()
+                                                                ).build()
                                                         ),
                                                         creator.getLogCreator().createLogMessageAction("turned to face(ish) target"),
                                                                 creator.getOperatorCreator().createRequireVision(

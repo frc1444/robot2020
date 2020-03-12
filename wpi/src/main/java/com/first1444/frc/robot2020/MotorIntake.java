@@ -180,8 +180,10 @@ public class MotorIntake extends BaseIntake {
                     indexerSpeed = speed;
                 }
             } else {
-                if(intakeSpeed == null) {
-                    intakeSpeed = 1.0;
+                if(ballTracker.getBallCount() >= 4) {
+                    if (intakeSpeed == null) {
+                        intakeSpeed = 1.0;
+                    }
                 }
                 if(indexerSpeed == null) {
                     indexerSpeed = 1.0;

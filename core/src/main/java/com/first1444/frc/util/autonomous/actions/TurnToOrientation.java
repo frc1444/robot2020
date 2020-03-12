@@ -13,8 +13,8 @@ import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 public class TurnToOrientation extends SimpleAction {
-    private static final double MAX_SPEED = .6;
-    private static final double MIN_SPEED = .35;
+    private static final double MAX_SPEED = .5;
+    private static final double MIN_SPEED = .15;
 
     private final Rotation2 desiredOrientation;
     private final DoubleConsumer turnAmountConsumer;
